@@ -1,0 +1,2191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beatmaker - 森巴鼓團練習程序 (Pro)</title>
+	
+	<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+	
+    <style>
+        :root {
+            --step-size: 30px;
+            --selection-bg-color: rgba(50, 150, 255, 0.3);
+            --selection-border-color: #3296ff;
+            --selection-glow-color: rgba(50, 150, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .bpm-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 11px 15px;
+            border-radius: 8px;
+        }
+
+        .bpm-input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            width: 60px;
+            text-align: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn.active, .btn.toggled {
+            background: linear-gradient(135deg, #ff4444 0%, #cc3333 100%);
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+        }
+        
+        .btn.warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ffa000 100%);
+        }
+
+        .btn.warning:hover:not(:disabled) {
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+        }
+        
+        .btn.action-btn {
+            background: linear-gradient(135deg, #33aaff 0%, #0088cc 100%);
+        }
+        .btn.action-btn:hover:not(:disabled) {
+            box-shadow: 0 5px 15px rgba(51, 170, 255, 0.3);
+        }
+        .btn.action-btn.toggled {
+            background: linear-gradient(135deg, #ff9900 0%, #ff6600 100%);
+            box-shadow: 0 0 10px rgba(255, 153, 0, 0.5);
+        }
+
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .mode-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        .beat-setting-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .beat-setting-label {
+            color: #00ff88;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .beat-setting-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .beat-setting-btn.active {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        .expand-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+		.expand-btn {
+			background: rgba(255, 255, 255, 0.1);
+			border: 2px solid #00ff88;
+			color: #00ff88;
+			width: 38px; 
+			height: 38px;
+			padding: 0;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 8px;
+			cursor: pointer;
+			font-size: 18px;
+			font-weight: bold;
+			transition: all 0.3s ease;
+		}
+
+        .expand-btn:hover {
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        .expand-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .expand-btn.reduce {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .expand-btn.reduce:hover {
+            background: rgba(255, 68, 68, 0.2);
+        }
+
+        .beats-info {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .sequencer {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            display: flex;
+            height: 500px;
+        }
+
+		.tracks-controls {
+			width: 280px;
+			flex-shrink: 0;
+			background: rgba(0, 0, 0, 0.5);
+			border-radius: 10px;
+			padding: 8px 8px 32px 8px;
+			margin-right: 10px;
+			margin-top: 20px;
+			overflow-y: auto;
+			border: 2px solid rgba(0, 255, 136, 0.3);
+			transition: width 0.3s ease, padding 0.3s ease;
+			position: relative;
+		}
+
+		.tracks-controls.collapsed {
+			width: 60px;
+			padding: 8px 4px 28px 4px;
+		}
+		
+		.collapse-btn {
+			position: absolute;
+			bottom: 8px;
+			left: 50%;
+			transform: translateX(-50%);
+			background: rgba(0, 255, 136, 0.2);
+			border: 1px solid #00ff88;
+			color: #00ff88;
+			width: 32px;
+			height: 24px;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 12px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: all 0.3s ease;
+			z-index: 10;
+		}
+
+		.collapse-btn:hover {
+			background: rgba(0, 255, 136, 0.4);
+		}
+
+		.tracks-controls.collapsed .collapse-btn {
+			left: 50%;
+			bottom: 8px;
+			width: 28px;
+			height: 20px;
+		}
+
+        .tracks-sequencer {
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            position: relative;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .track {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 5px;
+            min-width: fit-content;
+            transition: opacity 0.3s ease;
+            min-height: 50px;
+        }
+
+        .track.disabled {
+            opacity: 0.3;
+        }
+
+        .track.disabled .steps {
+            pointer-events: none;
+        }
+
+        .track.current-playing {
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 10px;
+            padding: 8px;
+            margin: 3px 0;
+        }
+
+        .track-control-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            min-height: 50px;
+			transition: all 0.3s ease;
+        }
+		
+		.tracks-controls.collapsed .track-control-item {
+			padding: 8px 4px;
+			margin-bottom: 8px;
+			min-height: 50px;
+			justify-content: center;
+			align-items: center;
+		}
+		
+		.tracks-controls.collapsed .drum-select,
+		.tracks-controls.collapsed .track-controls,
+		.tracks-controls.collapsed .volume-control {
+			display: none;
+		}
+
+		.tracks-controls.collapsed .track-number {
+			width: 32px;
+			height: 32px;
+			font-size: 14px;
+			line-height: 32px;
+			text-align: center;
+			flex-shrink: 0;
+		}
+
+        .track-control-item.current-playing {
+            background: rgba(0, 255, 136, 0.15);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+		.track-steps.disabled {
+			opacity: 0.3;
+			background: rgba(128, 128, 128, 0.1) !important;
+			pointer-events: none;
+		}
+
+		.track-steps.disabled .track-cell {
+			background: rgba(128, 128, 128, 0.1) !important;
+			border-color: rgba(128, 128, 128, 0.2) !important;
+		}
+
+		.track-steps.disabled .track-cell.active {
+			background: rgba(128, 128, 128, 0.2) !important;
+		}
+
+		.track-steps.disabled .track-label {
+			color: rgba(128, 128, 128, 0.6) !important;
+		}
+
+		.track-steps.disabled .step.beat-marker {
+			border-color: rgba(255, 170, 0, 0.3) !important;
+		}
+
+        .track-number {
+			width: 32px;
+			height: 32px;
+			font-size: 14px;
+			line-height: 32px;
+			text-align: center;
+			flex-shrink: 0;
+			background: rgba(0, 255, 136, 0.2);
+			border: 1px solid #00ff88;
+			color: #00ff88;
+			border-radius: 4px;
+			font-weight: bold;
+        }
+
+		.drum-select {
+			flex: 1;
+			min-width: 80px;
+			padding: 4px 8px;
+			background: rgba(0, 0, 0, 0.7);
+			color: #00ff88;
+			border: 1px solid rgba(0, 255, 136, 0.3);
+			border-radius: 4px;
+			font-size: 12px;
+		}
+
+        .track-controls {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .track-control-btn {
+            width: 28px;
+            height: 28px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        .track-control-btn.active {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+        }
+
+		.volume-control {
+			flex: 0 0 60px;
+		}
+
+		.volume-slider {
+			width: 100%;
+			height: 4px;
+			background: rgba(255, 255, 255, 0.2);
+			outline: none;
+			border-radius: 2px;
+			cursor: pointer;
+		}
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #00ff88;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: #00ff88;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .track-steps {
+            display: flex;
+            align-items: center;
+            min-height: 50px;
+            padding: 3px 0;
+            margin-bottom: 8px;
+        }
+
+        .steps {
+            display: flex;
+            gap: 1px;
+            min-width: fit-content;
+            align-items: center;
+        }
+
+        .step {
+            width: var(--step-size);
+            height: var(--step-size);
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+
+        .step.active {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            border-color: #00ff88;
+            transform: scale(1.05);
+        }
+
+        .step.beat-marker {
+            border-color: #ffaa00;
+        }
+
+        .step.selected {
+            background-color: var(--selection-bg-color) !important;
+            border-color: var(--selection-border-color) !important;
+            box-shadow: 0 0 8px var(--selection-glow-color);
+            z-index: 2;
+        }
+
+        .step.playing {
+            animation: pulse 0.2s ease;
+            box-shadow: 0 0 20px #00ff88;
+            z-index: 3;
+        }
+
+        .options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .position-indicator {
+            height: 10px;
+            margin-bottom: 10px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            min-width: fit-content;
+        }
+
+        .position-line {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            background: #ff4444;
+            border-radius: 1px;
+            transition: left 0.1s linear;
+        }
+
+        .file-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .sound-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            color: white;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 2px solid #00ff88;
+        }
+
+        .sound-controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .sound-controls-row {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sound-control-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .sound-control-item h4 {
+            color: #00ff88;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        /* --- 音源模式選擇 --- */
+        .sound-mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+        }
+        .sound-mode-selector label {
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .sound-mode-selector input {
+            display: none;
+        }
+        .sound-mode-selector input:checked + span {
+            color: #1a1a1a;
+            background-color: #00ff88;
+            border-color: #00ff88;
+            font-weight: bold;
+        }
+        .sound-mode-selector label.disabled span {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: rgba(128, 128, 128, 0.2);
+            color: rgba(255, 255, 255, 0.4);
+            border-color: rgba(128, 128, 128, 0.3);
+        }
+        .sound-mode-container {
+            display: none; /* 預設隱藏 */
+        }
+        .sound-mode-container.active {
+            display: block; /* 僅顯示 active 的 */
+        }
+        .loading-indicator::after {
+            content: ' (載入中...)';
+            color: #ffc107;
+            font-size: 10px;
+        }
+
+        .sound-control-params {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .sound-control-params label {
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .sound-control-params input,
+        .sound-control-params select {
+            width: 100%;
+            padding: 4px;
+            border-radius: 4px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .sound-control-bottom {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sample-controls {
+            margin-top: 15px;
+        }
+        
+        .sample-controls .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .sample-file-name {
+            font-size: 12px;
+            color: #00ff88;
+            margin-top: 8px;
+            display: inline-block;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+        }
+        
+        .test-btn {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .test-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .panel-buttons {
+            text-align: center;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1.05); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1.05); }
+        }
+
+        @media (max-width: 1200px) {
+            .tracks-controls {
+                width: 260px;
+            }
+            .sound-controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 1000px) {
+            .sequencer {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .tracks-controls {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 15px;
+                max-height: 200px;
+            }
+            
+            .tracks-sequencer {
+                height: 400px;
+            }
+        }
+
+		@media (max-width: 800px) {
+            .step {
+                font-size: 8px; 
+            }
+        }
+        
+		.btn.loading {
+            cursor: wait;
+            background: linear-gradient(135deg, #555 0%, #333 100%);
+            box-shadow: none;
+            transform: none;
+        }
+
+        .author-credit {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+		
+        @media (min-width: 801px) {
+            .steps {
+                gap: 2px;
+            }
+        }
+		
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎵 Beatmaker - 森巴鼓團</div>
+            <div class="controls">
+                <button class="btn" id="playBtn">▶ 播放</button>
+                <button class="btn warning" id="clearBtn">清除</button>
+                <button class="btn warning" id="resetBtn">重置</button>
+                <button class="btn" id="undoBtn" disabled>上一步</button>
+                <button class="btn" id="redoBtn" disabled>下一步</button>
+                <button class="btn" id="soundAdjustBtn">🎵 調音</button>
+                <button class="btn action-btn" id="selectBtn">選擇</button>
+                <button class="btn action-btn" id="copyBtn">複製</button>
+                <button class="btn action-btn" id="pasteBtn">貼上</button>
+                <div class="file-controls">
+                    <button class="btn" id="exportBtn">匯出</button>
+                    <button class="btn" id="importBtn">匯入</button>
+					<button class="btn action-btn" id="exportMp3Btn">匯出MP3</button>
+                    <input type="file" class="file-input" id="fileInput" accept=".json">
+                </div>
+				<label for="loopCountSelect" style="color: white; margin-left: 10px;">循環次數:</label>
+				<select id="loopCountSelect" style="background: rgba(0,0,0,0.7); color: #00ff88; border: 1px solid #00ff88; border-radius: 5px; padding: 4px;">
+				  <option value="1" selected>1</option>
+				  <option value="2">2</option>
+				  <option value="3">3</option>
+				  <option value="4">4</option>
+				  <option value="5">5</option>
+				  <option value="6">6</option>
+				  <option value="7">7</option>
+				  <option value="8">8</option>
+				</select>
+            </div>
+        </div>
+
+        <div class="control-row">
+            <div class="mode-controls">
+                <button class="mode-btn active" data-mode="ensemble">合奏模式</button>
+                <button class="mode-btn" data-mode="sequential">循環模式</button>
+            </div>
+            <div class="beat-setting-controls">
+                <span class="beat-setting-label">拍子設定:</span>
+                <button class="beat-setting-btn" data-beat-setting="2">2格一拍</button>
+                <button class="beat-setting-btn active" data-beat-setting="4">4格一拍</button>
+                <button class="beat-setting-btn" data-beat-setting="8">8格一拍</button>
+            </div>
+            <div class="expand-controls">
+                <button class="expand-btn reduce" id="reduceBtn">-</button>
+                <button class="expand-btn" id="expandBtn">+</button>
+                <span class="beats-info" id="beatsInfo">8拍</span>
+            </div>
+            <div class="bpm-control">
+                <span>BPM:</span>
+                <input type="number" class="bpm-input" id="bpmInput" value="65" min="60" max="200">
+            </div>
+            <div class="checkbox-container">
+                <input type="checkbox" class="checkbox" id="showNumbers">
+                <label for="showNumbers">數字提醒</label>
+            </div>
+        </div>
+
+        <div class="sequencer">
+			<div class="tracks-controls" id="tracksControls">
+				<button class="collapse-btn" id="collapseBtn" title="摺疊/展開控制面板">◀</button>
+				<div id="trackControls"></div>
+			</div>
+            
+            <div class="tracks-sequencer">
+                <div class="position-indicator">
+                    <div class="position-line" id="positionLine"></div>
+                </div>
+                <div id="trackSteps"></div>
+            </div>
+        </div>
+		
+		<div class="author-credit">
+        程式作者：徐承佑   森巴鼓指導老師：陳仰真
+		</div>
+    </div>
+	
+    <div class="sound-panel" id="soundAdjustPanel">
+        <h3 style="margin-bottom: 20px; color: #00ff88; text-align: center;">🎵 樂器音色調整</h3>
+        <div class="sound-controls-grid">
+            <div class="sound-controls-row" id="soundControlsTop"></div>
+            <div class="sound-controls-row" id="soundControlsBottom"></div>
+        </div>
+        <div class="panel-buttons">
+            <button class="btn" id="closeSoundPanel">關閉</button>
+            <button class="btn warning" id="resetSounds">重置音色</button>
+        </div>
+    </div>
+
+    <script>
+        class Beatmaker {
+            constructor() {
+                this.isPlaying = false;
+                this.currentStep = 0;
+                this.currentTrack = 0;
+                this.bpm = 65;
+                this.mode = 'ensemble';
+                this.showNumbers = false;
+                this.stepInterval = null;
+                this.tracks = [];
+                this.totalBeats = 8;
+                this.minBeats = 4;
+                this.stepsPerBeat = 4;
+
+                this.selectionMode = false;
+                this.selection = {
+                    trackIndex: null,
+                    startStep: null,
+                    endStep: null
+                };
+                this.clipboard = {
+                    pattern: null
+                };
+                
+                this.history = [];
+                this.historyIndex = -1;
+                this.maxHistory = 50; 
+
+                this.trackLabels = ['R', 'C', 'S1', 'S2', 'S3', 'O'];
+                this.defaultDrums = ['repinique', 'caixa', 'surdo1', 'surdo2', 'surdo3', 'pandeiro'];
+                
+                // =======================================================================
+                // ==================  請在此處修改預設音檔的路徑  ===================
+                // =======================================================================
+                // 說明：
+                // 1. 將您的 MP3/WAV/OGG 檔案上傳到一個公開的網址 (例如 GitHub Pages)。
+                // 2. 將對應的 URL 填入下方的 `defaultSampleUrls` 物件中。
+                // 3. 如果某個樂器沒有提供 URL (設為 '' 或 null)，則「系統預設」選項將無法使用。
+                // 4. 範例格式：'repinique': 'https://your-username.github.io/your-repo/sounds/repinique.mp3',
+                this.defaultSampleUrls = {
+                    'repinique': '', 
+                    'surdo1': '',
+                    'surdo2': '',
+                    'surdo3': '',
+                    'caixa': '',
+                    'tamborim': '',
+                    'cuica': '',
+                    'agogo': '',
+                    'pandeiro': ''
+                };
+                // =======================================================================
+                // =======================================================================
+                
+                this.drumSounds = {
+                    'repinique': { name: 'Repinique', freq: 220, type: 'triangle', attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.4, gain: 0.7 },
+                    'surdo1': { name: 'Surdo 1', freq: 55, type: 'triangle', attack: 0.02, decay: 0.8, sustain: 0.1, release: 0.8, gain: 1.0 },
+                    'surdo2': { name: 'Surdo 2', freq: 65, type: 'triangle', attack: 0.02, decay: 0.7, sustain: 0.1, release: 0.7, gain: 0.9 },
+                    'surdo3': { name: 'Surdo 3', freq: 75, type: 'triangle', attack: 0.02, decay: 0.6, sustain: 0.1, release: 0.6, gain: 0.8 },
+                    'caixa': { name: 'Caixa', freq: 250, type: 'square', attack: 0.01, decay: 0.15, sustain: 0.1, release: 0.2, gain: 0.6 },
+                    'tamborim': { name: 'Tamborim', freq: 400, type: 'square', attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.15, gain: 0.4 },
+                    'cuica': { name: 'Cuíca', freq: 180, type: 'sawtooth', attack: 0.02, decay: 0.3, sustain: 0.2, release: 0.4, gain: 0.5 },
+                    'agogo': { name: 'Agogô', freq: 800, type: 'sine', attack: 0.01, decay: 0.6, sustain: 0.1, release: 0.6, gain: 0.3 },
+                    'pandeiro': { name: 'Pandeiro', freq: 300, type: 'triangle', attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.3, gain: 0.5 }
+                };
+                
+                // --- 為每個音色物件添加新屬性 ---
+                Object.keys(this.drumSounds).forEach(key => {
+                    this.drumSounds[key].mode = 'synth'; // 'system', 'user', 'synth'
+                    this.drumSounds[key].defaultSampleUrl = this.defaultSampleUrls[key] || '';
+                    this.drumSounds[key].defaultSampleBuffer = null;
+                    this.drumSounds[key].isLoadingDefault = false;
+                    this.drumSounds[key].userSampleBuffer = null;
+                    this.drumSounds[key].userSampleFileName = '';
+                });
+
+                this.audioContext = null;
+                this.initAudio().then(() => {
+                    this.loadDefaultSamples();
+                });
+                this.initTracks();
+                this.initUI();
+				
+				document.addEventListener('visibilitychange', () => {
+					if (document.visibilityState === 'visible' && this.audioContext) {
+						if (this.audioContext.state === 'suspended') {
+							this.audioContext.resume().catch(e => {
+								console.warn('Failed to resume audio on visibility change:', e);
+							});
+						}
+					}
+				});
+            }
+
+            saveState(force = false) {
+                const currentState = JSON.stringify({
+                    tracks: this.tracks,
+                    totalBeats: this.totalBeats,
+                    stepsPerBeat: this.stepsPerBeat
+                });
+
+                if (!force && this.history.length > 0 && currentState === this.history[this.historyIndex]) {
+                    return; 
+                }
+                
+                if (this.historyIndex < this.history.length - 1) {
+                    this.history.splice(this.historyIndex + 1); 
+                }
+
+                this.history.push(currentState);
+                this.historyIndex++;
+                
+                if (this.history.length > this.maxHistory) {
+                    this.history.shift();
+                    this.historyIndex--;
+                }
+
+                this.updateUndoRedoButtons();
+            }
+
+            loadState(stateString) {
+                if (!stateString) return;
+                const state = JSON.parse(stateString);
+                
+                this.totalBeats = state.totalBeats;
+                this.stepsPerBeat = state.stepsPerBeat;
+                this.tracks = JSON.parse(JSON.stringify(state.tracks));
+                
+                this.updateExpandButton();
+                document.querySelectorAll('.beat-setting-btn').forEach(btn => {
+                    btn.classList.toggle('active', parseInt(btn.dataset.beatSetting) === this.stepsPerBeat);
+                });
+                this.renderTracks();
+                this.updateStepSize();
+                this.updateUndoRedoButtons();
+            }
+
+            undo() {
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    this.loadState(this.history[this.historyIndex]);
+                }
+            }
+
+            redo() {
+                if (this.historyIndex < this.history.length - 1) {
+                    this.historyIndex++;
+                    this.loadState(this.history[this.historyIndex]);
+                }
+            }
+
+            updateUndoRedoButtons() {
+                document.getElementById('undoBtn').disabled = this.historyIndex <= 0;
+                document.getElementById('redoBtn').disabled = this.historyIndex >= this.history.length - 1;
+            }
+
+			async initAudio() {
+				try {
+					this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+					if (this.audioContext.state === 'suspended') {
+						this.setupAudioContextResume();
+					}
+				} catch (e) {
+					console.warn('Web Audio API not supported');
+				}
+			}
+            
+            async loadDefaultSamples() {
+                for (const key in this.drumSounds) {
+                    const sound = this.drumSounds[key];
+                    if (sound.defaultSampleUrl && this.audioContext) {
+                        sound.isLoadingDefault = true;
+                        this.updateSoundControlUI(key); 
+                        try {
+                            const response = await fetch(sound.defaultSampleUrl);
+                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                            const arrayBuffer = await response.arrayBuffer();
+                            sound.defaultSampleBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                            sound.mode = 'system'; // 載入成功後，預設使用系統音源
+                            console.log(`Default sample for ${key} loaded successfully.`);
+                        } catch (error) {
+                            console.error(`Failed to load default sample for ${key} from ${sound.defaultSampleUrl}:`, error);
+                            sound.defaultSampleBuffer = null;
+                            sound.mode = 'synth'; // 載入失敗，退回人工音效
+                        } finally {
+                            sound.isLoadingDefault = false;
+                            this.updateSoundControlUI(key);
+                        }
+                    } else {
+                         sound.mode = 'synth'; // 沒有提供 URL，預設人工音效
+                    }
+                }
+                this.initSoundAdjustPanel(); // 重新渲染調音面板以更新狀態
+            }
+
+            setupAudioContextResume() {
+                const resumeAudio = async () => {
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        try {
+                            await this.audioContext.resume();
+                            console.log('Audio context resumed');
+                        } catch (e) {
+                            console.warn('Failed to resume audio context:', e);
+                        }
+                    }
+                };
+                const events = ['touchstart', 'touchend', 'mousedown', 'keydown', 'click'];
+                const resumeOnce = async () => {
+                    await resumeAudio();
+                    events.forEach(event => {
+                        document.removeEventListener(event, resumeOnce);
+                    });
+                };
+                events.forEach(event => {
+                    document.addEventListener(event, resumeOnce, { once: true });
+                });
+            }
+
+            initTracks() {
+                this.tracks = Array(6).fill().map((_, i) => ({
+                    id: i,
+                    drumType: this.defaultDrums[i],
+                    steps: Array(this.totalBeats * this.stepsPerBeat).fill(false),
+                    enabled: true,
+                    soundEnabled: true,
+                    volume: 0.8
+                }));
+            }
+
+            initUI() {
+                this.renderTracks();
+                this.initSoundAdjustPanel(); // 生成 HTML
+                this.bindEvents(); // 統一綁定事件
+                this.updateExpandButton();
+                this.initScrollPosition();
+                this.updateStepSize();
+                this.saveState(true); 
+            }
+
+            initScrollPosition() {
+                const sequencer = document.querySelector('.tracks-sequencer');
+                sequencer.scrollLeft = 0;
+            }
+
+            initSoundAdjustPanel() {
+                const drumKeys = Object.keys(this.drumSounds);
+                const topControls = document.getElementById('soundControlsTop');
+                const bottomControls = document.getElementById('soundControlsBottom');
+                
+                topControls.innerHTML = '';
+                bottomControls.innerHTML = '';
+
+                drumKeys.slice(0, 5).forEach(key => topControls.insertAdjacentHTML('beforeend', this.createSoundControlHTML(key)));
+                drumKeys.slice(5).forEach(key => bottomControls.insertAdjacentHTML('beforeend', this.createSoundControlHTML(key)));
+            }
+
+            createSoundControlHTML(key) {
+                const sound = this.drumSounds[key];
+                const isSystemAvailable = !!sound.defaultSampleBuffer;
+                const isSystemLoading = sound.isLoadingDefault;
+                const isUserSampleLoaded = !!sound.userSampleBuffer;
+
+                return `
+                    <div class="sound-control-item" id="sound-control-item-${key}">
+                        <h4>${sound.name}</h4>
+
+                        <div class="sound-mode-selector">
+                            <label class="${!isSystemAvailable && !isSystemLoading ? 'disabled' : ''} ${isSystemLoading ? 'loading-indicator' : ''}">
+                                <input type="radio" name="sound-mode-${key}" class="sound-mode-radio" value="system" data-drum="${key}" ${sound.mode === 'system' ? 'checked' : ''} ${!isSystemAvailable ? 'disabled' : ''}>
+                                <span>系統預設</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="sound-mode-${key}" class="sound-mode-radio" value="user" data-drum="${key}" ${sound.mode === 'user' ? 'checked' : ''}>
+                                <span>匯入音檔</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="sound-mode-${key}" class="sound-mode-radio" value="synth" data-drum="${key}" ${sound.mode === 'synth' ? 'checked' : ''}>
+                                <span>人工音效</span>
+                            </label>
+                        </div>
+                        
+                        <!-- 系統預設 UI (無內容) -->
+                        <div class="sound-mode-container ${sound.mode === 'system' ? 'active' : ''}" data-mode-container="system" data-drum="${key}">
+                             <p style="font-size:12px; color: #aaa;">使用預設的高品質音源。</p>
+                        </div>
+
+                        <!-- 匯入音檔 UI (包含上傳功能) -->
+                        <div class="sound-mode-container ${sound.mode === 'user' ? 'active' : ''}" data-mode-container="user" data-drum="${key}">
+                            <div class="sample-controls">
+                                <input type="file" id="sample-input-${key}" class="file-input sample-input" data-drum="${key}" accept=".mp3,.wav,.ogg">
+                                <button class="btn btn-small action-btn upload-sample-btn" data-drum="${key}">匯入取樣</button>
+                                <button class="btn btn-small warning remove-sample-btn" data-drum="${key}" style="display: ${isUserSampleLoaded ? 'inline-block' : 'none'};">移除</button>
+                                <span class="sample-file-name" id="sample-name-${key}">${sound.userSampleFileName}</span>
+                            </div>
+                        </div>
+
+                        <!-- 人工音效 UI -->
+                        <div class="sound-mode-container ${sound.mode === 'synth' ? 'active' : ''}" data-mode-container="synth" data-drum="${key}">
+                            <div class="sound-control-params">
+                                <label>頻率: <input type="range" min="20" max="1000" value="${sound.freq}" data-drum="${key}" data-param="freq"></label>
+                                <label>音量: <input type="range" min="0" max="1" step="0.1" value="${sound.gain}" data-drum="${key}" data-param="gain"></label>
+                                <label>起音: <input type="range" min="0.001" max="0.1" step="0.001" value="${sound.attack}" data-drum="${key}" data-param="attack"></label>
+                                <label>衰減: <input type="range" min="0.1" max="2" step="0.1" value="${sound.decay}" data-drum="${key}" data-param="decay"></label>
+                            </div>
+                             <div class="sound-control-bottom" style="justify-content: flex-start;">
+                                <label>波形: 
+                                    <select data-drum="${key}" data-param="type" style="padding: 5px; border-radius: 5px; border: none; background: rgba(255, 255, 255, 0.1); color: white;">
+                                        <option value="sine" ${sound.type === 'sine' ? 'selected' : ''}>正弦波</option>
+                                        <option value="square" ${sound.type === 'square' ? 'selected' : ''}>方波</option>
+                                        <option value="triangle" ${sound.type === 'triangle' ? 'selected' : ''}>三角波</option>
+                                        <option value="sawtooth" ${sound.type === 'sawtooth' ? 'selected' : ''}>鋸齒波</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: right; margin-top: 10px;">
+                             <button class="test-btn" data-drum="${key}">試聽</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            renderTracks() {
+                const trackControlsContainer = document.getElementById('trackControls');
+                const trackStepsContainer = document.getElementById('trackSteps');
+                
+                trackControlsContainer.innerHTML = '';
+                trackStepsContainer.innerHTML = '';
+
+                this.tracks.forEach((track, trackIndex) => {
+                    const controlElement = document.createElement('div');
+                    controlElement.className = 'track-control-item';
+                    
+                    const drumOptions = Object.keys(this.drumSounds).map(key => 
+                        `<option value="${key}" ${track.drumType === key ? 'selected' : ''}>${this.drumSounds[key].name}</option>`
+                    ).join('');
+                    controlElement.innerHTML = `
+                        <div class="track-number">${this.trackLabels[trackIndex]}</div>
+                        <select class="drum-select" data-track="${trackIndex}">${drumOptions}</select>
+                        <div class="track-controls">
+                            <div class="track-control-btn enable-btn ${track.enabled ? 'active' : ''}" data-track="${trackIndex}" data-type="enable">●</div>
+                            <div class="track-control-btn sound-btn ${track.soundEnabled ? 'active' : ''}" data-track="${trackIndex}" data-type="sound">🔊</div>
+                        </div>
+                        <div class="volume-control">
+                            <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="${track.volume}" data-track="${trackIndex}">
+                        </div>
+                    `;
+                    trackControlsContainer.appendChild(controlElement);
+                    
+                    const stepsElement = document.createElement('div');
+                    stepsElement.className = `track-steps ${!track.enabled ? 'disabled' : ''}`;
+                    
+                    const steps = track.steps.map((active, stepIndex) => {
+                        const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
+                        const displayNumber = (this.showNumbers && active) ? beatNumber : '';
+                        return `<div class="step ${active ? 'active' : ''} ${stepIndex % this.stepsPerBeat === 0 ? 'beat-marker' : ''}" data-track="${trackIndex}" data-step="${stepIndex}">${displayNumber}</div>`;
+                    }).join('');
+
+                    stepsElement.innerHTML = `<div class="steps">${steps}</div>`;
+                    trackStepsContainer.appendChild(stepsElement);
+                });
+            }
+
+            updateExpandButton() {
+                document.getElementById('reduceBtn').disabled = this.totalBeats <= this.minBeats;
+                document.getElementById('beatsInfo').textContent = `${this.totalBeats}拍`;
+            }
+
+            bindEvents() {
+                document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
+                document.getElementById('clearBtn').addEventListener('click', () => {
+                    if (window.confirm('您確定要清除所有音格嗎？此操作將被記錄，可以復原。')) this.clearAll();
+                });
+                document.getElementById('resetBtn').addEventListener('click', () => {
+                    if (window.confirm('您確定要重置整個編曲器嗎？此操作將被記錄，可以復原。')) this.resetAll();
+                });
+                
+                document.getElementById('undoBtn').addEventListener('click', () => this.undo());
+                document.getElementById('redoBtn').addEventListener('click', () => this.redo());
+
+                document.getElementById('soundAdjustBtn').addEventListener('click', () => { document.getElementById('soundAdjustPanel').style.display = 'block'; });
+                document.getElementById('closeSoundPanel').addEventListener('click', () => { document.getElementById('soundAdjustPanel').style.display = 'none'; });
+                document.getElementById('resetSounds').addEventListener('click', () => this.resetSounds());
+                document.getElementById('expandBtn').addEventListener('click', () => this.expandBeats());
+                document.getElementById('reduceBtn').addEventListener('click', () => this.reduceBeats());
+                document.getElementById('exportBtn').addEventListener('click', () => this.exportPattern());
+                document.getElementById('importBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+				document.getElementById('exportMp3Btn').addEventListener('click', () => this.exportMP3());
+                document.getElementById('fileInput').addEventListener('change', (e) => this.importPattern(e.target.files[0]));
+
+                document.getElementById('selectBtn').addEventListener('click', () => this.toggleSelectionMode());
+                document.getElementById('copyBtn').addEventListener('click', () => this.copySelection());
+                document.getElementById('pasteBtn').addEventListener('click', () => this.pasteSelection());
+
+                document.getElementById('bpmInput').addEventListener('change', (e) => {
+                    this.bpm = parseInt(e.target.value);
+                    if (this.isPlaying) {
+                        this.stop();
+                        this.play();
+                    }
+                });
+
+				document.getElementById('collapseBtn').addEventListener('click', () => this.toggleControlsCollapse());
+
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.mode = btn.dataset.mode;
+                        if (this.isPlaying) {
+                            this.stop();
+                            this.play();
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.beat-setting-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.beat-setting-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.changeBeatSetting(parseInt(btn.dataset.beatSetting));
+                    });
+                });
+
+                document.getElementById('showNumbers').addEventListener('change', (e) => {
+                    this.showNumbers = e.target.checked;
+                    this.renderTracks();
+                });
+                
+                // --- 使用事件委派處理調音面板的所有互動 ---
+                const soundPanel = document.getElementById('soundAdjustPanel');
+                soundPanel.addEventListener('input', (e) => {
+                    if (e.target.matches('input[data-param], select[data-param]')) {
+                        const drum = e.target.dataset.drum;
+                        const param = e.target.dataset.param;
+                        let value = (param === 'type') ? e.target.value : parseFloat(e.target.value);
+                        this.drumSounds[drum][param] = value;
+                    }
+                });
+                soundPanel.addEventListener('change', (e) => {
+                    if (e.target.classList.contains('sound-mode-radio')) {
+                        this.handleSoundModeChange(e);
+                    }
+                    if (e.target.classList.contains('sample-input')) {
+                        this.handleSampleUpload(e);
+                    }
+                });
+                soundPanel.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('upload-sample-btn')) {
+                        const drumKey = e.target.dataset.drum;
+                        document.getElementById(`sample-input-${drumKey}`).click();
+                    }
+                    if (e.target.classList.contains('remove-sample-btn')) {
+                        this.removeSample(e.target.dataset.drum);
+                    }
+                    if (e.target.classList.contains('test-btn')) {
+                        this.testSound(e.target.dataset.drum);
+                    }
+                });
+
+
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('step')) {
+                        this.handleStepClick(e.target);
+                    }
+                    if (e.target.classList.contains('track-control-btn')) {
+                        this.toggleTrackControl(parseInt(e.target.dataset.track), e.target.dataset.type);
+                    }
+                });
+
+                document.addEventListener('change', (e) => {
+                    let stateChanged = false;
+                    if (e.target.classList.contains('drum-select')) {
+                        this.tracks[parseInt(e.target.dataset.track)].drumType = e.target.value;
+                        stateChanged = true;
+                    }
+                    if (e.target.classList.contains('volume-slider')) {
+                        this.tracks[parseInt(e.target.dataset.track)].volume = parseFloat(e.target.value);
+                        stateChanged = true;
+                    }
+                    if (stateChanged) {
+                        this.saveState();
+                    }
+                });
+                
+                window.addEventListener('resize', () => this.updateStepSize());
+            }
+
+            updateStepSize() {
+                const sequencer = document.querySelector('.tracks-sequencer');
+                if (!sequencer) return;
+                const styles = window.getComputedStyle(sequencer);
+                const paddingX = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+                const contentWidth = sequencer.clientWidth - paddingX;
+                const isSmallScreen = window.innerWidth < 800;
+                
+                const MIN_STEP_SIZE = isSmallScreen ? 14 : 20;
+                const MAX_STEP_SIZE = isSmallScreen ? 22 : 35;				
+                const STEP_GAP = isSmallScreen ? 1 : 2; 
+                const stepsToFit = 8 * this.stepsPerBeat;
+                const totalGapWidth = (stepsToFit - 1) * STEP_GAP;
+                const idealStepSize = (contentWidth - totalGapWidth) / stepsToFit;
+                const finalStepSize = Math.max(MIN_STEP_SIZE, Math.min(MAX_STEP_SIZE, idealStepSize));
+                document.documentElement.style.setProperty('--step-size', `${finalStepSize}px`);
+            }
+
+			toggleControlsCollapse() {
+				const tracksControls = document.getElementById('tracksControls');
+				const collapseBtn = document.getElementById('collapseBtn');
+				tracksControls.classList.toggle('collapsed');
+				
+				if (tracksControls.classList.contains('collapsed')) {
+					collapseBtn.textContent = '▶';
+					collapseBtn.title = '展開控制面板';
+				} else {
+					collapseBtn.textContent = '◀';
+					collapseBtn.title = '摺疊控制面板';
+				}
+                setTimeout(() => this.updateStepSize(), 300);
+			}
+
+            changeBeatSetting(newStepsPerBeat) {
+                if (this.isPlaying) this.stop();
+                this.clearSelection();
+                const oldStepsPerBeat = this.stepsPerBeat;
+                this.stepsPerBeat = newStepsPerBeat;
+
+                this.tracks.forEach(track => {
+                    const newSteps = Array(this.totalBeats * this.stepsPerBeat).fill(false);
+                    if (track.steps.length > 0) {
+                        for (let beat = 0; beat < this.totalBeats; beat++) {
+                            if ((beat * oldStepsPerBeat) < track.steps.length) {
+                                newSteps[beat * this.stepsPerBeat] = track.steps[beat * oldStepsPerBeat];
+                            }
+                        }
+                    }
+                    track.steps = newSteps;
+                });
+                this.renderTracks();
+                this.updateStepSize();
+                this.saveState(); 
+            }
+            
+            toggleStep(trackIndex, stepIndex) {
+                this.tracks[trackIndex].steps[stepIndex] = !this.tracks[trackIndex].steps[stepIndex];
+                const stepElement = document.querySelector(`.step[data-track="${trackIndex}"][data-step="${stepIndex}"]`);
+                if (stepElement) {
+                    stepElement.classList.toggle('active', this.tracks[trackIndex].steps[stepIndex]);
+                    if (this.showNumbers) {
+                        const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
+                        stepElement.textContent = this.tracks[trackIndex].steps[stepIndex] ? beatNumber : '';
+                    }
+                }
+                this.saveState(); 
+            }
+
+            toggleTrackControl(trackIndex, type) {
+                const track = this.tracks[trackIndex];
+                const controlBtn = document.querySelector(`.track-control-btn[data-track="${trackIndex}"][data-type="${type}"]`);
+                const stepsElement = document.querySelectorAll('.track-steps')[trackIndex];
+                
+                if (type === 'enable') {
+                    track.enabled = !track.enabled;
+                    controlBtn.classList.toggle('active', track.enabled);
+                    stepsElement.classList.toggle('disabled', !track.enabled);
+                } else if (type === 'sound') {
+                    track.soundEnabled = !track.soundEnabled;
+                    controlBtn.classList.toggle('active', track.soundEnabled);
+                }
+                this.saveState();
+            }
+
+            togglePlay() {
+                if (this.selectionMode) this.toggleSelectionMode();
+                if (this.isPlaying) this.stop();
+                else this.play();
+            }
+
+            async play() {
+				if (!this.audioContext) await this.initAudio();
+				if (this.audioContext && this.audioContext.state === 'suspended') {
+					try { await this.audioContext.resume(); } catch (e) { console.warn('Failed to resume audio context on play:', e); }
+				}
+                this.isPlaying = true;
+                document.getElementById('playBtn').classList.add('active');
+                document.getElementById('playBtn').textContent = '⏸ 停止';
+                this.currentStep = 0;
+                if (this.mode === 'sequential') {
+                    this.currentTrack = this.getFirstEnabledTrack();
+                     document.querySelectorAll('.track-control-item').forEach((el, idx) => {
+                        el.classList.toggle('current-playing', idx === this.currentTrack);
+                    });
+                }
+                this.scrollToBeginning();
+                
+                const stepDuration = (60 / this.bpm) / this.stepsPerBeat * 1000;
+                this.stepInterval = setInterval(() => {
+                    this.updateStep();
+                    this.currentStep = (this.currentStep + 1) % (this.totalBeats * this.stepsPerBeat);
+                    if (this.currentStep === 0) {
+                        this.scrollToBeginning();
+                        if (this.mode === 'sequential') {
+                            this.currentTrack = this.getNextEnabledTrack();
+                            document.querySelectorAll('.track-control-item').forEach((el, idx) => {
+                                el.classList.toggle('current-playing', idx === this.currentTrack);
+                            });
+                        }
+                    }
+                }, stepDuration);
+            }
+
+            stop() {
+                this.isPlaying = false;
+                document.getElementById('playBtn').classList.remove('active');
+                document.getElementById('playBtn').textContent = '▶ 播放';
+                if (this.stepInterval) clearInterval(this.stepInterval);
+                this.stepInterval = null;
+                this.currentStep = 0;
+                this.currentTrack = 0;
+                this.updateBeatNumbers();
+                this.scrollToBeginning();
+                document.querySelectorAll('.playing').forEach(el => el.classList.remove('playing'));
+                document.querySelectorAll('.current-playing').forEach(el => el.classList.remove('current-playing'));
+            }
+
+            updateStep() {
+                this.updateBeatNumbers();
+                this.autoScroll();
+                if (this.mode === 'ensemble') {
+                    this.tracks.forEach((track) => {
+                        if (track.enabled && track.steps[this.currentStep]) {
+                            this.playSound(track.drumType, track.soundEnabled, track.volume);
+                        }
+                    });
+                } else if (this.mode === 'sequential') {
+                    const track = this.tracks[this.currentTrack];
+                    if (track && track.enabled && track.steps[this.currentStep]) {
+                        this.playSound(track.drumType, track.soundEnabled, track.volume);
+                    }
+                }
+            }
+
+            getFirstEnabledTrack() {
+                const firstEnabled = this.tracks.findIndex(t => t.enabled);
+                return firstEnabled !== -1 ? firstEnabled : 0;
+            }
+
+            getNextEnabledTrack() {
+                let nextTrack = this.currentTrack;
+                for (let i = 0; i < this.tracks.length; i++) {
+                    nextTrack = (nextTrack + 1) % this.tracks.length;
+                    if (this.tracks[nextTrack].enabled) return nextTrack;
+                }
+                return this.getFirstEnabledTrack();
+            }
+
+            updateBeatNumbers() {
+                const positionLine = document.getElementById('positionLine');
+                const firstStep = document.querySelector('.step');
+                if (firstStep) {
+                    const stepWidth = firstStep.offsetWidth;
+                    const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
+                    positionLine.style.left = `${this.currentStep * (stepWidth + gap)}px`;
+                }
+                document.querySelectorAll('.step.playing').forEach(el => el.classList.remove('playing'));
+                const playingSteps = this.mode === 'ensemble'
+                    ? document.querySelectorAll(`.step[data-step="${this.currentStep}"]`)
+                    : document.querySelectorAll(`.step[data-track="${this.currentTrack}"][data-step="${this.currentStep}"]`);
+                playingSteps.forEach(el => el.classList.add('playing'));
+            }
+
+            scrollToBeginning() {
+                document.querySelector('.tracks-sequencer').scrollTo({ left: 0, behavior: 'smooth' });
+            }
+
+            autoScroll() {
+                const sequencer = document.querySelector('.tracks-sequencer');
+                const firstStep = document.querySelector('.step');
+                if (!firstStep) return;
+                const stepWidth = firstStep.offsetWidth;
+                const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
+                const fullStepWidth = stepWidth + gap;
+                const scrollLeft = sequencer.scrollLeft;
+                const clientWidth = sequencer.clientWidth;
+                const playheadPosition = this.currentStep * fullStepWidth;
+                const scrollTriggerPoint = scrollLeft + (clientWidth * 0.8);
+                if (playheadPosition > scrollTriggerPoint && (scrollLeft + clientWidth) < sequencer.scrollWidth) {
+                    const newScrollLeft = playheadPosition - (clientWidth * 0.1);
+                    sequencer.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+                }
+            }
+
+            scrollToBeats(startBeat) {
+                const sequencer = document.querySelector('.tracks-sequencer');
+                const firstStep = document.querySelector('.step');
+                if (!firstStep) return;
+                const stepWidth = firstStep.offsetWidth;
+                const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
+                const fullStepWidth = stepWidth + gap;
+                const scrollTarget = (startBeat - 1) * this.stepsPerBeat * fullStepWidth;
+                sequencer.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+            }
+
+            expandBeats(beatsToAdd = 4) {
+                if (this.isPlaying) this.stop();
+                const oldBeats = this.totalBeats;
+                this.totalBeats += beatsToAdd;
+                this.tracks.forEach(track => {
+                    track.steps.push(...Array(beatsToAdd * this.stepsPerBeat).fill(false));
+                });
+                this.renderTracks();
+                this.updateExpandButton();
+                this.updateSelectionUI();
+                setTimeout(() => this.scrollToBeats(oldBeats + 1), 100);
+                this.saveState();
+            }
+
+            reduceBeats() {
+                if (this.totalBeats <= this.minBeats) return;
+                if (this.isPlaying) this.stop();
+                this.clearSelection();
+                this.totalBeats -= 4;
+                this.tracks.forEach(track => {
+                    track.steps.length = this.totalBeats * this.stepsPerBeat;
+                });
+                this.renderTracks();
+                this.updateExpandButton();
+                setTimeout(() => {
+                    const sequencer = document.querySelector('.tracks-sequencer');
+                    const maxScroll = sequencer.scrollWidth - sequencer.clientWidth;
+                    if (sequencer.scrollLeft > maxScroll) {
+                        sequencer.scrollTo({ left: maxScroll, behavior: 'smooth' });
+                    }
+                }, 100);
+                this.saveState();
+            }
+
+            testSound(drumType) {
+                this.playSound(drumType, true, 0.8);
+            }
+
+            async playSound(drumType, soundEnabled = true, volume = 0.8) {
+                if (!soundEnabled) return;
+                if (!this.audioContext) await this.initAudio();
+                if (this.audioContext.state === 'suspended') {
+                    try { await this.audioContext.resume(); } catch (e) { console.warn('Failed to resume audio context in playSound:', e); return; }
+                }
+                if (this.audioContext.state !== 'running') return;
+
+                const sound = this.drumSounds[drumType];
+                if (!sound) return;
+                const now = this.audioContext.currentTime;
+
+                const gainNode = this.audioContext.createGain();
+                gainNode.connect(this.audioContext.destination);
+
+                let bufferToPlay = null;
+                if (sound.mode === 'system' && sound.defaultSampleBuffer) {
+                    bufferToPlay = sound.defaultSampleBuffer;
+                } else if (sound.mode === 'user' && sound.userSampleBuffer) {
+                    bufferToPlay = sound.userSampleBuffer;
+                }
+
+                if (bufferToPlay) {
+                    gainNode.gain.setValueAtTime(volume, now);
+                    const source = this.audioContext.createBufferSource();
+                    source.buffer = bufferToPlay;
+                    source.connect(gainNode);
+                    source.start(now);
+                } else { // Fallback to synth
+                    try {
+                        const totalGain = sound.gain * volume;
+                        gainNode.gain.setValueAtTime(0, now);
+                        gainNode.gain.linearRampToValueAtTime(totalGain, now + sound.attack);
+                        gainNode.gain.exponentialRampToValueAtTime(totalGain * sound.sustain, now + sound.attack + sound.decay);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, now + sound.attack + sound.decay + sound.release);
+                        const oscillator = this.audioContext.createOscillator();
+                        oscillator.connect(gainNode);
+                        oscillator.type = sound.type;
+                        oscillator.frequency.setValueAtTime(sound.freq, now);
+                        if (drumType === 'cuica') oscillator.frequency.exponentialRampToValueAtTime(sound.freq * 0.5, now + sound.release);
+                        if (drumType === 'pandeiro') oscillator.frequency.exponentialRampToValueAtTime(sound.freq * 0.7, now + sound.decay);
+                        oscillator.start(now);
+                        oscillator.stop(now + sound.attack + sound.decay + sound.release);
+                    } catch (error) { console.warn('播放合成音色時發生錯誤:', error); }
+                }
+            }
+            
+            handleStepClick(stepElement) {
+                const trackIndex = parseInt(stepElement.dataset.track);
+                const stepIndex = parseInt(stepElement.dataset.step);
+                if (this.selectionMode) {
+                    if (this.selection.trackIndex === null || this.selection.trackIndex !== trackIndex) {
+                        this.clearSelection();
+                        this.selection.trackIndex = trackIndex;
+                        this.selection.startStep = stepIndex;
+                    } else if (this.selection.endStep === null) {
+                        this.selection.endStep = stepIndex;
+                    } else {
+                        this.clearSelection();
+                        this.selection.trackIndex = trackIndex;
+                        this.selection.startStep = stepIndex;
+                    }
+                    this.updateSelectionUI();
+                } else {
+                    this.toggleStep(trackIndex, stepIndex);
+                }
+            }
+            
+            toggleSelectionMode() {
+                this.selectionMode = !this.selectionMode;
+                document.getElementById('selectBtn').classList.toggle('toggled', this.selectionMode);
+                if (!this.selectionMode) {
+                    this.clearSelection();
+                }
+            }
+            
+            clearSelection() {
+                this.selection.trackIndex = null;
+                this.selection.startStep = null;
+                this.selection.endStep = null;
+                this.updateSelectionUI();
+            }
+
+            updateSelectionUI() {
+                document.querySelectorAll('.step.selected').forEach(el => el.classList.remove('selected'));
+                if (this.selection.trackIndex === null || this.selection.startStep === null) return;
+                const start = Math.min(this.selection.startStep, this.selection.endStep ?? this.selection.startStep);
+                const end = Math.max(this.selection.startStep, this.selection.endStep ?? this.selection.startStep);
+                for (let i = start; i <= end; i++) {
+                    const el = document.querySelector(`.step[data-track="${this.selection.trackIndex}"][data-step="${i}"]`);
+                    if (el) el.classList.add('selected');
+                }
+            }
+
+            copySelection() {
+                if (this.selection.trackIndex === null || this.selection.startStep === null || this.selection.endStep === null) {
+                    alert('請先完成一個選區！');
+                    return;
+                }
+                const start = Math.min(this.selection.startStep, this.selection.endStep);
+                const end = Math.max(this.selection.startStep, this.selection.endStep);
+                this.clipboard.pattern = this.tracks[this.selection.trackIndex].steps.slice(start, end + 1);
+                alert(`已複製 ${this.clipboard.pattern.length} 格的樣式！`);
+            }
+
+            pasteSelection() {
+                if (!this.clipboard.pattern) {
+                    alert('剪貼簿是空的！請先複製一個選區。');
+                    return;
+                }
+                if (this.selection.startStep === null || this.selection.trackIndex === null || this.selection.endStep !== null) {
+                    alert('請先在目標音軌點擊一個儲存格作為貼上的起點。');
+                    return;
+                }
+                const targetTrackIndex = this.selection.trackIndex;
+                const pasteStartStep = this.selection.startStep;
+                const pasteEndStep = pasteStartStep + this.clipboard.pattern.length - 1;
+                const totalSteps = this.totalBeats * this.stepsPerBeat;
+
+                if (pasteEndStep >= totalSteps) {
+                    const stepsNeeded = pasteEndStep - totalSteps + 1;
+                    const beatsNeeded = Math.ceil(stepsNeeded / this.stepsPerBeat);
+                    const beatsToAdd = Math.ceil(beatsNeeded / 4) * 4;
+                    if (window.confirm(`貼上內容會超出範圍，是否要自動擴充 ${beatsToAdd} 拍？`)) {
+                        this.expandBeats(beatsToAdd);
+                    } else {
+                        return;
+                    }
+                }
+                
+                const targetTrack = this.tracks[targetTrackIndex];
+                for (let i = 0; i < this.clipboard.pattern.length; i++) {
+                    const stepIndex = pasteStartStep + i;
+                    if (stepIndex < targetTrack.steps.length) {
+                        targetTrack.steps[stepIndex] = this.clipboard.pattern[i];
+                    }
+                }
+
+                for (let i = 0; i < this.clipboard.pattern.length; i++) {
+                     const stepIndex = pasteStartStep + i;
+                     const stepElement = document.querySelector(`.step[data-track="${targetTrackIndex}"][data-step="${stepIndex}"]`);
+                     if (stepElement) {
+                        stepElement.classList.toggle('active', targetTrack.steps[stepIndex]);
+                         if (this.showNumbers) {
+                            const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
+                            stepElement.textContent = targetTrack.steps[stepIndex] ? beatNumber : '';
+                        }
+                     }
+                }
+                
+                this.clearSelection();
+                alert('貼上成功！');
+                this.saveState();
+            }
+
+            handleSoundModeChange(event) {
+                const drumKey = event.target.dataset.drum;
+                const newMode = event.target.value;
+                if (drumKey && newMode) {
+                    this.drumSounds[drumKey].mode = newMode;
+                    this.updateSoundControlUI(drumKey);
+                }
+            }
+
+            async handleSampleUpload(event) {
+                const file = event.target.files[0];
+                const drumKey = event.target.dataset.drum;
+                if (!file || !drumKey) return;
+
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    
+                    this.drumSounds[drumKey].userSampleBuffer = audioBuffer;
+                    this.drumSounds[drumKey].userSampleFileName = file.name;
+                    this.drumSounds[drumKey].mode = 'user'; // 上傳後自動切換到匯入模式
+
+                    this.updateSoundControlUI(drumKey); 
+                    alert(`樂器 "${this.drumSounds[drumKey].name}" 的取樣 "${file.name}" 已成功載入！`);
+
+                } catch (error) {
+                    console.error(`Error loading sample for ${drumKey}:`, error);
+                    alert(`載入取樣失敗，請確認檔案格式是否為支援的音訊檔 (MP3, WAV, OGG)。\n錯誤訊息: ${error.message}`);
+                }
+                
+                event.target.value = '';
+            }
+
+            removeSample(drumKey) {
+                if (!drumKey || !this.drumSounds[drumKey]) return;
+                
+                const sound = this.drumSounds[drumKey];
+                sound.userSampleBuffer = null;
+                sound.userSampleFileName = '';
+
+                // 移除後，優先退回系統預設，若無則退回人工
+                sound.mode = sound.defaultSampleBuffer ? 'system' : 'synth';
+
+                this.updateSoundControlUI(drumKey);
+                alert(`樂器 "${sound.name}" 的匯入取樣已被移除。`);
+            }
+            
+            updateSoundControlUI(drumKey) {
+                const sound = this.drumSounds[drumKey];
+                const itemContainer = document.getElementById(`sound-control-item-${drumKey}`);
+                if (!itemContainer) return;
+
+                // 更新 Radio 按鈕狀態
+                const radioToCheck = itemContainer.querySelector(`input[name="sound-mode-${drumKey}"][value="${sound.mode}"]`);
+                if(radioToCheck) radioToCheck.checked = true;
+
+                // 更新系統預設選項的可用性
+                const systemLabel = itemContainer.querySelector('label:has(input[value="system"])');
+                const systemInput = itemContainer.querySelector('input[value="system"]');
+                if (systemLabel && systemInput) {
+                    const isSystemAvailable = !!sound.defaultSampleBuffer;
+                    systemLabel.classList.toggle('disabled', !isSystemAvailable && !sound.isLoadingDefault);
+                    systemLabel.classList.toggle('loading-indicator', sound.isLoadingDefault);
+                    systemInput.disabled = !isSystemAvailable;
+                }
+                
+                // 更新各模式容器的顯示
+                itemContainer.querySelectorAll('[data-mode-container]').forEach(container => {
+                    container.classList.toggle('active', container.dataset.modeContainer === sound.mode);
+                });
+
+                // 更新匯入模式的 UI
+                itemContainer.querySelector('.remove-sample-btn').style.display = !!sound.userSampleBuffer ? 'inline-block' : 'none';
+                itemContainer.querySelector(`#sample-name-${drumKey}`).textContent = sound.userSampleFileName;
+            }
+
+            resetSounds() {
+                if (!window.confirm('確定要重置所有音色為預設值嗎？這將會移除所有您匯入的聲音取樣，並將音源模式重設。')) return;
+                
+                const defaultSynthParams = {
+                    'repinique': { freq: 220, type: 'triangle', attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.4, gain: 0.7 },
+                    'surdo1': { freq: 55, type: 'triangle', attack: 0.02, decay: 0.8, sustain: 0.1, release: 0.8, gain: 1.0 },
+                    'surdo2': { freq: 65, type: 'triangle', attack: 0.02, decay: 0.7, sustain: 0.1, release: 0.7, gain: 0.9 },
+                    'surdo3': { freq: 75, type: 'triangle', attack: 0.02, decay: 0.6, sustain: 0.1, release: 0.6, gain: 0.8 },
+                    'caixa': { freq: 250, type: 'square', attack: 0.01, decay: 0.15, sustain: 0.1, release: 0.2, gain: 0.6 },
+                    'tamborim': { freq: 400, type: 'square', attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.15, gain: 0.4 },
+                    'cuica': { freq: 180, type: 'sawtooth', attack: 0.02, decay: 0.3, sustain: 0.2, release: 0.4, gain: 0.5 },
+                    'agogo': { freq: 800, type: 'sine', attack: 0.01, decay: 0.6, sustain: 0.1, release: 0.6, gain: 0.3 },
+                    'pandeiro': { freq: 300, type: 'triangle', attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.3, gain: 0.5 }
+                };
+                
+                Object.keys(this.drumSounds).forEach(key => {
+                    const sound = this.drumSounds[key];
+                    // 重設人工參數
+                    Object.assign(sound, defaultSynthParams[key]);
+                    // 清除使用者匯入的檔案
+                    sound.userSampleBuffer = null;
+                    sound.userSampleFileName = '';
+                    // 將模式重設為系統預設(如果可用)，否則設為人工
+                    sound.mode = sound.defaultSampleBuffer ? 'system' : 'synth';
+                });
+
+                this.initSoundAdjustPanel(); // 重新渲染整個面板
+                alert('音色已重置。匯入的取樣已清除，模式已更新。');
+            }
+
+
+            clearAll() {
+                this.tracks.forEach(track => track.steps.fill(false));
+                this.renderTracks();
+                if (this.selectionMode) this.toggleSelectionMode();
+                this.saveState(); 
+            }
+
+            resetAll() {
+                if (this.isPlaying) this.stop();
+                if (this.selectionMode) this.toggleSelectionMode();
+                this.totalBeats = 8;
+                this.stepsPerBeat = 4;
+                this.initTracks();
+                this.bpm = 65;
+                this.mode = 'ensemble';
+                this.showNumbers = false;
+                this.currentStep = 0;
+                this.currentTrack = 0;
+                document.getElementById('bpmInput').value = this.bpm;
+                document.getElementById('showNumbers').checked = this.showNumbers;
+                document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === 'ensemble'));
+                document.querySelectorAll('.beat-setting-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.beatSetting === '4'));
+                this.updateExpandButton();
+                this.renderTracks();
+                this.initScrollPosition();
+                this.updateStepSize();
+                this.saveState(true); 
+            }
+
+            exportPattern() {
+                const pattern = {
+                    version: '1.6-mode-support',
+                    totalBeats: this.totalBeats,
+                    bpm: this.bpm,
+                    mode: this.mode,
+                    showNumbers: this.showNumbers,
+                    stepsPerBeat: this.stepsPerBeat,
+                    tracks: this.tracks.map(track => ({
+                        drumType: track.drumType,
+                        steps: track.steps,
+                        enabled: track.enabled,
+                        soundEnabled: track.soundEnabled,
+                        volume: track.volume
+                    })),
+                    // --- 儲存音色設定，但不含聲音 buffer ---
+                    drumSounds: Object.fromEntries(Object.entries(this.drumSounds).map(([key, value]) => {
+                         const { defaultSampleBuffer, userSampleBuffer, isLoadingDefault, ...rest } = value; // 排除所有 buffer 和暫態
+                         return [key, rest];
+                    })),
+                    exportDate: new Date().toISOString()
+                };
+                const dataStr = JSON.stringify(pattern, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `beatmaker-pattern-${new Date().toISOString().slice(0, 10)}.json`;
+                link.click();
+            }
+
+            async importPattern(file) {
+                if (!file) return;
+                try {
+                    const text = await file.text();
+                    const pattern = JSON.parse(text);
+
+                    if (!pattern.version || !pattern.tracks) {
+                        throw new Error('無效的檔案格式');
+                    }
+                    if (this.isPlaying) this.stop();
+
+                    this.totalBeats = pattern.totalBeats || 8;
+                    this.bpm = pattern.bpm || 65;
+                    this.mode = pattern.mode || 'ensemble';
+                    this.showNumbers = pattern.showNumbers || false;
+                    this.stepsPerBeat = pattern.stepsPerBeat || 4;
+                    this.tracks = pattern.tracks.map((trackData, index) => ({
+                        id: index,
+                        drumType: trackData.drumType || this.defaultDrums[index],
+                        steps: trackData.steps || Array(this.totalBeats * this.stepsPerBeat).fill(false),
+                        enabled: trackData.enabled !== undefined ? trackData.enabled : true,
+                        soundEnabled: trackData.soundEnabled !== undefined ? trackData.soundEnabled : true,
+                        volume: trackData.volume !== undefined ? trackData.volume : 0.8
+                    }));
+                    while (this.tracks.length < 6) {
+                        this.tracks.push({ id: this.tracks.length, drumType: this.defaultDrums[this.tracks.length] || 'surdo1', steps: Array(this.totalBeats * this.stepsPerBeat).fill(false), enabled: true, soundEnabled: true, volume: 0.8 });
+                    }
+                    if (pattern.drumSounds) {
+                         Object.keys(pattern.drumSounds).forEach(key => {
+                            if (this.drumSounds[key]) {
+                                // 合併匯入的設定，但 buffer 保持不動
+                                Object.assign(this.drumSounds[key], { ...pattern.drumSounds[key] });
+                                // 清除使用者 buffer，因為它不會被匯出/入
+                                this.drumSounds[key].userSampleBuffer = null;
+                                this.drumSounds[key].userSampleFileName = '';
+                            }
+                        });
+                        this.initSoundAdjustPanel(); // 重新渲染調音面板以反映新設定
+                    }
+                    document.getElementById('bpmInput').value = this.bpm;
+                    document.getElementById('showNumbers').checked = this.showNumbers;
+                    document.querySelectorAll('.mode-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.mode === this.mode);
+                    });
+                    document.querySelectorAll('.beat-setting-btn').forEach(btn => {
+                        btn.classList.toggle('active', parseInt(btn.dataset.beatSetting) === this.stepsPerBeat);
+                    });
+
+                    this.updateExpandButton();
+                    this.renderTracks();
+                    this.initScrollPosition();
+                    this.updateStepSize();
+                    this.clearSelection();
+                    this.saveState(true); 
+                    alert('匯入成功！請注意：您需要手動重新匯入之前使用的聲音取樣。');
+                } catch (error) {
+                    alert('匯入失敗：' + error.message);
+                }
+                document.getElementById('fileInput').value = '';
+            }
+
+	        async exportMP3() {
+				const loopCountSelect = document.getElementById('loopCountSelect');
+				let loopCount = parseInt(loopCountSelect.value) || 1;
+				
+                if (typeof lamejs === 'undefined') {
+                    alert('MP3 編碼函式庫 (lame.min.js) 載入失敗！請檢查您的網路連線或 CDN 連結是否正確。');
+                    console.error("lamejs is not defined. MP3 export cannot proceed.");
+                    return;
+                }
+
+                if (this.isPlaying) this.stop();
+                
+                const exportBtn = document.getElementById('exportMp3Btn');
+                const originalText = exportBtn.textContent;
+                exportBtn.textContent = '處理中...';
+                exportBtn.disabled = true;
+                exportBtn.classList.add('loading');
+
+				try {
+					const sampleRate = 44100;
+					const stepsInOneLoop = this.totalBeats * this.stepsPerBeat;
+					const durationOfOneLoop = stepsInOneLoop * ((60 / this.bpm) / this.stepsPerBeat);
+
+					let totalDuration;
+                    const enabledTracks = this.tracks.filter(t => t.enabled);
+
+					if (this.mode === 'ensemble') {
+						totalDuration = durationOfOneLoop * loopCount;
+					} else { 
+						if (enabledTracks.length === 0) {
+                            throw new Error("在循環模式下，沒有啟用的音軌可供匯出。");
+                        }
+						totalDuration = durationOfOneLoop * enabledTracks.length * loopCount;
+					}
+
+					if (totalDuration <= 0) {
+						alert("無法匯出時長為零的音訊。請確保有設定拍子。");
+						throw new Error("Calculated total duration is zero or less.");
+					}
+					totalDuration += 1.0; 
+
+					const offlineContext = new OfflineAudioContext(2, Math.ceil(sampleRate * totalDuration), sampleRate);
+					const stepDurationInSeconds = (60 / this.bpm) / this.stepsPerBeat;
+
+					if (this.mode === 'ensemble') {
+						for (let loop = 0; loop < loopCount; loop++) {
+							const loopStartTime = loop * durationOfOneLoop;
+							for (let step = 0; step < stepsInOneLoop; step++) {
+								const time = loopStartTime + step * stepDurationInSeconds;
+								this.tracks.forEach(track => {
+									if (track.enabled && track.steps[step]) {
+										this.scheduleSound(offlineContext, time, track.drumType, track.soundEnabled, track.volume);
+									}
+								});
+							}
+						}
+					} else {
+						let timeOffset = 0;
+						for (let loop = 0; loop < loopCount; loop++) {
+							for (const track of enabledTracks) {
+								for (let step = 0; step < stepsInOneLoop; step++) {
+									if (track.steps[step]) {
+										const time = timeOffset + step * stepDurationInSeconds;
+										this.scheduleSound(offlineContext, time, track.drumType, track.soundEnabled, track.volume);
+									}
+								}
+								timeOffset += durationOfOneLoop;
+							}
+						}
+					}
+
+                    const renderedBuffer = await offlineContext.startRendering();
+					const mp3encoder = new lamejs.Mp3Encoder(2, sampleRate, 128);
+                    const leftFloat = renderedBuffer.getChannelData(0);
+                    const rightFloat = renderedBuffer.getChannelData(1);
+                    const leftInt16 = new Int16Array(leftFloat.length);
+                    const rightInt16 = new Int16Array(rightFloat.length);
+
+                    for (let i = 0; i < leftFloat.length; i++) {
+                        leftInt16[i] = Math.max(-1, Math.min(1, leftFloat[i])) * 32767;
+                        rightInt16[i] = Math.max(-1, Math.min(1, rightFloat[i])) * 32767;
+                    }
+                    
+                    const mp3Data = [];
+                    const bufferSize = 1152; 
+
+                    for (let i = 0; i < leftInt16.length; i += bufferSize) {
+                        const leftChunk = leftInt16.subarray(i, i + bufferSize);
+                        const rightChunk = rightInt16.subarray(i, i + bufferSize);
+                        const mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+                        if (mp3buf.length > 0) mp3Data.push(mp3buf);
+                    }
+                    const flush_buffer = mp3encoder.flush();
+                    if (flush_buffer.length > 0) mp3Data.push(flush_buffer);
+
+                    const blob = new Blob(mp3Data, { type: 'audio/mp3' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `beatmaker-${new Date().toISOString().slice(0,10)}.mp3`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                } catch (error) {
+                    console.error('MP3 匯出失敗:', error);
+                    alert('匯出 MP3 時發生錯誤: ' + error.message);
+                } finally {
+                    exportBtn.textContent = originalText;
+                    exportBtn.disabled = false;
+                    exportBtn.classList.remove('loading');
+                }
+            }
+			
+			scheduleSound(context, time, drumType, soundEnabled = true, volume = 1.0) {
+				if (!soundEnabled) return;
+				
+                const sound = this.drumSounds[drumType];
+                if (!sound) return;
+
+                const gainNode = context.createGain();
+                gainNode.connect(context.destination);
+
+                let bufferToPlay = null;
+                if (sound.mode === 'system' && sound.defaultSampleBuffer) {
+                    bufferToPlay = sound.defaultSampleBuffer;
+                } else if (sound.mode === 'user' && sound.userSampleBuffer) {
+                    bufferToPlay = sound.userSampleBuffer;
+                }
+                
+                if (bufferToPlay) {
+                    gainNode.gain.setValueAtTime(volume, time);
+                    const source = context.createBufferSource();
+                    source.buffer = bufferToPlay;
+                    source.connect(gainNode);
+                    source.start(time);
+                } else { // Fallback to synth
+                    try {
+                        const gainMultiplier = 3.0;
+                        const totalGain = sound.gain * volume * gainMultiplier;
+                        gainNode.gain.setValueAtTime(0, time);
+                        gainNode.gain.linearRampToValueAtTime(totalGain, time + sound.attack);
+                        gainNode.gain.exponentialRampToValueAtTime(totalGain * sound.sustain, time + sound.attack + sound.decay);
+                        gainNode.gain.exponentialRampToValueAtTime(0.001, time + sound.attack + sound.decay + sound.release);
+                        const oscillator = context.createOscillator();
+                        oscillator.connect(gainNode);
+                        oscillator.type = sound.type;
+                        oscillator.frequency.setValueAtTime(sound.freq, time);
+                        if (drumType === 'cuica') oscillator.frequency.exponentialRampToValueAtTime(sound.freq * 0.5, time + sound.release);
+                        if (drumType === 'pandeiro') oscillator.frequency.exponentialRampToValueAtTime(sound.freq * 0.7, time + sound.decay);
+                        oscillator.start(time);
+                        oscillator.stop(time + sound.attack + sound.decay + sound.release + 0.1);
+                    } catch (error) {
+                        console.warn(`排程合成音色時發生錯誤 (t=${time}, drum=${drumType}):`, error);
+                    }
+                }
+			}
+        }
+
+        let beatmaker;
+        document.addEventListener('DOMContentLoaded', () => {
+            beatmaker = new Beatmaker();
+        });
+    </script>
+</body>
+</html>
