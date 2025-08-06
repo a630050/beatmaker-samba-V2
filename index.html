@@ -243,7 +243,7 @@
             backdrop-filter: blur(10px);
             position: relative;
             display: flex;
-            height: 500px;
+            height: 580px; 
         }
 
 		.tracks-controls {
@@ -251,25 +251,27 @@
 			flex-shrink: 0;
 			background: rgba(0, 0, 0, 0.5);
 			border-radius: 10px;
-			padding: 8px 8px 32px 8px;
+			padding: 8px; 
 			margin-right: 10px;
 			margin-top: 20px;
 			overflow-y: auto;
 			border: 2px solid rgba(0, 255, 136, 0.3);
 			transition: width 0.3s ease, padding 0.3s ease;
 			position: relative;
+            display: flex;
+            flex-direction: column; 
 		}
+        
+        #trackControls {
+            flex-grow: 1; 
+        }
 
 		.tracks-controls.collapsed {
 			width: 60px;
-			padding: 8px 4px 28px 4px;
+			padding: 8px 4px;
 		}
 		
 		.collapse-btn {
-			position: absolute;
-			bottom: 8px;
-			left: 50%;
-			transform: translateX(-50%);
 			background: rgba(0, 255, 136, 0.2);
 			border: 1px solid #00ff88;
 			color: #00ff88;
@@ -283,6 +285,8 @@
 			justify-content: center;
 			transition: all 0.3s ease;
 			z-index: 10;
+            flex-shrink: 0; 
+            margin: 8px auto 0; 
 		}
 
 		.collapse-btn:hover {
@@ -290,10 +294,9 @@
 		}
 
 		.tracks-controls.collapsed .collapse-btn {
-			left: 50%;
-			bottom: 8px;
 			width: 28px;
 			height: 20px;
+            margin-top: 5px;
 		}
 
         .tracks-sequencer {
@@ -306,47 +309,22 @@
             padding: 10px;
         }
 
-        .track {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            gap: 5px;
-            min-width: fit-content;
-            transition: opacity 0.3s ease;
-            min-height: 50px;
-        }
-
-        .track.disabled {
-            opacity: 0.3;
-        }
-
-        .track.disabled .steps {
-            pointer-events: none;
-        }
-
-        .track.current-playing {
-            background: rgba(0, 255, 136, 0.1);
-            border-radius: 10px;
-            padding: 8px;
-            margin: 3px 0;
-        }
-
         .track-control-item {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px;
-            margin-bottom: 8px;
+            padding: 5px 8px;
+            margin-bottom: 5px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
-            min-height: 50px;
+            min-height: 42px;
 			transition: all 0.3s ease;
         }
 		
 		.tracks-controls.collapsed .track-control-item {
-			padding: 8px 4px;
-			margin-bottom: 8px;
-			min-height: 50px;
+			padding: 5px 4px;
+			margin-bottom: 5px; 
+			min-height: 42px;
 			justify-content: center;
 			align-items: center;
 		}
@@ -481,9 +459,9 @@
         .track-steps {
             display: flex;
             align-items: center;
-            min-height: 50px;
-            padding: 3px 0;
-            margin-bottom: 8px;
+            min-height: 42px;
+            padding: 2px 0;
+            margin-bottom: 5px;
         }
 
         .steps {
@@ -531,26 +509,6 @@
             animation: pulse 0.2s ease;
             box-shadow: 0 0 20px #00ff88;
             z-index: 3;
-        }
-
-        .options {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-
-        .checkbox-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
         }
 
         .position-indicator {
@@ -625,7 +583,6 @@
             font-size: 16px;
         }
 
-        /* --- 音源模式選擇 --- */
         .sound-mode-selector {
             display: flex;
             gap: 10px;
@@ -657,47 +614,56 @@
             color: rgba(255, 255, 255, 0.4);
             border-color: rgba(128, 128, 128, 0.3);
         }
-        .sound-mode-container {
-            display: none; /* 預設隱藏 */
-        }
-        .sound-mode-container.active {
-            display: block; /* 僅顯示 active 的 */
-        }
         .loading-indicator::after {
             content: ' (載入中...)';
             color: #ffc107;
             font-size: 10px;
         }
 
-        .sound-control-params {
+        .unified-sound-params {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px 15px;
+            margin-top: 15px;
         }
 
-        .sound-control-params label {
+        .unified-sound-params label {
             font-size: 12px;
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
-
-        .sound-control-params input,
-        .sound-control-params select {
-            width: 100%;
-            padding: 4px;
-            border-radius: 4px;
-            border: none;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+        
+        .unified-sound-params label.disabled {
+            opacity: 0.4;
+            pointer-events: none;
         }
 
-        .sound-control-bottom {
-            margin-top: 10px;
+        .unified-sound-params input[type="range"],
+        .unified-sound-params select {
+            width: 100%;
+            padding: 0;
+            margin-top: 4px;
+        }
+        .unified-sound-params select {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        
+        .param-value-display {
+            font-weight: bold;
+            color: #00ff88;
+            font-size: 11px;
+            min-width: 30px;
+            text-align: right;
+        }
+        .param-label-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
         }
         
         .sample-controls {
@@ -770,7 +736,7 @@
                 width: 100%;
                 margin-right: 0;
                 margin-bottom: 15px;
-                max-height: 200px;
+                max-height: 350px;
             }
             
             .tracks-sequencer {
@@ -868,8 +834,8 @@
 
         <div class="sequencer">
 			<div class="tracks-controls" id="tracksControls">
-				<button class="collapse-btn" id="collapseBtn" title="摺疊/展開控制面板">◀</button>
 				<div id="trackControls"></div>
+                <button class="collapse-btn" id="collapseBtn" title="摺疊/展開控制面板">◀</button>
 			</div>
             
             <div class="tracks-sequencer">
@@ -881,7 +847,7 @@
         </div>
 		
 		<div class="author-credit">
-        程式作者：徐承佑        森巴鼓指導老師：陳仰真
+        程式作者：徐承佑 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  森巴鼓指導老師：陳仰真
 		</div>
     </div>
 	
@@ -926,52 +892,22 @@
                 this.historyIndex = -1;
                 this.maxHistory = 50; 
 
-                this.trackLabels = ['R', 'C', 'S1', 'S2', 'S3', 'O'];
-                this.defaultDrums = ['repinique', 'caixa', 'surdo1', 'surdo2', 'surdo3', 'pandeiro'];
+                this.trackLabels = ['S1', 'S2', 'S3', 'C', 'C', 'R', 'R', 'A'];
+                this.defaultDrums = ['surdo1', 'surdo2', 'surdo3', 'caixa', 'caixa', 'repinique', 'repinique', 'agogo'];
                 
-                // =======================================================================
-                // ==================  請在此處修改預設音檔的路徑  ===================
-                // =======================================================================
-                // 說明：
-                // 1. 將您的 MP3/WAV/OGG 檔案上傳到一個公開的網址 (例如 GitHub Pages)。
-                // 2. 將對應的 URL 填入下方的 `defaultSampleUrls` 物件中。
-                // 3. 如果某個樂器沒有提供 URL (設為 '' 或 null)，則「系統預設」選項將無法使用。
-                // 4. 範例格式：'repinique': 'https://your-username.github.io/your-repo/sounds/repinique.mp3',
                 this.defaultSampleUrls = {
                     'repinique': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3', 
                     'surdo1': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3',
-                    'surdo2': '',
-                    'surdo3': '',
+                    'surdo2': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3',
+                    'surdo3': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3',
                     'caixa': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Caixa.mp3',
                     'tamborim': '',
                     'cuica': '',
                     'agogo': '',
                     'pandeiro': ''
                 };
-                // =======================================================================
-                // =======================================================================
                 
-                this.drumSounds = {
-                    'repinique': { name: 'Repinique', freq: 220, type: 'triangle', attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.4, gain: 0.7 },
-                    'surdo1': { name: 'Surdo 1', freq: 55, type: 'triangle', attack: 0.02, decay: 0.8, sustain: 0.1, release: 0.8, gain: 1.0 },
-                    'surdo2': { name: 'Surdo 2', freq: 65, type: 'triangle', attack: 0.02, decay: 0.7, sustain: 0.1, release: 0.7, gain: 0.9 },
-                    'surdo3': { name: 'Surdo 3', freq: 75, type: 'triangle', attack: 0.02, decay: 0.6, sustain: 0.1, release: 0.6, gain: 0.8 },
-                    'caixa': { name: 'Caixa', freq: 250, type: 'square', attack: 0.01, decay: 0.15, sustain: 0.1, release: 0.2, gain: 0.6 },
-                    'tamborim': { name: 'Tamborim', freq: 400, type: 'square', attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.15, gain: 0.4 },
-                    'cuica': { name: 'Cuíca', freq: 180, type: 'sawtooth', attack: 0.02, decay: 0.3, sustain: 0.2, release: 0.4, gain: 0.5 },
-                    'agogo': { name: 'Agogô', freq: 800, type: 'sine', attack: 0.01, decay: 0.6, sustain: 0.1, release: 0.6, gain: 0.3 },
-                    'pandeiro': { name: 'Pandeiro', freq: 300, type: 'triangle', attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.3, gain: 0.5 }
-                };
-                
-                // --- 為每個音色物件添加新屬性 ---
-                Object.keys(this.drumSounds).forEach(key => {
-                    this.drumSounds[key].mode = 'synth'; // 'system', 'user', 'synth'
-                    this.drumSounds[key].defaultSampleUrl = this.defaultSampleUrls[key] || '';
-                    this.drumSounds[key].defaultSampleBuffer = null;
-                    this.drumSounds[key].isLoadingDefault = false;
-                    this.drumSounds[key].userSampleBuffer = null;
-                    this.drumSounds[key].userSampleFileName = '';
-                });
+                this.initDrumSounds();
 
                 this.audioContext = null;
                 this.initAudio().then(() => {
@@ -989,6 +925,47 @@
 						}
 					}
 				});
+            }
+            
+            getDefaultSoundParams() {
+                 return {
+                    // Unified Params
+                    gain: 0.8,
+                    pan: 0, // -1 to 1
+                    detune: 0, // In cents
+                    attack: 0.01,
+                    release: 0.4,
+                    filterFreq: 12000,
+                    filterQ: 1,
+                    // Synth Specific
+                    synthType: 'triangle',
+                    synthBaseFreq: 100,
+                    // Sample Specific (Internal)
+                    mode: 'synth', // 'system', 'user', 'synth'
+                    defaultSampleUrl: '',
+                    defaultSampleBuffer: null,
+                    isLoadingDefault: false,
+                    userSampleBuffer: null,
+                    userSampleFileName: '',
+                };
+            }
+            
+            initDrumSounds() {
+                this.drumSounds = {
+                    'surdo1': { ...this.getDefaultSoundParams(), name: 'Surdo 1', gain: 1.0, release: 0.8, synthBaseFreq: 55, synthType: 'triangle' },
+                    'surdo2': { ...this.getDefaultSoundParams(), name: 'Surdo 2', gain: 0.9, release: 0.7, synthBaseFreq: 65, synthType: 'triangle' },
+                    'surdo3': { ...this.getDefaultSoundParams(), name: 'Surdo 3', gain: 0.8, release: 0.6, synthBaseFreq: 75, synthType: 'triangle' },
+                    'caixa': { ...this.getDefaultSoundParams(), name: 'Caixa', gain: 0.6, release: 0.2, synthBaseFreq: 250, synthType: 'square' },
+                    'repinique': { ...this.getDefaultSoundParams(), name: 'Repinique', gain: 0.7, release: 0.4, synthBaseFreq: 220, synthType: 'triangle' },
+                    'tamborim': { ...this.getDefaultSoundParams(), name: 'Tamborim', gain: 0.4, release: 0.15, synthBaseFreq: 400, synthType: 'square' },
+                    'agogo': { ...this.getDefaultSoundParams(), name: 'Agogô', gain: 0.5, release: 0.6, synthBaseFreq: 800, synthType: 'sine' },
+                    'pandeiro': { ...this.getDefaultSoundParams(), name: 'Pandeiro', gain: 0.5, release: 0.3, synthBaseFreq: 300, synthType: 'triangle' },
+                    'cuica': { ...this.getDefaultSoundParams(), name: 'Cuíca', gain: 0.5, release: 0.4, synthBaseFreq: 180, synthType: 'sawtooth' }
+                };
+
+                Object.keys(this.drumSounds).forEach(key => {
+                    this.drumSounds[key].defaultSampleUrl = this.defaultSampleUrls[key] || '';
+                });
             }
 
             saveState(force = false) {
@@ -1075,21 +1052,20 @@
                             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                             const arrayBuffer = await response.arrayBuffer();
                             sound.defaultSampleBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-                            sound.mode = 'system'; // 載入成功後，預設使用系統音源
-                            console.log(`Default sample for ${key} loaded successfully.`);
+                            sound.mode = 'system';
                         } catch (error) {
                             console.error(`Failed to load default sample for ${key} from ${sound.defaultSampleUrl}:`, error);
                             sound.defaultSampleBuffer = null;
-                            sound.mode = 'synth'; // 載入失敗，退回人工音效
+                            sound.mode = 'synth';
                         } finally {
                             sound.isLoadingDefault = false;
                             this.updateSoundControlUI(key);
                         }
                     } else {
-                         sound.mode = 'synth'; // 沒有提供 URL，預設人工音效
+                         sound.mode = 'synth';
                     }
                 }
-                this.initSoundAdjustPanel(); // 重新渲染調音面板以更新狀態
+                this.initSoundAdjustPanel();
             }
 
             setupAudioContextResume() {
@@ -1097,7 +1073,6 @@
                     if (this.audioContext && this.audioContext.state === 'suspended') {
                         try {
                             await this.audioContext.resume();
-                            console.log('Audio context resumed');
                         } catch (e) {
                             console.warn('Failed to resume audio context:', e);
                         }
@@ -1116,7 +1091,7 @@
             }
 
             initTracks() {
-                this.tracks = Array(6).fill().map((_, i) => ({
+                this.tracks = Array(8).fill().map((_, i) => ({
                     id: i,
                     drumType: this.defaultDrums[i],
                     steps: Array(this.totalBeats * this.stepsPerBeat).fill(false),
@@ -1128,8 +1103,8 @@
 
             initUI() {
                 this.renderTracks();
-                this.initSoundAdjustPanel(); // 生成 HTML
-                this.bindEvents(); // 統一綁定事件
+                this.initSoundAdjustPanel();
+                this.bindEvents();
                 this.updateExpandButton();
                 this.initScrollPosition();
                 this.updateStepSize();
@@ -1149,8 +1124,11 @@
                 topControls.innerHTML = '';
                 bottomControls.innerHTML = '';
 
-                drumKeys.slice(0, 5).forEach(key => topControls.insertAdjacentHTML('beforeend', this.createSoundControlHTML(key)));
-                drumKeys.slice(5).forEach(key => bottomControls.insertAdjacentHTML('beforeend', this.createSoundControlHTML(key)));
+                const midPoint = Math.ceil(drumKeys.length / 2);
+                drumKeys.slice(0, midPoint).forEach(key => topControls.insertAdjacentHTML('beforeend', this.createSoundControlHTML(key)));
+                drumKeys.slice(midPoint).forEach(key => bottomControls.insertAdjacentHTML('beforeend', this.createSoundControlHTML(key)));
+
+                this.bindSoundPanelEvents();
             }
 
             createSoundControlHTML(key) {
@@ -1160,61 +1138,73 @@
                 const isUserSampleLoaded = !!sound.userSampleBuffer;
 
                 return `
-                    <div class="sound-control-item" id="sound-control-item-${key}">
+                    <div class="sound-control-item" id="sound-control-item-${key}" data-drum="${key}">
                         <h4>${sound.name}</h4>
 
                         <div class="sound-mode-selector">
                             <label class="${!isSystemAvailable && !isSystemLoading ? 'disabled' : ''} ${isSystemLoading ? 'loading-indicator' : ''}">
-                                <input type="radio" name="sound-mode-${key}" class="sound-mode-radio" value="system" data-drum="${key}" ${sound.mode === 'system' ? 'checked' : ''} ${!isSystemAvailable ? 'disabled' : ''}>
+                                <input type="radio" name="sound-mode-${key}" class="sound-mode-radio" value="system" ${sound.mode === 'system' ? 'checked' : ''} ${!isSystemAvailable ? 'disabled' : ''}>
                                 <span>系統預設</span>
                             </label>
                             <label>
-                                <input type="radio" name="sound-mode-${key}" class="sound-mode-radio" value="user" data-drum="${key}" ${sound.mode === 'user' ? 'checked' : ''}>
+                                <input type="radio" name="sound-mode-${key}" class="sound-mode-radio" value="user" ${sound.mode === 'user' ? 'checked' : ''}>
                                 <span>匯入音檔</span>
                             </label>
                             <label>
-                                <input type="radio" name="sound-mode-${key}" class="sound-mode-radio" value="synth" data-drum="${key}" ${sound.mode === 'synth' ? 'checked' : ''}>
+                                <input type="radio" name="sound-mode-${key}" class="sound-mode-radio" value="synth" ${sound.mode === 'synth' ? 'checked' : ''}>
                                 <span>人工音效</span>
                             </label>
                         </div>
                         
-                        <!-- 系統預設 UI (無內容) -->
-                        <div class="sound-mode-container ${sound.mode === 'system' ? 'active' : ''}" data-mode-container="system" data-drum="${key}">
-                             <p style="font-size:12px; color: #aaa;">使用預設的高品質音源。</p>
+                        <div class="sample-controls" style="display: ${sound.mode === 'user' ? 'block' : 'none'}">
+                            <input type="file" id="sample-input-${key}" class="file-input sample-input" data-drum="${key}" accept=".mp3,.wav,.ogg">
+                            <button class="btn btn-small action-btn upload-sample-btn">匯入取樣</button>
+                            <button class="btn btn-small warning remove-sample-btn" style="display: ${isUserSampleLoaded ? 'inline-block' : 'none'};">移除</button>
+                            <span class="sample-file-name">${sound.userSampleFileName}</span>
                         </div>
 
-                        <!-- 匯入音檔 UI (包含上傳功能) -->
-                        <div class="sound-mode-container ${sound.mode === 'user' ? 'active' : ''}" data-mode-container="user" data-drum="${key}">
-                            <div class="sample-controls">
-                                <input type="file" id="sample-input-${key}" class="file-input sample-input" data-drum="${key}" accept=".mp3,.wav,.ogg">
-                                <button class="btn btn-small action-btn upload-sample-btn" data-drum="${key}">匯入取樣</button>
-                                <button class="btn btn-small warning remove-sample-btn" data-drum="${key}" style="display: ${isUserSampleLoaded ? 'inline-block' : 'none'};">移除</button>
-                                <span class="sample-file-name" id="sample-name-${key}">${sound.userSampleFileName}</span>
-                            </div>
-                        </div>
-
-                        <!-- 人工音效 UI -->
-                        <div class="sound-mode-container ${sound.mode === 'synth' ? 'active' : ''}" data-mode-container="synth" data-drum="${key}">
-                            <div class="sound-control-params">
-                                <label>頻率: <input type="range" min="20" max="1000" value="${sound.freq}" data-drum="${key}" data-param="freq"></label>
-                                <label>音量: <input type="range" min="0" max="1" step="0.1" value="${sound.gain}" data-drum="${key}" data-param="gain"></label>
-                                <label>起音: <input type="range" min="0.001" max="0.1" step="0.001" value="${sound.attack}" data-drum="${key}" data-param="attack"></label>
-                                <label>衰減: <input type="range" min="0.1" max="2" step="0.1" value="${sound.decay}" data-drum="${key}" data-param="decay"></label>
-                            </div>
-                             <div class="sound-control-bottom" style="justify-content: flex-start;">
-                                <label>波形: 
-                                    <select data-drum="${key}" data-param="type" style="padding: 5px; border-radius: 5px; border: none; background: rgba(255, 255, 255, 0.1); color: white;">
-                                        <option value="sine" ${sound.type === 'sine' ? 'selected' : ''}>正弦波</option>
-                                        <option value="square" ${sound.type === 'square' ? 'selected' : ''}>方波</option>
-                                        <option value="triangle" ${sound.type === 'triangle' ? 'selected' : ''}>三角波</option>
-                                        <option value="sawtooth" ${sound.type === 'sawtooth' ? 'selected' : ''}>鋸齒波</option>
-                                    </select>
-                                </label>
-                            </div>
+                        <div class="unified-sound-params">
+                            <label>
+                                <div class="param-label-container"><span>音高 (Pitch)</span><span class="param-value-display">${sound.detune}</span></div>
+                                <input type="range" min="-2400" max="2400" step="50" value="${sound.detune}" data-param="detune">
+                            </label>
+                             <label>
+                                <div class="param-label-container"><span>聲像 (Pan)</span><span class="param-value-display">${sound.pan}</span></div>
+                                <input type="range" min="-1" max="1" step="0.1" value="${sound.pan}" data-param="pan">
+                            </label>
+                            <label>
+                                <div class="param-label-container"><span>增益 (Gain)</span><span class="param-value-display">${sound.gain}</span></div>
+                                <input type="range" min="0" max="1.5" step="0.05" value="${sound.gain}" data-param="gain">
+                            </label>
+                             <label>
+                                <div class="param-label-container"><span>起音 (Atk)</span><span class="param-value-display">${sound.attack}</span></div>
+                                <input type="range" min="0.001" max="0.5" step="0.001" value="${sound.attack}" data-param="attack">
+                            </label>
+                            <label>
+                                <div class="param-label-container"><span>釋放 (Rel)</span><span class="param-value-display">${sound.release}</span></div>
+                                <input type="range" min="0.05" max="2" step="0.01" value="${sound.release}" data-param="release">
+                            </label>
+                            <label>
+                                <div class="param-label-container"><span>濾波 (Freq)</span><span class="param-value-display">${sound.filterFreq}</span></div>
+                                <input type="range" min="40" max="18000" step="10" value="${sound.filterFreq}" data-param="filterFreq">
+                            </label>
+                            <label>
+                                <div class="param-label-container"><span>共振 (Q)</span><span class="param-value-display">${sound.filterQ}</span></div>
+                                <input type="range" min="0.1" max="20" step="0.1" value="${sound.filterQ}" data-param="filterQ">
+                            </label>
+                            <label class="waveform-selector-label ${sound.mode !== 'synth' ? 'disabled' : ''}">
+                                <span>波形 (Wave)</span>
+                                <select data-param="synthType" ${sound.mode !== 'synth' ? 'disabled' : ''}>
+                                    <option value="sine" ${sound.synthType === 'sine' ? 'selected' : ''}>正弦波</option>
+                                    <option value="square" ${sound.synthType === 'square' ? 'selected' : ''}>方波</option>
+                                    <option value="triangle" ${sound.synthType === 'triangle' ? 'selected' : ''}>三角波</option>
+                                    <option value="sawtooth" ${sound.synthType === 'sawtooth' ? 'selected' : ''}>鋸齒波</option>
+                                </select>
+                            </label>
                         </div>
                         
-                        <div style="text-align: right; margin-top: 10px;">
-                             <button class="test-btn" data-drum="${key}">試聽</button>
+                        <div style="text-align: right; margin-top: 15px;">
+                             <button class="test-btn">試聽</button>
                         </div>
                     </div>
                 `;
@@ -1326,38 +1316,6 @@
                     this.showNumbers = e.target.checked;
                     this.renderTracks();
                 });
-                
-                // --- 使用事件委派處理調音面板的所有互動 ---
-                const soundPanel = document.getElementById('soundAdjustPanel');
-                soundPanel.addEventListener('input', (e) => {
-                    if (e.target.matches('input[data-param], select[data-param]')) {
-                        const drum = e.target.dataset.drum;
-                        const param = e.target.dataset.param;
-                        let value = (param === 'type') ? e.target.value : parseFloat(e.target.value);
-                        this.drumSounds[drum][param] = value;
-                    }
-                });
-                soundPanel.addEventListener('change', (e) => {
-                    if (e.target.classList.contains('sound-mode-radio')) {
-                        this.handleSoundModeChange(e);
-                    }
-                    if (e.target.classList.contains('sample-input')) {
-                        this.handleSampleUpload(e);
-                    }
-                });
-                soundPanel.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('upload-sample-btn')) {
-                        const drumKey = e.target.dataset.drum;
-                        document.getElementById(`sample-input-${drumKey}`).click();
-                    }
-                    if (e.target.classList.contains('remove-sample-btn')) {
-                        this.removeSample(e.target.dataset.drum);
-                    }
-                    if (e.target.classList.contains('test-btn')) {
-                        this.testSound(e.target.dataset.drum);
-                    }
-                });
-
 
                 document.addEventListener('click', (e) => {
                     if (e.target.classList.contains('step')) {
@@ -1384,6 +1342,54 @@
                 });
                 
                 window.addEventListener('resize', () => this.updateStepSize());
+            }
+
+            bindSoundPanelEvents() {
+                 const soundPanel = document.getElementById('soundAdjustPanel');
+                 soundPanel.addEventListener('input', (e) => {
+                    const controlItem = e.target.closest('.sound-control-item');
+                    if (!controlItem) return;
+                    const drumKey = controlItem.dataset.drum;
+
+                    if (e.target.matches('[data-param]')) {
+                        const param = e.target.dataset.param;
+                        let value = e.target.type === 'range' ? parseFloat(e.target.value) : e.target.value;
+                        this.drumSounds[drumKey][param] = value;
+                        
+                        const display = e.target.previousElementSibling.querySelector('.param-value-display');
+                        if(display) display.textContent = value;
+                    }
+                });
+
+                soundPanel.addEventListener('change', (e) => {
+                     const controlItem = e.target.closest('.sound-control-item');
+                    if (!controlItem) return;
+                    const drumKey = controlItem.dataset.drum;
+
+                    if (e.target.classList.contains('sound-mode-radio')) {
+                        this.handleSoundModeChange(drumKey, e.target.value);
+                    }
+                    if (e.target.classList.contains('sample-input')) {
+                        this.handleSampleUpload(drumKey, e.target.files[0]);
+                        e.target.value = ''; // Reset file input
+                    }
+                });
+
+                soundPanel.addEventListener('click', (e) => {
+                    const controlItem = e.target.closest('.sound-control-item');
+                    if (!controlItem) return;
+                    const drumKey = controlItem.dataset.drum;
+
+                    if (e.target.classList.contains('upload-sample-btn')) {
+                        controlItem.querySelector('.sample-input').click();
+                    }
+                    if (e.target.classList.contains('remove-sample-btn')) {
+                        this.removeSample(drumKey);
+                    }
+                    if (e.target.classList.contains('test-btn')) {
+                        this.testSound(drumKey);
+                    }
+                });
             }
 
             updateStepSize() {
@@ -1642,48 +1648,13 @@
             async playSound(drumType, soundEnabled = true, volume = 0.8) {
                 if (!soundEnabled) return;
                 if (!this.audioContext) await this.initAudio();
-                if (this.audioContext.state === 'suspended') {
+                 if (this.audioContext.state === 'suspended') {
                     try { await this.audioContext.resume(); } catch (e) { console.warn('Failed to resume audio context in playSound:', e); return; }
                 }
                 if (this.audioContext.state !== 'running') return;
-
-                const sound = this.drumSounds[drumType];
-                if (!sound) return;
+                
                 const now = this.audioContext.currentTime;
-
-                const gainNode = this.audioContext.createGain();
-                gainNode.connect(this.audioContext.destination);
-
-                let bufferToPlay = null;
-                if (sound.mode === 'system' && sound.defaultSampleBuffer) {
-                    bufferToPlay = sound.defaultSampleBuffer;
-                } else if (sound.mode === 'user' && sound.userSampleBuffer) {
-                    bufferToPlay = sound.userSampleBuffer;
-                }
-
-                if (bufferToPlay) {
-                    gainNode.gain.setValueAtTime(volume, now);
-                    const source = this.audioContext.createBufferSource();
-                    source.buffer = bufferToPlay;
-                    source.connect(gainNode);
-                    source.start(now);
-                } else { // Fallback to synth
-                    try {
-                        const totalGain = sound.gain * volume;
-                        gainNode.gain.setValueAtTime(0, now);
-                        gainNode.gain.linearRampToValueAtTime(totalGain, now + sound.attack);
-                        gainNode.gain.exponentialRampToValueAtTime(totalGain * sound.sustain, now + sound.attack + sound.decay);
-                        gainNode.gain.exponentialRampToValueAtTime(0.001, now + sound.attack + sound.decay + sound.release);
-                        const oscillator = this.audioContext.createOscillator();
-                        oscillator.connect(gainNode);
-                        oscillator.type = sound.type;
-                        oscillator.frequency.setValueAtTime(sound.freq, now);
-                        if (drumType === 'cuica') oscillator.frequency.exponentialRampToValueAtTime(sound.freq * 0.5, now + sound.release);
-                        if (drumType === 'pandeiro') oscillator.frequency.exponentialRampToValueAtTime(sound.freq * 0.7, now + sound.decay);
-                        oscillator.start(now);
-                        oscillator.stop(now + sound.attack + sound.decay + sound.release);
-                    } catch (error) { console.warn('播放合成音色時發生錯誤:', error); }
-                }
+                this.scheduleSound(this.audioContext, now, drumType, soundEnabled, volume);
             }
             
             handleStepClick(stepElement) {
@@ -1794,18 +1765,14 @@
                 this.saveState();
             }
 
-            handleSoundModeChange(event) {
-                const drumKey = event.target.dataset.drum;
-                const newMode = event.target.value;
+            handleSoundModeChange(drumKey, newMode) {
                 if (drumKey && newMode) {
                     this.drumSounds[drumKey].mode = newMode;
                     this.updateSoundControlUI(drumKey);
                 }
             }
 
-            async handleSampleUpload(event) {
-                const file = event.target.files[0];
-                const drumKey = event.target.dataset.drum;
+            async handleSampleUpload(drumKey, file) {
                 if (!file || !drumKey) return;
 
                 try {
@@ -1814,7 +1781,7 @@
                     
                     this.drumSounds[drumKey].userSampleBuffer = audioBuffer;
                     this.drumSounds[drumKey].userSampleFileName = file.name;
-                    this.drumSounds[drumKey].mode = 'user'; // 上傳後自動切換到匯入模式
+                    this.drumSounds[drumKey].mode = 'user';
 
                     this.updateSoundControlUI(drumKey); 
                     alert(`樂器 "${this.drumSounds[drumKey].name}" 的取樣 "${file.name}" 已成功載入！`);
@@ -1823,8 +1790,6 @@
                     console.error(`Error loading sample for ${drumKey}:`, error);
                     alert(`載入取樣失敗，請確認檔案格式是否為支援的音訊檔 (MP3, WAV, OGG)。\n錯誤訊息: ${error.message}`);
                 }
-                
-                event.target.value = '';
             }
 
             removeSample(drumKey) {
@@ -1833,10 +1798,7 @@
                 const sound = this.drumSounds[drumKey];
                 sound.userSampleBuffer = null;
                 sound.userSampleFileName = '';
-
-                // 移除後，優先退回系統預設，若無則退回人工
                 sound.mode = sound.defaultSampleBuffer ? 'system' : 'synth';
-
                 this.updateSoundControlUI(drumKey);
                 alert(`樂器 "${sound.name}" 的匯入取樣已被移除。`);
             }
@@ -1846,11 +1808,11 @@
                 const itemContainer = document.getElementById(`sound-control-item-${drumKey}`);
                 if (!itemContainer) return;
 
-                // 更新 Radio 按鈕狀態
+                // Update radio button
                 const radioToCheck = itemContainer.querySelector(`input[name="sound-mode-${drumKey}"][value="${sound.mode}"]`);
                 if(radioToCheck) radioToCheck.checked = true;
 
-                // 更新系統預設選項的可用性
+                // Update system sample availability
                 const systemLabel = itemContainer.querySelector('label:has(input[value="system"])');
                 const systemInput = itemContainer.querySelector('input[value="system"]');
                 if (systemLabel && systemInput) {
@@ -1860,44 +1822,25 @@
                     systemInput.disabled = !isSystemAvailable;
                 }
                 
-                // 更新各模式容器的顯示
-                itemContainer.querySelectorAll('[data-mode-container]').forEach(container => {
-                    container.classList.toggle('active', container.dataset.modeContainer === sound.mode);
-                });
-
-                // 更新匯入模式的 UI
+                // Show/hide user sample controls
+                itemContainer.querySelector('.sample-controls').style.display = sound.mode === 'user' ? 'block' : 'none';
                 itemContainer.querySelector('.remove-sample-btn').style.display = !!sound.userSampleBuffer ? 'inline-block' : 'none';
-                itemContainer.querySelector(`#sample-name-${drumKey}`).textContent = sound.userSampleFileName;
+                itemContainer.querySelector('.sample-file-name').textContent = sound.userSampleFileName;
+
+                // Enable/disable waveform selector
+                const waveformLabel = itemContainer.querySelector('.waveform-selector-label');
+                const waveformSelect = waveformLabel.querySelector('select');
+                waveformLabel.classList.toggle('disabled', sound.mode !== 'synth');
+                waveformSelect.disabled = sound.mode !== 'synth';
             }
 
             resetSounds() {
-                if (!window.confirm('確定要重置所有音色為預設值嗎？這將會移除所有您匯入的聲音取樣，並將音源模式重設。')) return;
+                if (!window.confirm('確定要重置所有音色為預設值嗎？這將會移除所有您匯入的聲音取樣，並將音源模式與參數重設。')) return;
                 
-                const defaultSynthParams = {
-                    'repinique': { freq: 220, type: 'triangle', attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.4, gain: 0.7 },
-                    'surdo1': { freq: 55, type: 'triangle', attack: 0.02, decay: 0.8, sustain: 0.1, release: 0.8, gain: 1.0 },
-                    'surdo2': { freq: 65, type: 'triangle', attack: 0.02, decay: 0.7, sustain: 0.1, release: 0.7, gain: 0.9 },
-                    'surdo3': { freq: 75, type: 'triangle', attack: 0.02, decay: 0.6, sustain: 0.1, release: 0.6, gain: 0.8 },
-                    'caixa': { freq: 250, type: 'square', attack: 0.01, decay: 0.15, sustain: 0.1, release: 0.2, gain: 0.6 },
-                    'tamborim': { freq: 400, type: 'square', attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.15, gain: 0.4 },
-                    'cuica': { freq: 180, type: 'sawtooth', attack: 0.02, decay: 0.3, sustain: 0.2, release: 0.4, gain: 0.5 },
-                    'agogo': { freq: 800, type: 'sine', attack: 0.01, decay: 0.6, sustain: 0.1, release: 0.6, gain: 0.3 },
-                    'pandeiro': { freq: 300, type: 'triangle', attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.3, gain: 0.5 }
-                };
+                this.initDrumSounds(); // Re-initializes all sound params to default
+                this.loadDefaultSamples(); // This will re-load samples and set modes correctly
                 
-                Object.keys(this.drumSounds).forEach(key => {
-                    const sound = this.drumSounds[key];
-                    // 重設人工參數
-                    Object.assign(sound, defaultSynthParams[key]);
-                    // 清除使用者匯入的檔案
-                    sound.userSampleBuffer = null;
-                    sound.userSampleFileName = '';
-                    // 將模式重設為系統預設(如果可用)，否則設為人工
-                    sound.mode = sound.defaultSampleBuffer ? 'system' : 'synth';
-                });
-
-                this.initSoundAdjustPanel(); // 重新渲染整個面板
-                alert('音色已重置。匯入的取樣已清除，模式已更新。');
+                alert('音色已重置。');
             }
 
 
@@ -1932,7 +1875,7 @@
 
             exportPattern() {
                 const pattern = {
-                    version: '1.6-mode-support',
+                    version: '2.0-unified-sound', // New Version
                     totalBeats: this.totalBeats,
                     bpm: this.bpm,
                     mode: this.mode,
@@ -1945,9 +1888,9 @@
                         soundEnabled: track.soundEnabled,
                         volume: track.volume
                     })),
-                    // --- 儲存音色設定，但不含聲音 buffer ---
+                    // Export sound params, removing non-serializable properties
                     drumSounds: Object.fromEntries(Object.entries(this.drumSounds).map(([key, value]) => {
-                         const { defaultSampleBuffer, userSampleBuffer, isLoadingDefault, ...rest } = value; // 排除所有 buffer 和暫態
+                         const { defaultSampleBuffer, userSampleBuffer, isLoadingDefault, ...rest } = value;
                          return [key, rest];
                     })),
                     exportDate: new Date().toISOString()
@@ -1976,6 +1919,7 @@
                     this.mode = pattern.mode || 'ensemble';
                     this.showNumbers = pattern.showNumbers || false;
                     this.stepsPerBeat = pattern.stepsPerBeat || 4;
+                    
                     this.tracks = pattern.tracks.map((trackData, index) => ({
                         id: index,
                         drumType: trackData.drumType || this.defaultDrums[index],
@@ -1984,21 +1928,35 @@
                         soundEnabled: trackData.soundEnabled !== undefined ? trackData.soundEnabled : true,
                         volume: trackData.volume !== undefined ? trackData.volume : 0.8
                     }));
-                    while (this.tracks.length < 6) {
-                        this.tracks.push({ id: this.tracks.length, drumType: this.defaultDrums[this.tracks.length] || 'surdo1', steps: Array(this.totalBeats * this.stepsPerBeat).fill(false), enabled: true, soundEnabled: true, volume: 0.8 });
+
+                    while (this.tracks.length < 8) {
+                        const i = this.tracks.length;
+                        this.tracks.push({ 
+                            id: i, 
+                            drumType: this.defaultDrums[i] || 'agogo',
+                            steps: Array(this.totalBeats * this.stepsPerBeat).fill(false), 
+                            enabled: true, 
+                            soundEnabled: true, 
+                            volume: 0.8 
+                        });
                     }
+
                     if (pattern.drumSounds) {
                          Object.keys(pattern.drumSounds).forEach(key => {
                             if (this.drumSounds[key]) {
-                                // 合併匯入的設定，但 buffer 保持不動
-                                Object.assign(this.drumSounds[key], { ...pattern.drumSounds[key] });
-                                // 清除使用者 buffer，因為它不會被匯出/入
+                                // Merge imported sound params with defaults to ensure all keys exist
+                                const defaults = this.getDefaultSoundParams();
+                                const imported = pattern.drumSounds[key];
+                                this.drumSounds[key] = { ...defaults, ...this.drumSounds[key], ...imported };
+
+                                // Ensure buffers are cleared as they are not serializable
                                 this.drumSounds[key].userSampleBuffer = null;
-                                this.drumSounds[key].userSampleFileName = '';
+                                this.drumSounds[key].userSampleFileName = imported.userSampleFileName || '';
                             }
                         });
-                        this.initSoundAdjustPanel(); // 重新渲染調音面板以反映新設定
+                        this.initSoundAdjustPanel(); // Re-render sound panel with imported values
                     }
+
                     document.getElementById('bpmInput').value = this.bpm;
                     document.getElementById('showNumbers').checked = this.showNumbers;
                     document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -2014,7 +1972,7 @@
                     this.updateStepSize();
                     this.clearSelection();
                     this.saveState(true); 
-                    alert('匯入成功！請注意：您需要手動重新匯入之前使用的聲音取樣。');
+                    alert('匯入成功！如果這是舊版檔案，將自動擴充至 8 音軌。');
                 } catch (error) {
                     alert('匯入失敗：' + error.message);
                 }
@@ -2027,7 +1985,6 @@
 				
                 if (typeof lamejs === 'undefined') {
                     alert('MP3 編碼函式庫 (lame.min.js) 載入失敗！請檢查您的網路連線或 CDN 連結是否正確。');
-                    console.error("lamejs is not defined. MP3 export cannot proceed.");
                     return;
                 }
 
@@ -2137,16 +2094,15 @@
                 }
             }
 			
-			scheduleSound(context, time, drumType, soundEnabled = true, volume = 1.0) {
+			scheduleSound(context, time, drumType, soundEnabled = true, trackVolume = 1.0) {
 				if (!soundEnabled) return;
 				
                 const sound = this.drumSounds[drumType];
                 if (!sound) return;
 
-                const gainNode = context.createGain();
-                gainNode.connect(context.destination);
-
+                let source;
                 let bufferToPlay = null;
+
                 if (sound.mode === 'system' && sound.defaultSampleBuffer) {
                     bufferToPlay = sound.defaultSampleBuffer;
                 } else if (sound.mode === 'user' && sound.userSampleBuffer) {
@@ -2154,30 +2110,38 @@
                 }
                 
                 if (bufferToPlay) {
-                    gainNode.gain.setValueAtTime(volume, time);
-                    const source = context.createBufferSource();
+                    source = context.createBufferSource();
                     source.buffer = bufferToPlay;
-                    source.connect(gainNode);
-                    source.start(time);
-                } else { // Fallback to synth
-                    try {
-                        const gainMultiplier = 3.0;
-                        const totalGain = sound.gain * volume * gainMultiplier;
-                        gainNode.gain.setValueAtTime(0, time);
-                        gainNode.gain.linearRampToValueAtTime(totalGain, time + sound.attack);
-                        gainNode.gain.exponentialRampToValueAtTime(totalGain * sound.sustain, time + sound.attack + sound.decay);
-                        gainNode.gain.exponentialRampToValueAtTime(0.001, time + sound.attack + sound.decay + sound.release);
-                        const oscillator = context.createOscillator();
-                        oscillator.connect(gainNode);
-                        oscillator.type = sound.type;
-                        oscillator.frequency.setValueAtTime(sound.freq, time);
-                        if (drumType === 'cuica') oscillator.frequency.exponentialRampToValueAtTime(sound.freq * 0.5, time + sound.release);
-                        if (drumType === 'pandeiro') oscillator.frequency.exponentialRampToValueAtTime(sound.freq * 0.7, time + sound.decay);
-                        oscillator.start(time);
-                        oscillator.stop(time + sound.attack + sound.decay + sound.release + 0.1);
-                    } catch (error) {
-                        console.warn(`排程合成音色時發生錯誤 (t=${time}, drum=${drumType}):`, error);
-                    }
+                    const playbackRate = Math.pow(2, sound.detune / 1200);
+                    source.playbackRate.setValueAtTime(playbackRate, time);
+                } else { // Synth mode
+                    source = context.createOscillator();
+                    source.type = sound.synthType;
+                    source.frequency.setValueAtTime(sound.synthBaseFreq, time);
+                    source.detune.setValueAtTime(sound.detune, time);
+                     if (drumType === 'cuica') source.frequency.exponentialRampToValueAtTime(sound.synthBaseFreq * 0.5, time + sound.release);
+                     if (drumType === 'pandeiro') source.frequency.exponentialRampToValueAtTime(sound.synthBaseFreq * 0.7, time + sound.release * 0.5);
+                }
+
+                const envelopeGain = context.createGain();
+                envelopeGain.gain.setValueAtTime(0, time);
+                envelopeGain.gain.linearRampToValueAtTime(sound.gain * trackVolume, time + sound.attack);
+                envelopeGain.gain.linearRampToValueAtTime(0, time + sound.attack + sound.release);
+
+                const panner = new StereoPannerNode(context, { pan: sound.pan });
+                
+                const filter = context.createBiquadFilter();
+                filter.type = "lowpass";
+                filter.frequency.setValueAtTime(sound.filterFreq, time);
+                filter.Q.setValueAtTime(sound.filterQ, time);
+
+                source.connect(filter).connect(panner).connect(envelopeGain).connect(context.destination);
+                
+                source.start(time);
+                const stopTime = time + sound.attack + sound.release + 0.1;
+                // Oscillator must be stopped, BufferSource stops automatically
+                if (source.constructor.name === "OscillatorNode") {
+                    source.stop(stopTime);
                 }
 			}
         }
