@@ -543,23 +543,39 @@
             display: none;
         }
 
-        .sound-panel {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            color: white;
-            max-width: 90vw;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 2px solid #00ff88;
-        }
+		/* 新增：Sound Panel 的全螢幕背景樣式 */
+		.sound-panel-overlay {
+			display: none; /* 預設隱藏 */
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.7);
+			backdrop-filter: blur(5px); /* 模糊效果移到這裡 */
+			z-index: 1000;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			padding: 20px; /* 給視窗一些邊距 */
+		}
+
+		/* 修改後：Sound Panel 的內容視窗樣式 */
+		.sound-panel {
+			/* 移除了 position, top, left, transform 等定位屬性 */
+			background: #1a1a1a; /* 統一樣式 */
+			padding: 30px;
+			border-radius: 15px;
+			color: white;
+			width: 100%; /* 寬度佔滿背景 */
+			max-width: 1200px; /* 最大寬度限制 */
+			height: 100%; /* 高度佔滿背景 */
+			overflow-y: auto;
+			border: 1px solid #00ff88; /* 統一樣式 */
+			box-shadow: 0 10px 40px rgba(0, 255, 136, 0.25); /* 統一樣式 */
+			display: flex; /* 讓內部元素可以更好地佈局 */
+			flex-direction: column;
+		}
 
         .sound-controls-grid {
             display: grid;
@@ -716,7 +732,20 @@
         }
 
 
+		@media (max-width: 1200px) {
+			.sound-controls-grid {
+				grid-template-columns: 1fr 1fr;
+			}
+		}
 
+        @media (max-width: 992px) {
+            .tracks-controls {
+                width: 260px;
+            }
+            .sound-controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
         @media (max-width: 1000px) {
             .sequencer {
@@ -736,21 +765,11 @@
             }
         }
 
-    	@media (max-width: 992px) {
-	    .tracks-controls {
-	                width: 260px;
-	            }
-	        }
-
-	@media (max-width: 800px) {
+		@media (max-width: 800px) {
             .step {
                 font-size: 8px; 
-	    .
-        	}
-		sound-controls-grid {
-		grid-template-columns: 1fr 1fr;
-            	}
-	    }
+            }
+        }
         
 		.btn.loading {
             cursor: wait;
@@ -1028,18 +1047,19 @@
         程式作者：徐承佑 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  森巴鼓指導老師：陳仰真
 		</div>
     </div>
-	
-    <div class="sound-panel" id="soundAdjustPanel">
-        <h3 style="margin-bottom: 20px; color: #00ff88; text-align: center;">🎵 樂器音色調整</h3>
-		<div class="sound-controls-grid" id="soundControlsContainer">
-			<!-- JavaScript 將會把所有樂器面板直接插入到這裡 -->
+	<!-- 新增的 Sound Panel Overlay 背景 -->
+	<div class="sound-panel-overlay" id="soundPanelOverlay">	
+		<div class="sound-panel" id="soundAdjustPanel">
+			<h3 style="margin-bottom: 20px; color: #00ff88; text-align: center;">🎵 樂器音色調整</h3>
+			<div class="sound-controls-grid" id="soundControlsContainer">
+				<!-- JavaScript 將會把所有樂器面板直接插入到這裡 -->
+			</div>
+			<div class="panel-buttons">
+				<button class="btn" id="closeSoundPanel">關閉</button>
+				<button class="btn warning" id="resetSounds">重置音色</button>
+			</div>
 		</div>
-        <div class="panel-buttons">
-            <button class="btn" id="closeSoundPanel">關閉</button>
-            <button class="btn warning" id="resetSounds">重置音色</button>
-        </div>
-    </div>
-
+	</div>	
     <script>
         class Beatmaker {
             constructor() {
@@ -1567,27 +1587,27 @@
                 document.getElementById('undoBtn').addEventListener('click', () => this.undo());
                 document.getElementById('redoBtn').addEventListener('click', () => this.redo());
 
-		const soundPanel = document.getElementById('soundAdjustPanel');
-		if (soundPanel) {
-			document.getElementById('soundAdjustBtn').addEventListener('click', () => {
-				// 注意：這裡使用 'block' 而不是 'flex'，以匹配 .sound-panel 的 CSS 置中方式
-				soundPanel.style.display = 'block';
-			});
+				const soundPanel = document.getElementById('soundAdjustPanel');
+				if (soundPanel) {
+					document.getElementById('soundAdjustBtn').addEventListener('click', () => {
+						// 注意：這裡使用 'block' 而不是 'flex'，以匹配 .sound-panel 的 CSS 置中方式
+						soundPanel.style.display = 'block';
+					});
 
-			document.getElementById('closeSoundPanel').addEventListener('click', () => {
-				soundPanel.style.display = 'none';
-			});
+					document.getElementById('closeSoundPanel').addEventListener('click', () => {
+						soundPanel.style.display = 'none';
+					});
 
-			// 【這就是新增的核心邏輯】
-			// 監聽整個面板背景的點擊事件
-			soundPanel.addEventListener('click', (e) => {
-				// 如果點擊的目標(e.target)正好是半透明的背景本身(soundPanel)，就關閉視窗
-				if (e.target === soundPanel) {
-					soundPanel.style.display = 'none';
+					// 【這就是新增的核心邏輯】
+					// 監聽整個面板背景的點擊事件
+					soundPanel.addEventListener('click', (e) => {
+						// 如果點擊的目標(e.target)正好是半透明的背景本身(soundPanel)，就關閉視窗
+						if (e.target === soundPanel) {
+							soundPanel.style.display = 'none';
+						}
+					});
 				}
-			});
-		}
-
+				
                 document.getElementById('resetSounds').addEventListener('click', () => this.resetSounds());
                 document.getElementById('expandBtn').addEventListener('click', () => this.expandBeats());
                 document.getElementById('reduceBtn').addEventListener('click', () => this.reduceBeats());
@@ -1663,6 +1683,28 @@
 
                 // ======[ 使用說明 Modal 的控制邏輯 ]======
                 const helpBtn = document.getElementById('helpBtn');
+				// ======[ 調音面板控制 (修正後) ]======
+				const soundPanelOverlay = document.getElementById('soundPanelOverlay');
+				const closeSoundPanelBtn = document.getElementById('closeSoundPanel');
+				const openSoundPanelBtn = document.getElementById('soundAdjustBtn');
+
+				if (soundPanelOverlay && openSoundPanelBtn && closeSoundPanelBtn) {
+					openSoundPanelBtn.addEventListener('click', () => {
+						soundPanelOverlay.style.display = 'flex';
+					});
+
+					closeSoundPanelBtn.addEventListener('click', () => {
+						soundPanelOverlay.style.display = 'none';
+					});
+
+					// 點擊視窗外的灰色區域也可以關閉
+					soundPanelOverlay.addEventListener('click', (e) => {
+						if (e.target === soundPanelOverlay) {
+							soundPanelOverlay.style.display = 'none';
+						}
+					});
+				}
+				
                 const helpModal = document.getElementById('helpModal');
                 const closeHelpModal = document.getElementById('closeHelpModal');
 
@@ -1684,18 +1726,18 @@
                 }
                 
                 // ======[ 新增：監聽 ESC 鍵以關閉彈出視窗 ]======
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') {
-                        const soundPanel = document.getElementById('soundAdjustPanel');
-                        const helpPanel = document.getElementById('helpModal');
-                        if (soundPanel && soundPanel.style.display !== 'none') {
-                            soundPanel.style.display = 'none';
-                        }
-                        if (helpPanel && helpPanel.style.display !== 'none') {
-                            helpPanel.style.display = 'none';
-                        }
-                    }
-                });
+				document.addEventListener('keydown', (e) => {
+					if (e.key === 'Escape') {
+						const soundPanelOverlay = document.getElementById('soundPanelOverlay'); // 改為監聽 Overlay
+						const helpPanel = document.getElementById('helpModal');
+						if (soundPanelOverlay && soundPanelOverlay.style.display !== 'none') {
+							soundPanelOverlay.style.display = 'none';
+						}
+						if (helpPanel && helpPanel.style.display !== 'none') {
+							helpPanel.style.display = 'none';
+						}
+					}
+				});
             }
 
             bindSoundPanelEvents() {
