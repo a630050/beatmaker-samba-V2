@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beatmaker - 森巴鼓團練習程序 (Pro)</title>
+    <title>SambaBeatmaker - 森巴鼓團練習程式(Pro)</title>
 	
 	<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
 	
@@ -38,7 +38,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             padding: 20px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 15px;
@@ -48,7 +48,7 @@
         }
 
         .logo {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: bold;
             color: #00ff88;
         }
@@ -65,7 +65,7 @@
             align-items: center;
             gap: 10px;
             background: rgba(255, 255, 255, 0.1);
-            padding: 11px 15px;
+            padding: 8px 16px;
             border-radius: 8px;
         }
 
@@ -73,7 +73,7 @@
             background: transparent;
             border: none;
             color: white;
-            font-size: 18px;
+            font-size: 16px;
             width: 60px;
             text-align: center;
         }
@@ -82,7 +82,7 @@
             background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
             border: none;
             color: white;
-            padding: 12px 20px;
+            padding: 8px 16px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
@@ -131,8 +131,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin: 20px 0;
-            padding: 15px 20px;
+            margin: 10px 0;
+            padding: 6px 15px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
             backdrop-filter: blur(10px);
@@ -150,7 +150,7 @@
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid transparent;
             color: white;
-            padding: 10px 20px;
+            padding: 6px 15px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -178,8 +178,8 @@
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid transparent;
             color: white;
-            padding: 10px 20px;
-            font-size: 14px;
+            padding: 8px 16px;
+            font-size: 12px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -200,8 +200,8 @@
 			background: rgba(255, 255, 255, 0.1);
 			border: 2px solid #00ff88;
 			color: #00ff88;
-			width: 38px; 
-			height: 38px;
+			width: 34px; 
+			height: 34px;
 			padding: 0;
 			display: flex;
 			align-items: center;
@@ -239,11 +239,11 @@
         .sequencer {
             background: rgba(0, 0, 0, 0.4);
             border-radius: 15px;
-            padding: 20px;
+            padding: 10px;
             backdrop-filter: blur(10px);
             position: relative;
             display: flex;
-            height: 580px; 
+            height: auto; 
         }
 
 		.tracks-controls {
@@ -276,7 +276,7 @@
 			border: 1px solid #00ff88;
 			color: #00ff88;
 			width: 32px;
-			height: 24px;
+			height: 32px;
 			border-radius: 4px;
 			cursor: pointer;
 			font-size: 12px;
@@ -294,8 +294,8 @@
 		}
 
 		.tracks-controls.collapsed .collapse-btn {
-			width: 28px;
-			height: 20px;
+			width: 32px;
+			height: 32px;
             margin-top: 5px;
 		}
 
@@ -425,7 +425,7 @@
         }
 
 		.volume-control {
-			flex: 0 0 60px;
+			flex: 0 0 50px;
 		}
 
 		.volume-slider {
@@ -761,7 +761,7 @@
             text-align: center;
             margin-top: 20px;
             color: rgba(255, 255, 255, 0.5);
-            font-size: 12px;
+            font-size: 14px;
         }
 		
         @media (min-width: 801px) {
@@ -775,7 +775,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🎵 Beatmaker - 森巴鼓團</div>
+            <div class="logo">🎵 SambaBeatmaker-森巴鼓團</div>
             <div class="controls">
                 <button class="btn" id="playBtn">▶ 播放</button>
                 <button class="btn warning" id="clearBtn">清除</button>
@@ -926,7 +926,7 @@
 					}
 				});
             }
-            
+
             getDefaultSoundParams() {
                  return {
                     // Unified Params
@@ -950,22 +950,145 @@
                 };
             }
             
+            
             initDrumSounds() {
                 this.drumSounds = {
-                    'surdo1': { ...this.getDefaultSoundParams(), name: 'Surdo 1', gain: 1.0, release: 0.8, synthBaseFreq: 55, synthType: 'triangle' },
-                    'surdo2': { ...this.getDefaultSoundParams(), name: 'Surdo 2', gain: 0.9, release: 0.7, synthBaseFreq: 65, synthType: 'triangle' },
-                    'surdo3': { ...this.getDefaultSoundParams(), name: 'Surdo 3', gain: 0.8, release: 0.6, synthBaseFreq: 75, synthType: 'triangle' },
-                    'caixa': { ...this.getDefaultSoundParams(), name: 'Caixa', gain: 0.6, release: 0.2, synthBaseFreq: 250, synthType: 'square' },
-                    'repinique': { ...this.getDefaultSoundParams(), name: 'Repinique', gain: 0.7, release: 0.4, synthBaseFreq: 220, synthType: 'triangle' },
-                    'tamborim': { ...this.getDefaultSoundParams(), name: 'Tamborim', gain: 0.4, release: 0.15, synthBaseFreq: 400, synthType: 'square' },
-                    'agogo': { ...this.getDefaultSoundParams(), name: 'Agogô', gain: 0.5, release: 0.6, synthBaseFreq: 800, synthType: 'sine' },
-                    'pandeiro': { ...this.getDefaultSoundParams(), name: 'Pandeiro', gain: 0.5, release: 0.3, synthBaseFreq: 300, synthType: 'triangle' },
-                    'cuica': { ...this.getDefaultSoundParams(), name: 'Cuíca', gain: 0.5, release: 0.4, synthBaseFreq: 180, synthType: 'sawtooth' }
+                    'surdo1': {
+                        name: 'Surdo 1',
+                        gain: 1,
+                        pan: 0,
+                        detune: 0,
+                        attack: 0.01,
+                        release: 0.8,
+                        filterFreq: 12000,
+                        filterQ: 1,
+                        synthType: "triangle",
+                        synthBaseFreq: 55,
+                        mode: "system",
+                        defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3",
+                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+                    },
+                    'surdo2': {
+                        name: 'Surdo 2',
+                        gain: 0.9,
+                        pan: 0,
+                        detune: 100,
+                        attack: 0.01,
+                        release: 0.7,
+                        filterFreq: 12000,
+                        filterQ: 1,
+                        synthType: "triangle",
+                        synthBaseFreq: 65,
+                        mode: "system",
+                        defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3",
+                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+                    },
+                    'surdo3': {
+                        name: 'Surdo 3',
+                        gain: 0.8,
+                        pan: 0,
+                        detune: 300,
+                        attack: 0.01,
+                        release: 0.6,
+                        filterFreq: 12000,
+                        filterQ: 1,
+                        synthType: "triangle",
+                        synthBaseFreq: 75,
+                        mode: "system",
+                        defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3",
+                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+                    },
+                    'caixa': {
+                        name: 'Caixa',
+                        gain: 0.6,
+                        pan: 0,
+                        detune: 0,
+                        attack: 0.01,
+                        release: 0.2,
+                        filterFreq: 12000,
+                        filterQ: 1,
+                        synthType: "square",
+                        synthBaseFreq: 250,
+                        mode: "system",
+                        defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Caixa.mp3",
+                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+                    },
+                    'repinique': {
+                        name: 'Repinique',
+                        gain: 0.7,
+                        pan: 0,
+                        detune: 0,
+                        attack: 0.01,
+                        release: 0.4,
+                        filterFreq: 12000,
+                        filterQ: 1,
+                        synthType: "triangle",
+                        synthBaseFreq: 220,
+                        mode: "system",
+                        defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3",
+                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+                    },
+                    'tamborim': {
+                        name: 'Tamborim',
+                        gain: 0.4,
+                        pan: 0,
+                        detune: 0,
+                        attack: 0.01,
+                        release: 0.15,
+                        filterFreq: 12000,
+                        filterQ: 1,
+                        synthType: "square",
+                        synthBaseFreq: 400,
+                        mode: "synth",
+                        defaultSampleUrl: "",
+                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+                    },
+                    'agogo': {
+                        name: 'Agogô',
+                        gain: 1,
+                        pan: 0,
+                        detune: 0,
+                        attack: 0.001,
+                        release: 0.34,
+                        filterFreq: 1470,
+                        filterQ: 0.1,
+                        synthType: "sine",
+                        synthBaseFreq: 800,
+                        mode: "synth",
+                        defaultSampleUrl: "",
+                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+                    },
+                    'pandeiro': {
+                        name: 'Pandeiro',
+                        gain: 0.5,
+                        pan: 0,
+                        detune: 0,
+                        attack: 0.01,
+                        release: 0.3,
+                        filterFreq: 12000,
+                        filterQ: 1,
+                        synthType: "triangle",
+                        synthBaseFreq: 300,
+                        mode: "synth",
+                        defaultSampleUrl: "",
+                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+                    },
+                    'cuica': {
+                        name: 'Cuíca',
+                        gain: 0.5,
+                        pan: 0,
+                        detune: 0,
+                        attack: 0.01,
+                        release: 0.4,
+                        filterFreq: 12000,
+                        filterQ: 1,
+                        synthType: "sawtooth",
+                        synthBaseFreq: 180,
+                        mode: "synth",
+                        defaultSampleUrl: "",
+                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+                    }
                 };
-
-                Object.keys(this.drumSounds).forEach(key => {
-                    this.drumSounds[key].defaultSampleUrl = this.defaultSampleUrls[key] || '';
-                });
             }
 
             saveState(force = false) {
