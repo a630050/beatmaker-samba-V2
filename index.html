@@ -1449,27 +1449,6 @@
             }
 
             bindEvents() {
-			
-				const helpBtn = document.getElementById('helpBtn');
-				const helpModal = document.getElementById('helpModal');
-				const closeHelpModal = document.getElementById('closeHelpModal');
-
-				helpBtn.addEventListener('click', () => {
-					helpModal.style.display = 'flex';
-				});
-
-				closeHelpModal.addEventListener('click', () => {
-					helpModal.style.display = 'none';
-				});
-
-				// 點擊視窗外的灰色區域也可以關閉
-				helpModal.addEventListener('click', (e) => {
-					if (e.target === helpModal) {
-						helpModal.style.display = 'none';
-					}
-				});			
-			
-				document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
                 document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
                 document.getElementById('clearBtn').addEventListener('click', () => {
                     if (window.confirm('您確定要清除所有音格嗎？此操作將被記錄，可以復原。')) this.clearAll();
@@ -1477,7 +1456,7 @@
                 document.getElementById('resetBtn').addEventListener('click', () => {
                     if (window.confirm('您確定要重置整個編曲器嗎？此操作將被記錄，可以復原。')) this.resetAll();
                 });
-                
+
                 document.getElementById('undoBtn').addEventListener('click', () => this.undo());
                 document.getElementById('redoBtn').addEventListener('click', () => this.redo());
 
@@ -1488,7 +1467,7 @@
                 document.getElementById('reduceBtn').addEventListener('click', () => this.reduceBeats());
                 document.getElementById('exportBtn').addEventListener('click', () => this.exportPattern());
                 document.getElementById('importBtn').addEventListener('click', () => document.getElementById('fileInput').click());
-				document.getElementById('exportMp3Btn').addEventListener('click', () => this.exportMP3());
+                document.getElementById('exportMp3Btn').addEventListener('click', () => this.exportMP3());
                 document.getElementById('fileInput').addEventListener('change', (e) => this.importPattern(e.target.files[0]));
 
                 document.getElementById('selectBtn').addEventListener('click', () => this.toggleSelectionMode());
@@ -1503,7 +1482,7 @@
                     }
                 });
 
-				document.getElementById('collapseBtn').addEventListener('click', () => this.toggleControlsCollapse());
+                document.getElementById('collapseBtn').addEventListener('click', () => this.toggleControlsCollapse());
 
                 document.querySelectorAll('.mode-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
@@ -1555,6 +1534,28 @@
                 });
                 
                 window.addEventListener('resize', () => this.updateStepSize());
+
+                // ======[ 使用說明 Modal 的控制邏輯 ]======
+                const helpBtn = document.getElementById('helpBtn');
+                const helpModal = document.getElementById('helpModal');
+                const closeHelpModal = document.getElementById('closeHelpModal');
+
+                if (helpBtn && helpModal && closeHelpModal) {
+                    helpBtn.addEventListener('click', () => {
+                        helpModal.style.display = 'flex';
+                    });
+
+                    closeHelpModal.addEventListener('click', () => {
+                        helpModal.style.display = 'none';
+                    });
+
+                    // 點擊視窗外的灰色區域也可以關閉
+                    helpModal.addEventListener('click', (e) => {
+                        if (e.target === helpModal) {
+                            helpModal.style.display = 'none';
+                        }
+                    });
+                }
             }
 
             bindSoundPanelEvents() {
