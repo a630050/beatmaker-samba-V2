@@ -769,15 +769,84 @@
                 gap: 2px;
             }
         }
+
+		/* Help Modal Styles */
+		.modal-overlay {
+			display: none; /* 預設隱藏 */
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.8);
+			z-index: 2000;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.modal-content {
+			background: #2d2d2d;
+			border: 2px solid #00ff88;
+			border-radius: 15px;
+			width: 80vw;
+			height: 85vh;
+			max-width: 1000px;
+			box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+			display: flex;
+			flex-direction: column;
+			overflow: hidden;
+		}
+
+		.modal-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			padding: 15px 25px;
+			border-bottom: 1px solid rgba(0, 255, 136, 0.3);
+			color: #00ff88;
+		}
+
+		.modal-header h3 {
+			margin: 0;
+			font-size: 20px;
+		}
+
+		.close-btn {
+			background: none;
+			border: none;
+			color: white;
+			font-size: 30px;
+			font-weight: bold;
+			cursor: pointer;
+			opacity: 0.7;
+			transition: opacity 0.2s;
+		}
+
+		.close-btn:hover {
+			opacity: 1;
+		}
+
+		.modal-body {
+			flex-grow: 1;
+			padding: 0;
+			overflow: hidden;
+		}
+
+		#helpFrame {
+			width: 100%;
+			height: 100%;
+			border: none;
+		}
 		
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🎵 SambaBeatmaker</div>
+            <div class="logo">🎵 SambaBeatmaker-森巴鼓團</div>
             <div class="controls">
-                <button class="btn" id="playBtn">▶ 播放</button>
+                <button class="btn" id="helpBtn">? 使用說明</button>
+				<button class="btn" id="playBtn">▶ 播放</button>
                 <button class="btn warning" id="clearBtn">清除</button>
                 <button class="btn warning" id="resetBtn">重置</button>
                 <button class="btn" id="undoBtn" disabled>上一步</button>
@@ -1380,6 +1449,27 @@
             }
 
             bindEvents() {
+			
+				const helpBtn = document.getElementById('helpBtn');
+				const helpModal = document.getElementById('helpModal');
+				const closeHelpModal = document.getElementById('closeHelpModal');
+
+				helpBtn.addEventListener('click', () => {
+					helpModal.style.display = 'flex';
+				});
+
+				closeHelpModal.addEventListener('click', () => {
+					helpModal.style.display = 'none';
+				});
+
+				// 點擊視窗外的灰色區域也可以關閉
+				helpModal.addEventListener('click', (e) => {
+					if (e.target === helpModal) {
+						helpModal.style.display = 'none';
+					}
+				});			
+			
+				document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
                 document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
                 document.getElementById('clearBtn').addEventListener('click', () => {
                     if (window.confirm('您確定要清除所有音格嗎？此操作將被記錄，可以復原。')) this.clearAll();
@@ -2274,5 +2364,17 @@
             beatmaker = new Beatmaker();
         });
     </script>
+	<!-- 使用說明 Modal -->
+<div id="helpModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Beatmaker 使用說明</h3>
+            <button id="closeHelpModal" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <iframe id="helpFrame" src="readme.html" frameborder="0"></iframe>
+        </div>
+    </div>
+</div>
 </body>
 </html>
