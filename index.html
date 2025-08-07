@@ -1567,8 +1567,27 @@
                 document.getElementById('undoBtn').addEventListener('click', () => this.undo());
                 document.getElementById('redoBtn').addEventListener('click', () => this.redo());
 
-                document.getElementById('soundAdjustBtn').addEventListener('click', () => { document.getElementById('soundAdjustPanel').style.display = 'block'; });
-                document.getElementById('closeSoundPanel').addEventListener('click', () => { document.getElementById('soundAdjustPanel').style.display = 'none'; });
+		const soundPanel = document.getElementById('soundAdjustPanel');
+		if (soundPanel) {
+			document.getElementById('soundAdjustBtn').addEventListener('click', () => {
+				// 注意：這裡使用 'block' 而不是 'flex'，以匹配 .sound-panel 的 CSS 置中方式
+				soundPanel.style.display = 'block';
+			});
+
+			document.getElementById('closeSoundPanel').addEventListener('click', () => {
+				soundPanel.style.display = 'none';
+			});
+
+			// 【這就是新增的核心邏輯】
+			// 監聽整個面板背景的點擊事件
+			soundPanel.addEventListener('click', (e) => {
+				// 如果點擊的目標(e.target)正好是半透明的背景本身(soundPanel)，就關閉視窗
+				if (e.target === soundPanel) {
+					soundPanel.style.display = 'none';
+				}
+			});
+		}
+
                 document.getElementById('resetSounds').addEventListener('click', () => this.resetSounds());
                 document.getElementById('expandBtn').addEventListener('click', () => this.expandBeats());
                 document.getElementById('reduceBtn').addEventListener('click', () => this.reduceBeats());
