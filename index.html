@@ -928,6 +928,73 @@
 		.btn.btn-help:hover:not(:disabled) {
 			box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
 		}
+		
+		/* --- 請將這整段新的 CSS 程式碼加到您的 <style> 標籤中 --- */
+
+        /* 標記工具列的容器 */
+        .marker-controls {
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid #00ff88;
+        }
+
+        /* 標記工具按鈕 (R, L, 橡皮擦) 的樣式 */
+        .marker-btn {
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.6);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 標記工具按鈕被選中時的樣式 */
+        .marker-btn.active {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+            color: #00ff88;
+            transform: scale(1.1);
+        }
+        .marker-btn.active svg {
+            stroke: #00ff88;
+        }
+
+        .marker-btn:not(.active):hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #fff;
+            color: #fff;
+        }
+        .marker-btn:not(.active):hover svg {
+             stroke: #fff;
+        }
+
+        /* 網格中 R/L 標記的文字樣式 */
+        .step .marker-text {
+            font-size: 18px; /* 根據需要調整大小 */
+            font-weight: bold;
+            color: #ffc107; /* 使用醒目的黃色 */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none; /* 讓標記文字不會干擾點擊 */
+            text-shadow: 0 0 5px black;
+        }
+        
+        /* 當格子同時被啟用時，稍微降低標記的透明度以突顯背景 */
+        .step.active .marker-text {
+            opacity: 0.85;
+        }
 				
     </style>
 
@@ -972,6 +1039,12 @@
 					<button class="btn action-btn" id="copyBtn">複製</button>
 					<button class="btn action-btn" id="pasteBtn">貼上</button>
 				</div>
+				
+				<!-- ======[ 請在這裡新增以下區塊 ]====== -->
+                <div class="control-group">
+                    <button class="btn action-btn" id="markBtn">📝 標記</button>
+                </div>
+                <!-- ==================================== -->
 				
 				<!-- Group: 檔案操作 (紫色) -->
 				<div class="control-group">
@@ -1026,6 +1099,17 @@
                 <input type="checkbox" class="checkbox" id="showNumbers">
                 <label for="showNumbers">數字提醒</label>
             </div>
+			
+	
+			<!-- ======[ 請在這裡新增以下區塊 ]====== -->
+			<div id="markerControls" class="marker-controls" style="display: none;">
+				<button class="marker-btn" data-marker="R">R</button>
+				<button class="marker-btn" data-marker="L">L</button>
+				<button class="marker-btn active" data-marker="eraser">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+				</button>
+			</div>
+			<!-- ==================================== -->
         </div>
 
         <div class="sequencer">
@@ -1083,6 +1167,9 @@
                 this.clipboard = {
                     pattern: null
                 };
+				
+				this.markingMode = false;
+				this.currentMarker = 'eraser'; // 預設工具
                 
                 this.history = [];
                 this.historyIndex = -1;
@@ -1147,149 +1234,61 @@
             }
             
             
-            initDrumSounds() {
-                this.drumSounds = {
-                    'surdo1': {
-                        name: 'Surdo 1',
-                        gain: 1,
-                        pan: 0,
-                        detune: 0,
-                        attack: 0.01,
-                        release: 0.8,
-                        filterFreq: 12000,
-                        filterQ: 1,
-                        synthType: "triangle",
-                        synthBaseFreq: 55,
-                        mode: "system",
-                        defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3",
-                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-                    },
-                    'surdo2': {
-                        name: 'Surdo 2',
-                        gain: 0.9,
-                        pan: 0,
-                        detune: 100,
-                        attack: 0.01,
-                        release: 0.7,
-                        filterFreq: 12000,
-                        filterQ: 1,
-                        synthType: "triangle",
-                        synthBaseFreq: 65,
-                        mode: "system",
-                        defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3",
-                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-                    },
-                    'surdo3': {
-                        name: 'Surdo 3',
-                        gain: 0.8,
-                        pan: 0,
-                        detune: 300,
-                        attack: 0.01,
-                        release: 0.6,
-                        filterFreq: 12000,
-                        filterQ: 1,
-                        synthType: "triangle",
-                        synthBaseFreq: 75,
-                        mode: "system",
-                        defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3",
-                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-                    },
-                    'caixa': {
-                        name: 'Caixa',
-                        gain: 0.6,
-                        pan: 0,
-                        detune: 0,
-                        attack: 0.01,
-                        release: 0.2,
-                        filterFreq: 12000,
-                        filterQ: 1,
-                        synthType: "square",
-                        synthBaseFreq: 250,
-                        mode: "system",
-                        defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Caixa.mp3",
-                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-                    },
-                    'repinique': {
-                        name: 'Repinique',
-                        gain: 0.7,
-                        pan: 0,
-                        detune: 0,
-                        attack: 0.01,
-                        release: 0.4,
-                        filterFreq: 12000,
-                        filterQ: 1,
-                        synthType: "triangle",
-                        synthBaseFreq: 220,
-                        mode: "system",
-                        defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3",
-                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-                    },
-                    'tamborim': {
-                        name: 'Tamborim',
-                        gain: 0.4,
-                        pan: 0,
-                        detune: 0,
-                        attack: 0.01,
-                        release: 0.15,
-                        filterFreq: 12000,
-                        filterQ: 1,
-                        synthType: "square",
-                        synthBaseFreq: 400,
-                        mode: "synth",
-                        defaultSampleUrl: "",
-                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-                    },
-                    'agogo': {
-                        name: 'Agogô',
-                        gain: 1,
-                        pan: 0,
-                        detune: 0,
-                        attack: 0.001,
-                        release: 0.34,
-                        filterFreq: 1470,
-                        filterQ: 0.1,
-                        synthType: "sine",
-                        synthBaseFreq: 800,
-                        mode: "synth",
-                        defaultSampleUrl: "",
-                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-                    },
-                    'pandeiro': {
-                        name: 'Pandeiro',
-                        gain: 0.5,
-                        pan: 0,
-                        detune: 0,
-                        attack: 0.01,
-                        release: 0.3,
-                        filterFreq: 12000,
-                        filterQ: 1,
-                        synthType: "triangle",
-                        synthBaseFreq: 300,
-                        mode: "synth",
-                        defaultSampleUrl: "",
-                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-                    },
-                    'cuica': {
-                        name: 'Cuíca',
-                        gain: 0.5,
-                        pan: 0,
-                        detune: 0,
-                        attack: 0.01,
-                        release: 0.4,
-                        filterFreq: 12000,
-                        filterQ: 1,
-                        synthType: "sawtooth",
-                        synthBaseFreq: 180,
-                        mode: "synth",
-                        defaultSampleUrl: "",
-                        defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-                    }
-                };
-            }
+            // =================================================================
+            // ====[ 修正後的 initDrumSounds 函式 ]====
+            // =================================================================
+				initDrumSounds() {
+					this.drumSounds = {
+						'surdo1': {
+							name: 'Surdo 1', gain: 1, pan: 0, detune: 0, attack: 0.01, release: 0.8, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 55, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+						},
+						'surdo2': {
+							name: 'Surdo 2', gain: 0.9, pan: 0, detune: 100, attack: 0.01, release: 0.7, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 65, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+						},
+						'surdo3': {
+							name: 'Surdo 3', gain: 0.8, pan: 0, detune: 300, attack: 0.01, release: 0.6, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 75, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+						},
+						'caixa': {
+							name: 'Caixa', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.2, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Caixa.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+						},
+						'caixa-drag': {
+							name: 'Caixa (拖拍)', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "",
+							dragBounces: 5, dragDuration: 0.15, dragGainDecay: 0.5, dragTimeStretch: 1.4
+						},
+						'repinique': {
+							name: 'Repinique', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 220, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+						},
+						'repinique-drag': {
+							name: 'Repinique (拖拍)', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 11000, filterQ: 1.2, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "",
+							dragBounces: 6, dragDuration: 0.12, dragGainDecay: 0.6, dragTimeStretch: 1.3
+						},
+						'tamborim': {
+							name: 'Tamborim', gain: 0.4, pan: 0, detune: 0, attack: 0.01, release: 0.15, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 400, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+						},
+						'agogo': {
+							name: 'Agogô', gain: 1, pan: 0, detune: 0, attack: 0.001, release: 0.34, filterFreq: 1470, filterQ: 0.1, synthType: "sine", synthBaseFreq: 800, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+						},
+						'pandeiro': {
+							name: 'Pandeiro', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+						},
+						'cuica': {
+							name: 'Cuíca', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "sawtooth", synthBaseFreq: 180, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+						}
+					};
+				}
+            
 
             saveState(force = false) {
                 const currentState = JSON.stringify({
-                    tracks: this.tracks,
+                    tracks: this.tracks.map(track => ({ // <-- 修改點：改用 .map 來序列化
+					  id: track.id,
+                        drumType: track.drumType,
+                        steps: track.steps,
+                        markers: track.markers, // <--- 核心新增：將 markers 陣列加入儲存狀態
+                        enabled: track.enabled,
+                        soundEnabled: track.soundEnabled,
+                        volume: track.volume
+                    })),
                     totalBeats: this.totalBeats,
                     stepsPerBeat: this.stepsPerBeat
                 });
@@ -1319,7 +1318,13 @@
                 
                 this.totalBeats = state.totalBeats;
                 this.stepsPerBeat = state.stepsPerBeat;
-                this.tracks = JSON.parse(JSON.stringify(state.tracks));
+								
+                 // 核心修改：確保能正確還原包含 markers 的 tracks 數據
+                this.tracks = state.tracks.map(trackData => ({
+                    ...trackData,
+                    // 向下相容，如果舊的狀態沒有 markers，就給一個空陣列
+                    markers: trackData.markers || Array(this.totalBeats * this.stepsPerBeat).fill(null)
+                }));
                 
                 this.updateExpandButton();
                 document.querySelectorAll('.beat-setting-btn').forEach(btn => {
@@ -1414,6 +1419,7 @@
                     id: i,
                     drumType: this.defaultDrums[i],
                     steps: Array(this.totalBeats * this.stepsPerBeat).fill(false),
+					markers: Array(this.totalBeats * this.stepsPerBeat).fill(null), // <--- 新增這一行
                     enabled: true,
                     soundEnabled: true,
                     volume: 0.8
@@ -1454,6 +1460,7 @@
                 const isSystemAvailable = !!sound.defaultSampleBuffer;
                 const isSystemLoading = sound.isLoadingDefault;
                 const isUserSampleLoaded = !!sound.userSampleBuffer;
+				const isDragInstrument = key.includes('-drag'); // 判斷是否為拖拍樂器
 
                 return `
                     <div class="sound-control-item" id="sound-control-item-${key}" data-drum="${key}">
@@ -1520,6 +1527,26 @@
                                 </select>
                             </label>
                         </div>
+						
+						<!-- ======[ 新增：拖拍參數專用區塊 ]====== -->
+                        <div class="unified-sound-params drag-params" style="display: ${isDragInstrument ? 'grid' : 'none'}; border-top: 1px solid rgba(255,255,255,0.2); margin-top: 15px; padding-top: 15px;">
+                             <label>
+                                <div class="param-label-container"><span>彈跳次數</span><span class="param-value-display">${sound.dragBounces}</span></div>
+                                <input type="range" min="2" max="15" step="1" value="${sound.dragBounces}" data-param="dragBounces">
+                            </label>
+                             <label>
+                                <div class="param-label-container"><span>總時長</span><span class="param-value-display">${sound.dragDuration}</span></div>
+                                <input type="range" min="0.05" max="0.5" step="0.01" value="${sound.dragDuration}" data-param="dragDuration">
+                            </label>
+                             <label>
+                                <div class="param-label-container"><span>音量衰減</span><span class="param-value-display">${sound.dragGainDecay}</span></div>
+                                <input type="range" min="0.2" max="0.9" step="0.05" value="${sound.dragGainDecay}" data-param="dragGainDecay">
+                            </label>
+                             <label>
+                                <div class="param-label-container"><span>間隔拉伸</span><span class="param-value-display">${sound.dragTimeStretch}</span></div>
+                                <input type="range" min="1.0" max="2.5" step="0.05" value="${sound.dragTimeStretch}" data-param="dragTimeStretch">
+                            </label>
+                        </div>
                         
                         <div style="text-align: right; margin-top: 15px;">
                              <button class="test-btn">試聽</button>
@@ -1559,9 +1586,18 @@
                     stepsElement.className = `track-steps ${!track.enabled ? 'disabled' : ''}`;
                     
                     const steps = track.steps.map((active, stepIndex) => {
-                        const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
-                        const displayNumber = (this.showNumbers && active) ? beatNumber : '';
-                        return `<div class="step ${active ? 'active' : ''} ${stepIndex % this.stepsPerBeat === 0 ? 'beat-marker' : ''}" data-track="${trackIndex}" data-step="${stepIndex}">${displayNumber}</div>`;
+                        const marker = track.markers[stepIndex];
+                        const markerHTML = marker ? `<span class="marker-text">${marker}</span>` : '';
+                        
+                        let contentHTML = markerHTML; // 預設顯示標記
+
+                        if (this.showNumbers && active) {
+                            const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
+                            // 核心修改：將數字和標記同時放進去，讓 CSS 去處理層疊
+                            contentHTML = `${beatNumber}${markerHTML}`;
+                        }
+
+                        return `<div class="step ${active ? 'active' : ''} ${stepIndex % this.stepsPerBeat === 0 ? 'beat-marker' : ''}" data-track="${trackIndex}" data-step="${stepIndex}">${contentHTML}</div>`;
                     }).join('');
 
                     stepsElement.innerHTML = `<div class="steps">${steps}</div>`;
@@ -1677,6 +1713,30 @@
                         this.saveState();
                     }
                 });
+				
+					// ======[ 新增：標記模式的控制邏輯 ]======
+				const markBtn = document.getElementById('markBtn');
+				const markerControls = document.getElementById('markerControls');
+
+				markBtn.addEventListener('click', () => {
+					this.markingMode = !this.markingMode;
+					markBtn.classList.toggle('toggled', this.markingMode);
+					markerControls.style.display = this.markingMode ? 'flex' : 'none';
+					
+					// 退出標記模式時，確保選擇模式也關閉
+					if (!this.markingMode && this.selectionMode) {
+						this.toggleSelectionMode();
+					}
+				});
+
+				markerControls.querySelectorAll('.marker-btn').forEach(btn => {
+					btn.addEventListener('click', () => {
+						markerControls.querySelector('.marker-btn.active').classList.remove('active');
+						btn.classList.add('active');
+						this.currentMarker = btn.dataset.marker;
+					});
+				});
+				// ===========================================
                 
                 window.addEventListener('resize', () => this.updateStepSize());
 
@@ -1724,6 +1784,8 @@
                     });
                 }
                 
+				
+				
                 // ======[ 新增：監聽 ESC 鍵以關閉彈出視窗 ]======
 				document.addEventListener('keydown', (e) => {
 					if (e.key === 'Escape') {
@@ -2055,6 +2117,38 @@
             handleStepClick(stepElement) {
                 const trackIndex = parseInt(stepElement.dataset.track);
                 const stepIndex = parseInt(stepElement.dataset.step);
+				
+				if (this.markingMode) {
+				const currentMarkerValue = this.tracks[trackIndex].markers[stepIndex];
+				let newMarkerValue = null;
+
+				if (this.currentMarker === 'eraser') {
+					newMarkerValue = null;
+				} else {
+					// 如果再次點擊同一個標記，則取消標記，否則設定新標記
+					newMarkerValue = currentMarkerValue === this.currentMarker ? null : this.currentMarker;
+				}
+				
+				this.tracks[trackIndex].markers[stepIndex] = newMarkerValue;
+				
+				// 更新 UI
+				const markerTextElement = stepElement.querySelector('.marker-text');
+				if (newMarkerValue) {
+					if (markerTextElement) {
+						markerTextElement.textContent = newMarkerValue;
+					} else {
+						stepElement.insertAdjacentHTML('beforeend', `<span class="marker-text">${newMarkerValue}</span>`);
+					}
+				} else {
+					if (markerTextElement) {
+						markerTextElement.remove();
+					}
+				}
+				this.saveState();
+				return; // 標記模式下，操作完畢後直接返回，不執行後續的 toggleStep
+			}
+			// ====================================
+				
                 if (this.selectionMode) {
                     if (this.selection.trackIndex === null || this.selection.trackIndex !== trackIndex) {
                         this.clearSelection();
@@ -2107,6 +2201,7 @@
                 const start = Math.min(this.selection.startStep, this.selection.endStep);
                 const end = Math.max(this.selection.startStep, this.selection.endStep);
                 this.clipboard.pattern = this.tracks[this.selection.trackIndex].steps.slice(start, end + 1);
+				this.clipboard.markers = this.tracks[this.selection.trackIndex].markers.slice(start, end + 1);
                 alert(`已複製 ${this.clipboard.pattern.length} 格的樣式！`);
             }
 
@@ -2120,6 +2215,7 @@
                     return;
                 }
                 const targetTrackIndex = this.selection.trackIndex;
+				
                 const pasteStartStep = this.selection.startStep;
                 const pasteEndStep = pasteStartStep + this.clipboard.pattern.length - 1;
                 const totalSteps = this.totalBeats * this.stepsPerBeat;
@@ -2140,6 +2236,9 @@
                     const stepIndex = pasteStartStep + i;
                     if (stepIndex < targetTrack.steps.length) {
                         targetTrack.steps[stepIndex] = this.clipboard.pattern[i];
+						if (this.clipboard.markers) { // 檢查是否有 markers 資料可貼
+                       targetTrack.markers[stepIndex] = this.clipboard.markers[i]; // <--- 新增
+					   }
                     }
                 }
 
@@ -2155,9 +2254,13 @@
                      }
                 }
                 
+				
+				 // 為了簡化，直接重新渲染整個軌道來顯示貼上的標記
+				this.renderTracks(); // <--- 將原本的 for 迴圈更新 UI 的部分，替換成這一行
+				
                 this.clearSelection();
                 alert('貼上成功！');
-                this.saveState();
+                this.saveState();	
             }
 
             handleSoundModeChange(drumKey, newMode) {
@@ -2241,6 +2344,7 @@
 
             clearAll() {
                 this.tracks.forEach(track => track.steps.fill(false));
+				track.markers.fill(null); // <--- 新增這一行
                 this.renderTracks();
                 if (this.selectionMode) this.toggleSelectionMode();
                 this.saveState(); 
@@ -2279,6 +2383,7 @@
                     tracks: this.tracks.map(track => ({
                         drumType: track.drumType,
                         steps: track.steps,
+						markers: track.markers, // <--- 新增這一行	
                         enabled: track.enabled,
                         soundEnabled: track.soundEnabled,
                         volume: track.volume
@@ -2319,6 +2424,7 @@
                         id: index,
                         drumType: trackData.drumType || this.defaultDrums[index],
                         steps: trackData.steps || Array(this.totalBeats * this.stepsPerBeat).fill(false),
+						markers: trackData.markers || Array(this.totalBeats * this.stepsPerBeat).fill(null),
                         enabled: trackData.enabled !== undefined ? trackData.enabled : true,
                         soundEnabled: trackData.soundEnabled !== undefined ? trackData.soundEnabled : true,
                         volume: trackData.volume !== undefined ? trackData.volume : 0.8
@@ -2494,6 +2600,14 @@
 				
                 const sound = this.drumSounds[drumType];
                 if (!sound) return;
+				
+				// =====================================================
+				// ====[ 新增：判斷是否為拖拍樂器 ]====
+				// =====================================================
+				if (drumType.includes('-drag')) {
+					this.scheduleDrumRoll(context, time, drumType, soundEnabled, trackVolume);
+					return; // 呼叫完專用函式後，直接結束，不再執行下面的舊邏輯
+				}
 
                 let source;
                 let bufferToPlay = null;
@@ -2539,6 +2653,75 @@
                     source.stop(stopTime);
                 }
 			}
+			
+			// =================================================================
+            // ====[ 新增：專門用來排程連續敲擊音效 (鼓卷/拖拍) 的函式 ]====
+            // =================================================================
+			scheduleDrumRoll(context, time, drumType, soundEnabled = true, trackVolume = 1.0) {
+                if (!soundEnabled) return;
+                
+                const sound = this.drumSounds[drumType];
+                if (!sound) return;
+
+                // --- 修改：從 sound 物件讀取參數，如果不存在則使用預設值 ---
+                const numBounces = sound.dragBounces || 5;
+                const rollDuration = sound.dragDuration || 0.15;
+                const gainDecay = sound.dragGainDecay || 0.5;
+                const timeStretch = sound.dragTimeStretch || 1.4;
+
+                let currentTimeOffset = 0;
+                let currentGain = sound.gain * trackVolume;
+                let currentInterval = rollDuration / (numBounces * 1.5);
+
+                if (!this.whiteNoiseBuffer) {
+                    const bufferSize = context.sampleRate * 2;
+                    const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+                    let output = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+                    this.whiteNoiseBuffer = buffer;
+                }
+
+                for (let i = 0; i < numBounces; i++) {
+                    const bounceTime = time + currentTimeOffset;
+
+                    const osc = context.createOscillator();
+                    osc.type = sound.synthType;
+                    const baseFreq = sound.synthBaseFreq * (i === 0 ? 1 : 0.9);
+                    osc.frequency.setValueAtTime(baseFreq, bounceTime);
+                    osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, bounceTime + 0.05);
+
+                    const noiseSource = context.createBufferSource();
+                    noiseSource.buffer = this.whiteNoiseBuffer;
+
+                    const envelope = context.createGain();
+                    envelope.gain.setValueAtTime(0, bounceTime);
+                    envelope.gain.linearRampToValueAtTime(currentGain, bounceTime + 0.01);
+                    envelope.gain.linearRampToValueAtTime(0, bounceTime + 0.04);
+                    
+                    const filter = context.createBiquadFilter();
+                    filter.type = "lowpass";
+                    filter.frequency.setValueAtTime(sound.filterFreq, bounceTime);
+                    filter.Q.setValueAtTime(sound.filterQ, time);
+                    
+                    const panner = new StereoPannerNode(context, { pan: sound.pan });
+
+                    osc.connect(envelope);
+                    noiseSource.connect(envelope);
+                    envelope.connect(filter).connect(panner).connect(context.destination);
+
+                    osc.start(bounceTime);
+                    noiseSource.start(bounceTime);
+                    osc.stop(bounceTime + 0.1);
+                    noiseSource.stop(bounceTime + 0.1);
+
+                    currentGain *= gainDecay;
+                    currentTimeOffset += currentInterval;
+                    currentInterval *= timeStretch;
+                }
+            }
+			
         }
 
         let beatmaker;
