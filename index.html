@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-tw">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,21 +34,21 @@
             margin: 0 auto;
         }
 
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+		.header {
+			display: flex;
+			flex-direction: column;      /* <--- 新增：將主軸改為垂直方向 */
+			align-items: flex-start;     /* <--- 修改：讓項目從左邊開始對齊 */
+			gap: 20px;                   /* <--- 修改：調整 Logo 和按鈕之間的垂直間距 */
+			margin-bottom: 20px;
+			padding: 20px;
+			background: rgba(0, 0, 0, 0.3);
+			border-radius: 15px;
+			backdrop-filter: blur(10px);
+			flex-wrap: wrap;
+		}
 
         .logo {
-            font-size: 26px;
+            font-size: 30px;
             font-weight: bold;
             color: #00ff88;
         }
@@ -248,7 +248,7 @@
         }
 
 		.tracks-controls {
-			width: 280px;
+			width: 320px;
 			flex-shrink: 0;
 			background: rgba(0, 0, 0, 0.5);
 			border-radius: 10px;
@@ -543,7 +543,7 @@
             display: none;
         }
 
-		/* 新增：Sound Panel 的全螢幕背景樣式 */
+		/* Sound Panel 的全螢幕背景樣式 */
 		.sound-panel-overlay {
 			display: none; /* 預設隱藏 */
 			position: fixed;
@@ -559,9 +559,8 @@
 			padding: 20px; /* 給視窗一些邊距 */
 		}
 
-		/* 修改後：Sound Panel 的內容視窗樣式 */
+		/* Sound Panel 的內容視窗樣式 */
 		.sound-panel {
-			/* 移除了 position, top, left, transform 等定位屬性 */
 			background: #1a1a1a; /* 統一樣式 */
 			padding: 30px;
 			border-radius: 15px;
@@ -791,7 +790,7 @@
         }
 
 		.modal-overlay {
-			display: none; /* 預設隱藏 (這是最重要的修正) */
+			display: none; /* 預設隱藏*/
 			position: fixed;
 			top: 0;
 			left: 0;
@@ -929,7 +928,25 @@
 			box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
 		}
 		
-		/* --- 請將這整段新的 CSS 程式碼加到您的 <style> 標籤中 --- */
+				
+		.tracks-footer-controls {
+            display: flex;
+            justify-content: center; /* 讓按鈕居中 */
+            gap: 10px; /* 按鈕之間的間距 */
+            margin-top: 8px; /* 與上方音軌列表的間距 */
+            flex-shrink: 0;
+        }
+
+        /* 收摺後，隱藏新增軌道按鈕 */
+        .tracks-controls.collapsed .tracks-footer-controls {
+            flex-direction: column; /* 垂直排列 */
+            gap: 5px;
+        }
+
+        .tracks-controls.collapsed #addTrackBtn {
+            display: none;
+        }
+
 
         /* 標記工具列的容器 */
         .marker-controls {
@@ -995,7 +1012,41 @@
         .step.active .marker-text {
             opacity: 0.85;
         }
-				
+		
+		/* 預設隱藏標記文字 */
+        .step .marker-text {
+            display: none; 
+        }
+
+        /* 當 .container 擁有 .markers-visible 類別時，才顯示標記文字 */
+        .container.markers-visible .step .marker-text {
+            display: block;
+        }
+
+        /* 當格子內有數字時，為了避免標記(R/L)完全覆蓋數字，
+           我們讓標記稍微縮小並移到右上角。*/
+        .container.markers-visible .step:not(:empty) .marker-text {
+            font-size: 12px; /* 縮小字體 */
+            top: 5px;       /* 向上移動 */
+            left: auto;     /* 取消水平置中 */
+            right: 4px;     /* 靠右對齊 */
+            transform: none; /* 取消置中用的 transform */
+        }
+		
+		 .track-number input {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border: 1px dotted #00ff88; /* 編輯時給予一個虛線框提示 */
+            color: #00ff88;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 0;
+            outline: none;
+            box-sizing: border-box;
+        }
+		
     </style>
 
 
@@ -1011,7 +1062,7 @@
 					<button class="btn btn-help" id="helpBtn">? 使用說明</button>
 				</div>
 				
-				<!-- Group: 調音 (已移至此處) -->
+				<!-- Group: 調音  -->
 				<div class="control-group">
 					<button class="btn btn-special" id="soundAdjustBtn">🎵 調音</button>
 				</div>
@@ -1023,8 +1074,8 @@
 
 				<!-- Group: 危險操作 -->
 				<div class="control-group">
-					<button class="btn btn-danger" id="clearBtn">清除</button>
-					<button class="btn btn-danger" id="resetBtn">重置</button>
+					<button class="btn btn-danger" id="clearBtn">清除標記</button>
+					<button class="btn btn-danger" id="resetBtn">重置音格</button>
 				</div>
 
 				<!-- Group: 歷史紀錄 -->
@@ -1042,7 +1093,7 @@
 				
 				<!-- ======[ 請在這裡新增以下區塊 ]====== -->
                 <div class="control-group">
-                    <button class="btn action-btn" id="markBtn">📝 標記</button>
+                    <button class="btn action-btn" id="markBtn">LR 標記</button>
                 </div>
                 <!-- ==================================== -->
 				
@@ -1053,6 +1104,8 @@
 					<button class="btn btn-info" id="exportMp3Btn">匯出MP3</button>
 					<input type="file" class="file-input" id="fileInput" accept=".json">
 				</div>
+				
+
 				
 				<!-- Group: 循環次數 -->
 				<div class="control-group">
@@ -1097,11 +1150,14 @@
             </div>
             <div class="checkbox-container">
                 <input type="checkbox" class="checkbox" id="showNumbers">
-                <label for="showNumbers">數字提醒</label>
+                <label for="showNumbers">拍數顯示</label>
+            </div>
+			<div class="checkbox-container">
+                <input type="checkbox" class="checkbox" id="showMarkersCheckbox">
+                <label for="showMarkersCheckbox">LR顯示</label>
             </div>
 			
 	
-			<!-- ======[ 請在這裡新增以下區塊 ]====== -->
 			<div id="markerControls" class="marker-controls" style="display: none;">
 				<button class="marker-btn" data-marker="R">R</button>
 				<button class="marker-btn" data-marker="L">L</button>
@@ -1109,13 +1165,16 @@
 					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
 				</button>
 			</div>
-			<!-- ==================================== -->
+			
         </div>
 
-        <div class="sequencer">
+		<div class="sequencer">
 			<div class="tracks-controls" id="tracksControls">
-				<div id="trackControls"></div>
-                <button class="collapse-btn" id="collapseBtn" title="摺疊/展開控制面板">◀</button>
+				<div id="trackControls"></div> 
+				<div class="tracks-footer-controls">
+					<button class="collapse-btn" id="addTrackBtn" title="新增軌道">➕</button>
+					<button class="collapse-btn" id="collapseBtn" title="摺疊/展開控制面板">◀</button>
+				</div>
 			</div>
             
             <div class="tracks-sequencer">
@@ -1130,7 +1189,7 @@
         程式作者：徐承佑 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  森巴鼓指導老師：陳仰真
 		</div>
     </div>
-	<!-- 新增的 Sound Panel Overlay 背景 -->
+	<!--  Sound Panel Overlay 背景 -->
 	<div class="sound-panel-overlay" id="soundPanelOverlay">	
 		<div class="sound-panel" id="soundAdjustPanel">
 			<h3 style="margin-bottom: 20px; color: #00ff88; text-align: center;">🎵 樂器音色調整</h3>
@@ -1144,15 +1203,48 @@
 		</div>
 	</div>	
     <script>
+		 
+        class AudioCache {
+            constructor() {
+                this.cache = new Map();
+            }
+            
+            async getSample(url, audioContext) {
+                if (this.cache.has(url)) {
+                    return this.cache.get(url);
+                }
+                
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    
+                    this.cache.set(url, audioBuffer);
+                    return audioBuffer;
+                } catch (error) {
+                    console.error(`Failed to load or decode audio from ${url}:`, error);
+                    return null;
+                }
+            }
+        }
+       
+
+        
         class Beatmaker {
             constructor() {
+				this.audioCache = new AudioCache(); 
+			    this.maxTracks = 16; // 最大軌道數
+				this.minTracks = 4;  // 最小軌道數
                 this.isPlaying = false;
                 this.currentStep = 0;
                 this.currentTrack = 0;
                 this.bpm = 65;
                 this.mode = 'ensemble';
                 this.showNumbers = false;
-                this.stepInterval = null;
+				this.showMarkers = false; 
+				this.stepInterval = null;
                 this.tracks = [];
                 this.totalBeats = 8;
                 this.minBeats = 4;
@@ -1175,7 +1267,7 @@
                 this.historyIndex = -1;
                 this.maxHistory = 50; 
 
-                this.trackLabels = ['S1', 'S2', 'S3', 'C', 'C', 'R', 'R', 'A'];
+                this.defaultTrackLabels  = ['S1', 'S2', 'S3', 'C', 'C', 'R', 'R', 'A'];
                 this.defaultDrums = ['surdo1', 'surdo2', 'surdo3', 'caixa', 'caixa', 'repinique', 'repinique', 'agogo'];
                 
                 this.defaultSampleUrls = {
@@ -1188,7 +1280,7 @@
                     'cuica': '',
                     'agogo': '',
                     'pandeiro': ''
-                };
+                }
                 
                 this.initDrumSounds();
 
@@ -1231,57 +1323,54 @@
                     userSampleBuffer: null,
                     userSampleFileName: '',
                 };
-            }
-            
-            
-            // =================================================================
-            // ====[ 修正後的 initDrumSounds 函式 ]====
-            // =================================================================
-				initDrumSounds() {
-					this.drumSounds = {
-						'surdo1': {
-							name: 'Surdo 1', gain: 1, pan: 0, detune: 0, attack: 0.01, release: 0.8, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 55, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-						},
-						'surdo2': {
-							name: 'Surdo 2', gain: 0.9, pan: 0, detune: 100, attack: 0.01, release: 0.7, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 65, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-						},
-						'surdo3': {
-							name: 'Surdo 3', gain: 0.8, pan: 0, detune: 300, attack: 0.01, release: 0.6, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 75, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-						},
-						'caixa': {
-							name: 'Caixa', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.2, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Caixa.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-						},
-						'caixa-drag': {
-							name: 'Caixa (拖拍)', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "",
-							dragBounces: 5, dragDuration: 0.15, dragGainDecay: 0.5, dragTimeStretch: 1.4
-						},
-						'repinique': {
-							name: 'Repinique', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 220, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-						},
-						'repinique-drag': {
-							name: 'Repinique (拖拍)', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 11000, filterQ: 1.2, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "",
-							dragBounces: 6, dragDuration: 0.12, dragGainDecay: 0.6, dragTimeStretch: 1.3
-						},
-						'tamborim': {
-							name: 'Tamborim', gain: 0.4, pan: 0, detune: 0, attack: 0.01, release: 0.15, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 400, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-						},
-						'agogo': {
-							name: 'Agogô', gain: 1, pan: 0, detune: 0, attack: 0.001, release: 0.34, filterFreq: 1470, filterQ: 0.1, synthType: "sine", synthBaseFreq: 800, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-						},
-						'pandeiro': {
-							name: 'Pandeiro', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-						},
-						'cuica': {
-							name: 'Cuíca', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "sawtooth", synthBaseFreq: 180, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-						}
-					};
-				}
+            }         
+
+			initDrumSounds() {
+						this.drumSounds = {
+							'surdo1': {
+								name: 'Surdo 1', gain: 1, pan: 0, detune: 0, attack: 0.01, release: 0.8, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 55, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+							},
+							'surdo2': {
+								name: 'Surdo 2', gain: 0.9, pan: 0, detune: 100, attack: 0.01, release: 0.7, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 65, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+							},
+							'surdo3': {
+								name: 'Surdo 3', gain: 0.8, pan: 0, detune: 300, attack: 0.01, release: 0.6, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 75, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+							},
+							'caixa': {
+								name: 'Caixa', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.2, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Caixa.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+							},
+							'caixa-drag': {
+								name: 'Caixa (拖拍)', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "",
+								dragBounces: 5, dragDuration: 0.15, dragGainDecay: 0.5, dragTimeStretch: 1.4
+							},
+							'repinique': {
+								name: 'Repinique', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 220, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+							},
+							'repinique-drag': {
+								name: 'Repinique (拖拍)', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 11000, filterQ: 1.2, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "",
+								dragBounces: 6, dragDuration: 0.12, dragGainDecay: 0.6, dragTimeStretch: 1.3
+							},
+							'tamborim': {
+								name: 'Tamborim', gain: 0.4, pan: 0, detune: 0, attack: 0.01, release: 0.15, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 400, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+							},
+							'agogo': {
+								name: 'Agogô', gain: 1, pan: 0, detune: 0, attack: 0.001, release: 0.34, filterFreq: 1470, filterQ: 0.1, synthType: "sine", synthBaseFreq: 800, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+							},
+							'pandeiro': {
+								name: 'Pandeiro', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+							},
+							'cuica': {
+								name: 'Cuíca', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "sawtooth", synthBaseFreq: 180, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
+							}
+						};
+					}
             
 
             saveState(force = false) {
                 const currentState = JSON.stringify({
                     tracks: this.tracks.map(track => ({ // <-- 修改點：改用 .map 來序列化
 					  id: track.id,
+						label: track.label, // <--- 在此處新增
                         drumType: track.drumType,
                         steps: track.steps,
                         markers: track.markers, // <--- 核心新增：將 markers 陣列加入儲存狀態
@@ -1320,8 +1409,9 @@
                 this.stepsPerBeat = state.stepsPerBeat;
 								
                  // 核心修改：確保能正確還原包含 markers 的 tracks 數據
-                this.tracks = state.tracks.map(trackData => ({
+                this.tracks = state.tracks.map((trackData, index) => ({
                     ...trackData,
+					label: trackData.label || this.defaultTrackLabels[index], //處理舊檔相容性
                     // 向下相容，如果舊的狀態沒有 markers，就給一個空陣列
                     markers: trackData.markers || Array(this.totalBeats * this.stepsPerBeat).fill(null)
                 }));
@@ -1365,32 +1455,31 @@
 				}
 			}
             
-            async loadDefaultSamples() {
-                for (const key in this.drumSounds) {
-                    const sound = this.drumSounds[key];
-                    if (sound.defaultSampleUrl && this.audioContext) {
-                        sound.isLoadingDefault = true;
-                        this.updateSoundControlUI(key); 
-                        try {
-                            const response = await fetch(sound.defaultSampleUrl);
-                            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                            const arrayBuffer = await response.arrayBuffer();
-                            sound.defaultSampleBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-                            sound.mode = 'system';
-                        } catch (error) {
-                            console.error(`Failed to load default sample for ${key} from ${sound.defaultSampleUrl}:`, error);
-                            sound.defaultSampleBuffer = null;
-                            sound.mode = 'synth';
-                        } finally {
-                            sound.isLoadingDefault = false;
-                            this.updateSoundControlUI(key);
-                        }
-                    } else {
-                         sound.mode = 'synth';
-                    }
-                }
-                this.initSoundAdjustPanel();
-            }
+				async loadDefaultSamples() {
+					for (const key in this.drumSounds) {
+						const sound = this.drumSounds[key];
+						if (sound.defaultSampleUrl && this.audioContext) {
+							sound.isLoadingDefault = true;
+							this.updateSoundControlUI(key);
+							
+							// 使用快取系統來獲取音訊
+							const buffer = await this.audioCache.getSample(sound.defaultSampleUrl, this.audioContext);
+							
+							if (buffer) {
+								sound.defaultSampleBuffer = buffer;
+								sound.mode = 'system';
+							} else {
+								sound.defaultSampleBuffer = null;
+								sound.mode = 'synth';
+							}
+							sound.isLoadingDefault = false;
+							this.updateSoundControlUI(key);
+						} else {
+							sound.mode = 'synth';
+						}
+					}
+					this.initSoundAdjustPanel();
+				}
 
             setupAudioContextResume() {
                 const resumeAudio = async () => {
@@ -1414,17 +1503,70 @@
                 });
             }
 
-            initTracks() {
-                this.tracks = Array(8).fill().map((_, i) => ({
-                    id: i,
-                    drumType: this.defaultDrums[i],
+			initTracks() {
+				const initialTrackCount = 8; // 預設還是 8 軌
+				this.tracks = Array(initialTrackCount).fill().map((_, i) => ({
+					id: i,
+					label: this.defaultTrackLabels[i] || `T${i + 1}`, // 如果預設標籤不夠，使用 T1, T2...
+					drumType: this.defaultDrums[i] || 'agogo', // 如果預設樂器不夠，使用 agogo
+					steps: Array(this.totalBeats * this.stepsPerBeat).fill(false),
+					markers: Array(this.totalBeats * this.stepsPerBeat).fill(null),
+					enabled: true,
+					soundEnabled: true,
+					volume: 0.8
+				}));
+			}
+			
+			addTrack() {
+                if (this.tracks.length >= this.maxTracks) {
+                    alert(`最多只能有 ${this.maxTracks} 個軌道`);
+                    return false;
+                }
+                
+                if (this.isPlaying) this.stop();
+                
+                const newTrackIndex = this.tracks.length;
+                const newTrack = {
+                    id: newTrackIndex,
+                    label: 'UN', // 
+                    drumType: this.defaultDrums[newTrackIndex] || 'agogo',
                     steps: Array(this.totalBeats * this.stepsPerBeat).fill(false),
-					markers: Array(this.totalBeats * this.stepsPerBeat).fill(null), // <--- 新增這一行
+                    markers: Array(this.totalBeats * this.stepsPerBeat).fill(null),
                     enabled: true,
                     soundEnabled: true,
                     volume: 0.8
-                }));
+                };
+                
+                this.tracks.push(newTrack);
+                this.renderTracks();
+                this.saveState();
+                return true;
             }
+
+            removeTrack(trackIndex) {
+                if (this.tracks.length <= this.minTracks) {
+                    alert(`最少需要保留 ${this.minTracks} 個軌道`);
+                    return false;
+                }
+                
+                if (!window.confirm(`確定要刪除軌道 "${this.tracks[trackIndex].label}" 嗎？`)) {
+                    return false;
+                }
+                
+                if (this.isPlaying) this.stop();
+                
+                this.tracks.splice(trackIndex, 1);
+                
+                // 重新分配 ID
+                this.tracks.forEach((track, index) => {
+                    track.id = index;
+                });
+                
+                this.renderTracks();
+                this.saveState();
+                return true;
+            }
+            // ===========================================			
 
             initUI() {
                 this.renderTracks();
@@ -1555,55 +1697,59 @@
                 `;
             }
 
-            renderTracks() {
-                const trackControlsContainer = document.getElementById('trackControls');
-                const trackStepsContainer = document.getElementById('trackSteps');
-                
-                trackControlsContainer.innerHTML = '';
-                trackStepsContainer.innerHTML = '';
+			renderTracks() {
+				const trackControlsContainer = document.getElementById('trackControls');
+				const trackStepsContainer = document.getElementById('trackSteps');
+				
+				// 如果容器不存在，就直接返回，避免錯誤
+				if (!trackControlsContainer || !trackStepsContainer) return;
 
-                this.tracks.forEach((track, trackIndex) => {
-                    const controlElement = document.createElement('div');
-                    controlElement.className = 'track-control-item';
-                    
-                    const drumOptions = Object.keys(this.drumSounds).map(key => 
-                        `<option value="${key}" ${track.drumType === key ? 'selected' : ''}>${this.drumSounds[key].name}</option>`
-                    ).join('');
-                    controlElement.innerHTML = `
-                        <div class="track-number">${this.trackLabels[trackIndex]}</div>
-                        <select class="drum-select" data-track="${trackIndex}">${drumOptions}</select>
-                        <div class="track-controls">
-                            <div class="track-control-btn enable-btn ${track.enabled ? 'active' : ''}" data-track="${trackIndex}" data-type="enable">●</div>
-                            <div class="track-control-btn sound-btn ${track.soundEnabled ? 'active' : ''}" data-track="${trackIndex}" data-type="sound">🔊</div>
-                        </div>
-                        <div class="volume-control">
-                            <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="${track.volume}" data-track="${trackIndex}">
-                        </div>
-                    `;
-                    trackControlsContainer.appendChild(controlElement);
-                    
-                    const stepsElement = document.createElement('div');
-                    stepsElement.className = `track-steps ${!track.enabled ? 'disabled' : ''}`;
-                    
-                    const steps = track.steps.map((active, stepIndex) => {
-                        const marker = track.markers[stepIndex];
-                        const markerHTML = marker ? `<span class="marker-text">${marker}</span>` : '';
-                        
-                        let contentHTML = markerHTML; // 預設顯示標記
+				trackControlsContainer.innerHTML = '';
+				trackStepsContainer.innerHTML = '';
 
-                        if (this.showNumbers && active) {
-                            const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
-                            // 核心修改：將數字和標記同時放進去，讓 CSS 去處理層疊
-                            contentHTML = `${beatNumber}${markerHTML}`;
-                        }
+				this.tracks.forEach((track, trackIndex) => {
+					const controlElement = document.createElement('div');
+					controlElement.className = 'track-control-item';
+					
+					const drumOptions = Object.keys(this.drumSounds).map(key => 
+						`<option value="${key}" ${track.drumType === key ? 'selected' : ''}>${this.drumSounds[key].name}</option>`
+					).join('');
 
-                        return `<div class="step ${active ? 'active' : ''} ${stepIndex % this.stepsPerBeat === 0 ? 'beat-marker' : ''}" data-track="${trackIndex}" data-step="${stepIndex}">${contentHTML}</div>`;
-                    }).join('');
+					controlElement.innerHTML = `
+						<div class="track-number" data-track-index="${trackIndex}">${track.label}</div>
+						<select class="drum-select" data-track="${trackIndex}">${drumOptions}</select>
+						<div class="track-controls">
+							<div class="track-control-btn enable-btn ${track.enabled ? 'active' : ''}" data-track="${trackIndex}" data-type="enable">●</div>
+							<div class="track-control-btn sound-btn ${track.soundEnabled ? 'active' : ''}" data-track="${trackIndex}" data-type="sound">🔊</div>
+							${this.tracks.length > this.minTracks ? `<div class="track-control-btn remove-btn" data-track="${trackIndex}" data-type="remove" title="刪除軌道" style="color:#e74c3c;">✖</div>` : ''}
+						</div>
+						<div class="volume-control">
+							<input type="range" class="volume-slider" min="0" max="1" step="0.1" value="${track.volume}" data-track="${trackIndex}">
+						</div>
+					`;
+					
+					trackControlsContainer.appendChild(controlElement);
+					
+					const stepsElement = document.createElement('div');
+					stepsElement.className = `track-steps ${!track.enabled ? 'disabled' : ''}`;
+					
+					const steps = track.steps.map((active, stepIndex) => {
+						const marker = track.markers[stepIndex];
+						const markerHTML = marker ? `<span class="marker-text">${marker}</span>` : '';
+						let numberHTML = '';
+						
+						if (this.showNumbers && active) {
+							const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
+							numberHTML = beatNumber;
+						}
 
-                    stepsElement.innerHTML = `<div class="steps">${steps}</div>`;
-                    trackStepsContainer.appendChild(stepsElement);
-                });
-            }
+						return `<div class="step ${active ? 'active' : ''} ${stepIndex % this.stepsPerBeat === 0 ? 'beat-marker' : ''}" data-track="${trackIndex}" data-step="${stepIndex}">${numberHTML}${markerHTML}</div>`;
+					}).join('');
+
+					stepsElement.innerHTML = `<div class="steps">${steps}</div>`;
+					trackStepsContainer.appendChild(stepsElement);
+				});
+			}
 
             updateExpandButton() {
                 document.getElementById('reduceBtn').disabled = this.totalBeats <= this.minBeats;
@@ -1612,36 +1758,12 @@
 
             bindEvents() {
                 document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
-                document.getElementById('clearBtn').addEventListener('click', () => {
-                    if (window.confirm('您確定要清除所有音格嗎？此操作將被記錄，可以復原。')) this.clearAll();
-                });
-                document.getElementById('resetBtn').addEventListener('click', () => {
-                    if (window.confirm('您確定要重置整個編曲器嗎？此操作將被記錄，可以復原。')) this.resetAll();
-                });
 
                 document.getElementById('undoBtn').addEventListener('click', () => this.undo());
                 document.getElementById('redoBtn').addEventListener('click', () => this.redo());
-
-				const soundPanel = document.getElementById('soundAdjustPanel');
-				if (soundPanel) {
-					document.getElementById('soundAdjustBtn').addEventListener('click', () => {
-						// 注意：這裡使用 'block' 而不是 'flex'，以匹配 .sound-panel 的 CSS 置中方式
-						soundPanel.style.display = 'block';
-					});
-
-					document.getElementById('closeSoundPanel').addEventListener('click', () => {
-						soundPanel.style.display = 'none';
-					});
-
-					// 【這就是新增的核心邏輯】
-					// 監聽整個面板背景的點擊事件
-					soundPanel.addEventListener('click', (e) => {
-						// 如果點擊的目標(e.target)正好是半透明的背景本身(soundPanel)，就關閉視窗
-						if (e.target === soundPanel) {
-							soundPanel.style.display = 'none';
-						}
-					});
-				}
+				
+				document.getElementById('clearBtn').addEventListener('click', () => this.clearAll());
+				document.getElementById('resetBtn').addEventListener('click', () => this.resetAll());
 				
                 document.getElementById('resetSounds').addEventListener('click', () => this.resetSounds());
                 document.getElementById('expandBtn').addEventListener('click', () => this.expandBeats());
@@ -1691,13 +1813,26 @@
                 });
 
                 document.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('step')) {
-                        this.handleStepClick(e.target);
-                    }
-                    if (e.target.classList.contains('track-control-btn')) {
-                        this.toggleTrackControl(parseInt(e.target.dataset.track), e.target.dataset.type);
-                    }
-                });
+					if (e.target.classList.contains('step')) {
+						this.handleStepClick(e.target);
+					}
+					if (e.target.classList.contains('track-control-btn')) {
+						const trackIndex = parseInt(e.target.dataset.track);
+						const type = e.target.dataset.type;
+						
+						if (type === 'remove') {
+							this.removeTrack(trackIndex);
+						} else {
+							this.toggleTrackControl(trackIndex, type);
+						}
+					}
+				});
+				
+				// ======[ 請新增以下程式碼到 bindEvents 中 ]======
+				document.getElementById('addTrackBtn').addEventListener('click', () => {
+					this.addTrack();
+				});
+				// ===========================================
 
                 document.addEventListener('change', (e) => {
                     let stateChanged = false;
@@ -1714,28 +1849,42 @@
                     }
                 });
 				
-					// ======[ 新增：標記模式的控制邏輯 ]======
-				const markBtn = document.getElementById('markBtn');
-				const markerControls = document.getElementById('markerControls');
-
-				markBtn.addEventListener('click', () => {
-					this.markingMode = !this.markingMode;
-					markBtn.classList.toggle('toggled', this.markingMode);
-					markerControls.style.display = this.markingMode ? 'flex' : 'none';
 					
-					// 退出標記模式時，確保選擇模式也關閉
-					if (!this.markingMode && this.selectionMode) {
-						this.toggleSelectionMode();
-					}
-				});
+					// ======[ 修改：標記模式的控制邏輯 (連動核取方塊) ]======
+					const markBtn = document.getElementById('markBtn');
+					const markerControls = document.getElementById('markerControls');
+					const showMarkersCheckbox = document.getElementById('showMarkersCheckbox');
 
-				markerControls.querySelectorAll('.marker-btn').forEach(btn => {
-					btn.addEventListener('click', () => {
-						markerControls.querySelector('.marker-btn.active').classList.remove('active');
-						btn.classList.add('active');
-						this.currentMarker = btn.dataset.marker;
+					markBtn.addEventListener('click', () => {
+						this.markingMode = !this.markingMode;
+						markBtn.classList.toggle('toggled', this.markingMode);
+						markerControls.style.display = this.markingMode ? 'flex' : 'none';
+						
+						// 【核心修改】當進入標記模式時，自動勾選並啟用標記顯示
+						if (this.markingMode) {
+							this.showMarkers = true;
+							showMarkersCheckbox.checked = true;
+							document.querySelector('.container').classList.add('markers-visible');
+						}
+						
+						if (!this.markingMode && this.selectionMode) {
+							this.toggleSelectionMode();
+						}
 					});
-				});
+
+					markerControls.querySelectorAll('.marker-btn').forEach(btn => {
+						btn.addEventListener('click', () => {
+							markerControls.querySelector('.marker-btn.active').classList.remove('active');
+							btn.classList.add('active');
+							this.currentMarker = btn.dataset.marker;
+						});
+					});
+					
+					// 【核心新增】為新的核取方塊加上事件監聽
+					showMarkersCheckbox.addEventListener('change', (e) => {
+						this.showMarkers = e.target.checked;
+						document.querySelector('.container').classList.toggle('markers-visible', this.showMarkers);
+					});
 				// ===========================================
                 
                 window.addEventListener('resize', () => this.updateStepSize());
@@ -1799,6 +1948,60 @@
 						}
 					}
 				});
+				
+				 const trackControlsContainer = document.getElementById('trackControls');
+					trackControlsContainer.addEventListener('dblclick', (e) => {
+						if (e.target.classList.contains('track-number')) {
+							const trackLabelDiv = e.target;
+							const trackIndex = parseInt(trackLabelDiv.dataset.trackIndex);
+							const originalLabel = this.tracks[trackIndex].label;
+
+							// 創建 input 元素
+							const input = document.createElement('input');
+							input.type = 'text';
+							input.value = originalLabel;
+							input.maxLength = 2; // 限制最多2個字元
+
+							// 清空原 div 並放入 input
+							trackLabelDiv.innerHTML = '';
+							trackLabelDiv.appendChild(input);
+							input.focus();
+							input.select();
+
+							const saveLabel = () => {
+								const newLabel = input.value.trim().toUpperCase();
+								
+								// 如果輸入為空，則還原
+								if (newLabel === '') {
+									trackLabelDiv.textContent = originalLabel;
+								} else {
+									this.tracks[trackIndex].label = newLabel;
+									trackLabelDiv.textContent = newLabel;
+									this.saveState(); // 觸發歷史紀錄
+								}
+								
+								// 移除事件監聽，避免重複觸發
+								input.removeEventListener('blur', saveLabel);
+								input.removeEventListener('keydown', handleKeydown);
+							};
+							
+							const handleKeydown = (evt) => {
+								if (evt.key === 'Enter') {
+									input.blur(); // 觸發 blur 事件來儲存
+								} else if (evt.key === 'Escape') {
+									trackLabelDiv.textContent = originalLabel; // 按 ESC 取消
+									input.removeEventListener('blur', saveLabel);
+									input.removeEventListener('keydown', handleKeydown);
+								}
+							};
+							
+							input.addEventListener('blur', saveLabel);
+							input.addEventListener('keydown', handleKeydown);
+						}
+					});	
+				
+				this.setupKeyboardShortcuts();
+				
             }
 
             bindSoundPanelEvents() {
@@ -1950,9 +2153,7 @@
                 this.currentStep = 0;
                 if (this.mode === 'sequential') {
                     this.currentTrack = this.getFirstEnabledTrack();
-                     document.querySelectorAll('.track-control-item').forEach((el, idx) => {
-                        el.classList.toggle('current-playing', idx === this.currentTrack);
-                    });
+                   
                 }
                 this.scrollToBeginning();
                 
@@ -1964,9 +2165,7 @@
                         this.scrollToBeginning();
                         if (this.mode === 'sequential') {
                             this.currentTrack = this.getNextEnabledTrack();
-                            document.querySelectorAll('.track-control-item').forEach((el, idx) => {
-                                el.classList.toggle('current-playing', idx === this.currentTrack);
-                            });
+                           
                         }
                     }
                 }, stepDuration);
@@ -2017,52 +2216,72 @@
                 return this.getFirstEnabledTrack();
             }
 
-            updateBeatNumbers() {
-                const positionLine = document.getElementById('positionLine');
-                const firstStep = document.querySelector('.step');
-                if (firstStep) {
-                    const stepWidth = firstStep.offsetWidth;
-                    const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
-                    positionLine.style.left = `${this.currentStep * (stepWidth + gap)}px`;
-                }
-                document.querySelectorAll('.step.playing').forEach(el => el.classList.remove('playing'));
-                const playingSteps = this.mode === 'ensemble'
-                    ? document.querySelectorAll(`.step[data-step="${this.currentStep}"]`)
-                    : document.querySelectorAll(`.step[data-track="${this.currentTrack}"][data-step="${this.currentStep}"]`);
-                playingSteps.forEach(el => el.classList.add('playing'));
-            }
+			updateBeatNumbers() {
+				const positionLine = document.getElementById('positionLine');
+				
+				// 🔧 修正：確保只在右側音軌序列區域中操作
+				const tracksSequencer = document.querySelector('.tracks-sequencer');
+				if (!tracksSequencer) return;
+				
+				// 🔧 修正：只在 trackSteps 容器中尋找第一個步驟
+				const trackStepsContainer = document.getElementById('trackSteps');
+				const firstStep = trackStepsContainer ? trackStepsContainer.querySelector('.step') : null;
+				
+				if (firstStep) {
+					const stepWidth = firstStep.offsetWidth;
+					const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
+					positionLine.style.left = `${this.currentStep * (stepWidth + gap)}px`;
+				}
+				
+				// 清除之前的播放狀態 - 只清除右側序列區域的
+				trackStepsContainer.querySelectorAll('.step.playing').forEach(el => el.classList.remove('playing'));
+				
+				// 🔧 修正：只在右側音軌序列區域中標記播放中的步驟
+				const playingSteps = this.mode === 'ensemble'
+					? trackStepsContainer.querySelectorAll(`.step[data-step="${this.currentStep}"]`)
+					: trackStepsContainer.querySelectorAll(`.step[data-track="${this.currentTrack}"][data-step="${this.currentStep}"]`);
+					
+				playingSteps.forEach(el => el.classList.add('playing'));
+			}
 
             scrollToBeginning() {
                 document.querySelector('.tracks-sequencer').scrollTo({ left: 0, behavior: 'smooth' });
             }
 
-            autoScroll() {
-                const sequencer = document.querySelector('.tracks-sequencer');
-                const firstStep = document.querySelector('.step');
-                if (!firstStep) return;
-                const stepWidth = firstStep.offsetWidth;
-                const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
-                const fullStepWidth = stepWidth + gap;
-                const scrollLeft = sequencer.scrollLeft;
-                const clientWidth = sequencer.clientWidth;
-                const playheadPosition = this.currentStep * fullStepWidth;
-                const scrollTriggerPoint = scrollLeft + (clientWidth * 0.8);
-                if (playheadPosition > scrollTriggerPoint && (scrollLeft + clientWidth) < sequencer.scrollWidth) {
-                    const newScrollLeft = playheadPosition - (clientWidth * 0.1);
-                    sequencer.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
-                }
-            }
-
-            scrollToBeats(startBeat) {
-                const sequencer = document.querySelector('.tracks-sequencer');
-                const firstStep = document.querySelector('.step');
-                if (!firstStep) return;
-                const stepWidth = firstStep.offsetWidth;
-                const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
-                const fullStepWidth = stepWidth + gap;
-                const scrollTarget = (startBeat - 1) * this.stepsPerBeat * fullStepWidth;
-                sequencer.scrollTo({ left: scrollTarget, behavior: 'smooth' });
-            }
+			autoScroll() {
+				const sequencer = document.querySelector('.tracks-sequencer');
+				const trackStepsContainer = document.getElementById('trackSteps');
+				const firstStep = trackStepsContainer ? trackStepsContainer.querySelector('.step') : null;
+				
+				if (!firstStep || !sequencer) return;
+				
+				const stepWidth = firstStep.offsetWidth;
+				const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
+				const fullStepWidth = stepWidth + gap;
+				const scrollLeft = sequencer.scrollLeft;
+				const clientWidth = sequencer.clientWidth;
+				const playheadPosition = this.currentStep * fullStepWidth;
+				const scrollTriggerPoint = scrollLeft + (clientWidth * 0.8);
+				
+				if (playheadPosition > scrollTriggerPoint && (scrollLeft + clientWidth) < sequencer.scrollWidth) {
+					const newScrollLeft = playheadPosition - (clientWidth * 0.1);
+					sequencer.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+				}
+			}
+			
+			scrollToBeats(startBeat) {
+				const sequencer = document.querySelector('.tracks-sequencer');
+				const trackStepsContainer = document.getElementById('trackSteps');
+				const firstStep = trackStepsContainer ? trackStepsContainer.querySelector('.step') : null;
+				
+				if (!firstStep || !sequencer) return;
+				
+				const stepWidth = firstStep.offsetWidth;
+				const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
+				const fullStepWidth = stepWidth + gap;
+				const scrollTarget = (startBeat - 1) * this.stepsPerBeat * fullStepWidth;
+				sequencer.scrollTo({ left: scrollTarget, behavior: 'smooth' });
+			}
 
             expandBeats(beatsToAdd = 4) {
                 if (this.isPlaying) this.stop();
@@ -2147,7 +2366,7 @@
 				this.saveState();
 				return; // 標記模式下，操作完畢後直接返回，不執行後續的 toggleStep
 			}
-			// ====================================
+			
 				
                 if (this.selectionMode) {
                     if (this.selection.trackIndex === null || this.selection.trackIndex !== trackIndex) {
@@ -2256,7 +2475,7 @@
                 
 				
 				 // 為了簡化，直接重新渲染整個軌道來顯示貼上的標記
-				this.renderTracks(); // <--- 將原本的 for 迴圈更新 UI 的部分，替換成這一行
+				this.renderTracks(); 
 				
                 this.clearSelection();
                 alert('貼上成功！');
@@ -2270,12 +2489,16 @@
                 }
             }
 
-            async handleSampleUpload(drumKey, file) {
+			async handleSampleUpload(drumKey, file) {
                 if (!file || !drumKey) return;
 
                 try {
                     const arrayBuffer = await file.arrayBuffer();
                     const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+                    
+                    // 將用戶上傳的檔案也加入快取，這裡用檔案名+大小作為 key
+                    const cacheKey = `user_${file.name}_${file.size}`;
+                    this.audioCache.cache.set(cacheKey, audioBuffer);
                     
                     this.drumSounds[drumKey].userSampleBuffer = audioBuffer;
                     this.drumSounds[drumKey].userSampleFileName = file.name;
@@ -2342,48 +2565,59 @@
             }
 
 
-            clearAll() {
-                this.tracks.forEach(track => track.steps.fill(false));
-				track.markers.fill(null); // <--- 新增這一行
-                this.renderTracks();
-                if (this.selectionMode) this.toggleSelectionMode();
-                this.saveState(); 
-            }
+			clearAll() {
+				if (!window.confirm('您確定要清除所有 R/L 標記嗎？此操作將被記錄，可以復原。')) {
+					return;
+				}
 
-            resetAll() {
-                if (this.isPlaying) this.stop();
-                if (this.selectionMode) this.toggleSelectionMode();
-                this.totalBeats = 8;
-                this.stepsPerBeat = 4;
-                this.initTracks();
-                this.bpm = 65;
-                this.mode = 'ensemble';
-                this.showNumbers = false;
-                this.currentStep = 0;
-                this.currentTrack = 0;
-                document.getElementById('bpmInput').value = this.bpm;
-                document.getElementById('showNumbers').checked = this.showNumbers;
-                document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === 'ensemble'));
-                document.querySelectorAll('.beat-setting-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.beatSetting === '4'));
-                this.updateExpandButton();
-                this.renderTracks();
-                this.initScrollPosition();
-                this.updateStepSize();
-                this.saveState(true); 
-            }
+				this.tracks.forEach(track => {
+					// 只將 markers 陣列重置為 null，保留 steps 不變
+					track.markers.fill(null);
+				});
+
+				this.renderTracks(); // 重新渲染以移除介面上的標記文字
+				if (this.selectionMode) this.toggleSelectionMode();
+				this.saveState(); // 儲存這個狀態以便復原
+			}
+
+			resetAll() {
+				if (!window.confirm('您確定要重置所有節拍點與 R/L 標記嗎？\n此操作將保留您的總拍數、音量與音色設定。')) {
+					return;
+				}
+				
+				if (this.isPlaying) this.stop();
+				if (this.selectionMode) this.toggleSelectionMode();
+
+				
+				this.tracks.forEach(track => {
+					track.steps.fill(false);
+					track.markers.fill(null); 
+				});
+
+				this.currentStep = 0;
+				this.currentTrack = 0;
+				
+				// 重新渲染以更新介面
+				this.renderTracks();
+				this.initScrollPosition();
+				
+				this.saveState(true); 
+			}
 
             exportPattern() {
                 const pattern = {
-                    version: '2.0-unified-sound', // New Version
+                    version: '2.2-dynamic-tracks', 
+					trackCount: this.tracks.length, 
                     totalBeats: this.totalBeats,
                     bpm: this.bpm,
                     mode: this.mode,
                     showNumbers: this.showNumbers,
                     stepsPerBeat: this.stepsPerBeat,
                     tracks: this.tracks.map(track => ({
+						label: track.label, 
                         drumType: track.drumType,
                         steps: track.steps,
-						markers: track.markers, // <--- 新增這一行	
+						markers: track.markers, 	
                         enabled: track.enabled,
                         soundEnabled: track.soundEnabled,
                         volume: track.volume
@@ -2405,57 +2639,59 @@
 
             async importPattern(file) {
                 if (!file) return;
+                if (!window.confirm('匯入新鼓譜將會覆蓋目前的內容，確定要繼續嗎？')) {
+                    document.getElementById('fileInput').value = ''; // 清空選擇，以便下次能選同一個檔案
+                    return;
+                }
+
                 try {
                     const text = await file.text();
                     const pattern = JSON.parse(text);
 
                     if (!pattern.version || !pattern.tracks) {
-                        throw new Error('無效的檔案格式');
+                        throw new Error('無效的檔案格式或檔案已損壞');
                     }
                     if (this.isPlaying) this.stop();
 
+                    // --- 核心修改：完全根據檔案來重建狀態 ---
                     this.totalBeats = pattern.totalBeats || 8;
                     this.bpm = pattern.bpm || 65;
                     this.mode = pattern.mode || 'ensemble';
                     this.showNumbers = pattern.showNumbers || false;
                     this.stepsPerBeat = pattern.stepsPerBeat || 4;
                     
+                    // 1. 清空現有音軌
+                    this.tracks = []; 
+                    
+                    // 2. 根據檔案中的 tracks 數據重新建立音軌
                     this.tracks = pattern.tracks.map((trackData, index) => ({
                         id: index,
-                        drumType: trackData.drumType || this.defaultDrums[index],
+                        label: trackData.label || this.defaultTrackLabels[index] || `T${index + 1}`,
+                        drumType: trackData.drumType || this.defaultDrums[index] || 'agogo',
                         steps: trackData.steps || Array(this.totalBeats * this.stepsPerBeat).fill(false),
-						markers: trackData.markers || Array(this.totalBeats * this.stepsPerBeat).fill(null),
+                        markers: trackData.markers || Array(this.totalBeats * this.stepsPerBeat).fill(null),
                         enabled: trackData.enabled !== undefined ? trackData.enabled : true,
                         soundEnabled: trackData.soundEnabled !== undefined ? trackData.soundEnabled : true,
                         volume: trackData.volume !== undefined ? trackData.volume : 0.8
                     }));
 
-                    while (this.tracks.length < 8) {
-                        const i = this.tracks.length;
-                        this.tracks.push({ 
-                            id: i, 
-                            drumType: this.defaultDrums[i] || 'agogo',
-                            steps: Array(this.totalBeats * this.stepsPerBeat).fill(false), 
-                            enabled: true, 
-                            soundEnabled: true, 
-                            volume: 0.8 
-                        });
+                    // 向下相容舊版沒有 trackCount 的檔案
+                    if (!pattern.trackCount && this.tracks.length < this.minTracks) {
+                        while (this.tracks.length < this.minTracks) { this.addTrack(); }
                     }
+                    // --- 修改結束 ---
 
                     if (pattern.drumSounds) {
                          Object.keys(pattern.drumSounds).forEach(key => {
                             if (this.drumSounds[key]) {
-                                // Merge imported sound params with defaults to ensure all keys exist
                                 const defaults = this.getDefaultSoundParams();
                                 const imported = pattern.drumSounds[key];
                                 this.drumSounds[key] = { ...defaults, ...this.drumSounds[key], ...imported };
-
-                                // Ensure buffers are cleared as they are not serializable
                                 this.drumSounds[key].userSampleBuffer = null;
                                 this.drumSounds[key].userSampleFileName = imported.userSampleFileName || '';
                             }
                         });
-                        this.initSoundAdjustPanel(); // Re-render sound panel with imported values
+                        this.initSoundAdjustPanel();
                     }
 
                     document.getElementById('bpmInput').value = this.bpm;
@@ -2473,7 +2709,7 @@
                     this.updateStepSize();
                     this.clearSelection();
                     this.saveState(true); 
-                    alert('匯入成功！');
+                    alert('鼓譜匯入成功！');
                 } catch (error) {
                     alert('匯入失敗：' + error.message);
                 }
@@ -2484,7 +2720,7 @@
 				const loopCountSelect = document.getElementById('loopCountSelect');
 				let loopCount = parseInt(loopCountSelect.value) || 1;
 				
-                if (typeof lamejs === 'undefined') {
+                if (typeof lamejs === 'UNundefined') {
                     alert('MP3 編碼函式庫 (lame.min.js) 載入失敗！請檢查您的網路連線或 CDN 連結是否正確。');
                     return;
                 }
@@ -2601,9 +2837,9 @@
                 const sound = this.drumSounds[drumType];
                 if (!sound) return;
 				
-				// =====================================================
-				// ====[ 新增：判斷是否為拖拍樂器 ]====
-				// =====================================================
+
+				//判斷是否為拖拍樂器
+
 				if (drumType.includes('-drag')) {
 					this.scheduleDrumRoll(context, time, drumType, soundEnabled, trackVolume);
 					return; // 呼叫完專用函式後，直接結束，不再執行下面的舊邏輯
@@ -2654,9 +2890,9 @@
                 }
 			}
 			
-			// =================================================================
-            // ====[ 新增：專門用來排程連續敲擊音效 (鼓卷/拖拍) 的函式 ]====
-            // =================================================================
+
+            // 專門用來排程連續敲擊音效 (鼓卷/拖拍) 的函式
+
 			scheduleDrumRoll(context, time, drumType, soundEnabled = true, trackVolume = 1.0) {
                 if (!soundEnabled) return;
                 
@@ -2721,6 +2957,85 @@
                     currentInterval *= timeStretch;
                 }
             }
+			
+
+            setupKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    // 如果正在編輯軌道標籤或BPM，則不觸發大部分快速鍵
+                    if (e.target.tagName === 'INPUT') {
+                         if (e.key === 'Escape') e.target.blur(); // ESC 可以取消編輯
+                         if (e.key === 'Enter') e.target.blur(); // Enter 可以確認編輯
+                        return;
+                    }
+                    
+                    if (e.ctrlKey || e.metaKey) { // MetaKey for Mac
+                        switch(e.key.toLowerCase()) {
+                            case 's': e.preventDefault(); this.exportPattern(); break;
+                            case 'z': e.preventDefault(); e.shiftKey ? this.redo() : this.undo(); break;
+                            case 'y': e.preventDefault(); this.redo(); break;
+                            case 'c': if(this.selectionMode) { e.preventDefault(); this.copySelection(); } break;
+                            case 'v': if(this.selectionMode) { e.preventDefault(); this.pasteSelection(); } break;
+                        }
+                    } else {
+                        // 處理標記模式下的專屬快速鍵
+                        if (this.markingMode) {
+                            const markerControls = document.getElementById('markerControls');
+                            let markerToSelect = null;
+
+                            switch(e.key.toLowerCase()) {
+                                case 'r': markerToSelect = 'R'; break;
+                                case 'l': markerToSelect = 'L'; break;
+                                case 'x': markerToSelect = 'eraser'; break;
+                            }
+
+                            if (markerToSelect) {
+                                e.preventDefault();
+                                markerControls.querySelector('.marker-btn.active').classList.remove('active');
+                                const newActiveBtn = markerControls.querySelector(`.marker-btn[data-marker="${markerToSelect}"]`);
+                                if (newActiveBtn) {
+                                    newActiveBtn.classList.add('active');
+                                    this.currentMarker = markerToSelect;
+                                }
+                                return; // 處理完畢，不再執行後續 switch
+                            }
+                        }
+                        
+                        //處理一般模式下的快速鍵
+                        switch(e.key) {
+                            case ' ': e.preventDefault(); this.togglePlay(); break;
+                            case 's': // 新增：切換選擇模式
+                                e.preventDefault();
+                                document.getElementById('selectBtn').click();
+                                break;
+                            case 'm': // 新增：切換標記模式
+                                e.preventDefault();
+                                document.getElementById('markBtn').click();
+                                break;
+                            case 'Escape':
+                                if (this.selectionMode) { this.toggleSelectionMode(); }
+                                if (this.markingMode) { document.getElementById('markBtn').click(); }
+                                break;
+                            case 'ArrowUp': e.preventDefault(); this.adjustBPM(5); break;
+                            case 'ArrowDown': e.preventDefault(); this.adjustBPM(-5); break;
+                        }
+                    }
+                });
+            }
+
+            adjustBPM(delta) {
+                const bpmInput = document.getElementById('bpmInput');
+                let newBPM = parseInt(bpmInput.value) + delta;
+                newBPM = Math.max(60, Math.min(200, newBPM)); // 限制在 60-200 之間
+                
+                this.bpm = newBPM;
+                bpmInput.value = newBPM;
+                
+                if (this.isPlaying) {
+                    this.stop();
+                    this.play();
+                }
+            }
+            // ===========================================
 			
         }
 
