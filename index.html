@@ -955,13 +955,13 @@
             background: rgba(0, 0, 0, 0.4);
             padding: 5px 10px;
             border-radius: 8px;
-            border: 1px solid #00ff88;
+            border: 1px solid #ff9900;
         }
 
         /* 標記工具按鈕 (R, L, 橡皮擦) 的樣式 */
         .marker-btn {
             background: transparent;
-            border: 2px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid #ff9900;
             color: rgba(255, 255, 255, 0.6);
             width: 36px;
             height: 36px;
@@ -1046,6 +1046,35 @@
             outline: none;
             box-sizing: border-box;
         }
+
+        /* 選取工具列容器 */
+        .selection-controls {
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 5px 10px;
+            border-radius: 8px;
+            border: 1px solid #ff9900;
+        }
+
+        /* 選取工具列按鈕樣式 */
+        .selection-btn {
+            background: transparent;
+            border: 2px solid rgba(255, 153, 0, 0.6);
+            color: rgba(255, 153, 0, 0.8);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .selection-btn:hover {
+            background: rgba(255, 153, 0, 0.2);
+            color: #ff9900;
+            border-color: #ff9900;
+        }
 		
     </style>
 
@@ -1086,16 +1115,29 @@
 
 				<!-- Group: 選取/編輯 -->
 				<div class="control-group">
-					<button class="btn action-btn" id="selectBtn">選擇</button>
-					<button class="btn action-btn" id="copyBtn">複製</button>
-					<button class="btn action-btn" id="pasteBtn">貼上</button>
+					 <button class="btn action-btn" id="selectBtn">選取</button>
 				</div>
-				
-				<!-- ======[ 請在這裡新增以下區塊 ]====== -->
+
+				<!-- 這就是新的工具列，它預設是隱藏的 -->
+				<div id="selectionControls" class="selection-controls" style="display: none;">
+					<button class="selection-btn" id="copySelectionBtn">複製</button>
+					<button class="selection-btn" id="pasteSelectionBtn">貼上</button>
+					<button class="selection-btn" id="savePatternBtn">儲存樣式</button>
+					<button class="selection-btn" id="loadPatternBtn">載入樣式</button>
+					<input type="file" class="file-input" id="patternFileInput" accept=".pa">
+				</div>
+
                 <div class="control-group">
                     <button class="btn action-btn" id="markBtn">LR 標記</button>
                 </div>
-                <!-- ==================================== -->
+				
+				<div id="markerControls" class="marker-controls" style="display: none;">
+					<button class="marker-btn" data-marker="R">R</button>
+					<button class="marker-btn" data-marker="L">L</button>
+					<button class="marker-btn active" data-marker="eraser">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+					</button>
+				</div>
 				
 				<!-- Group: 檔案操作 (紫色) -->
 				<div class="control-group">
@@ -1131,10 +1173,10 @@
                 <button class="mode-btn" data-mode="sequential">循環模式</button>
             </div>
             <div class="beat-setting-controls">
-                <span class="beat-setting-label">拍子設定:</span>
-                <button class="beat-setting-btn" data-beat-setting="2">2格一拍</button>
-                <button class="beat-setting-btn active" data-beat-setting="4">4格一拍</button>
-                <button class="beat-setting-btn" data-beat-setting="8">8格一拍</button>
+                <span class="beat-setting-label">一拍長度:</span>
+                <button class="beat-setting-btn" data-beat-setting="2">2格</button>
+                <button class="beat-setting-btn active" data-beat-setting="4">4格</button>
+                <button class="beat-setting-btn" data-beat-setting="8">8格</button>
             </div>
 			<div class="expand-controls">
 				<button class="expand-btn reduce" id="reduceBtn">-</button>
@@ -1148,6 +1190,11 @@
                 <span>BPM:</span>
                 <input type="number" class="bpm-input" id="bpmInput" value="65" min="60" max="200">
             </div>
+			<div class="bpm-control"> <!-- 我們可以沿用 bpm-control 的樣式 -->
+				<span>音量:</span>
+				<input type="number" class="bpm-input" id="globalVolumeInput" value="80" min="0" max="100">
+				<span style="margin-left: -10px;">%</span> <!-- 加上百分比符號 -->
+			</div>
             <div class="checkbox-container">
                 <input type="checkbox" class="checkbox" id="showNumbers">
                 <label for="showNumbers">拍數顯示</label>
@@ -1156,34 +1203,34 @@
                 <input type="checkbox" class="checkbox" id="showMarkersCheckbox">
                 <label for="showMarkersCheckbox">LR顯示</label>
             </div>
-			
-	
-			<div id="markerControls" class="marker-controls" style="display: none;">
-				<button class="marker-btn" data-marker="R">R</button>
-				<button class="marker-btn" data-marker="L">L</button>
-				<button class="marker-btn active" data-marker="eraser">
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
-				</button>
-			</div>
+
 			
         </div>
 
 		<div class="sequencer">
+			<!-- (左側) 音軌控制面板 -->
 			<div class="tracks-controls" id="tracksControls">
-				<div id="trackControls"></div> 
+				<!-- JS 會將所有音軌的控制項 (樂器選擇、音量等) 插入到這裡 -->
+				<div id="trackControls"></div>
+				
+				<!-- 面板底部的按鈕 (新增軌道、收合) -->
 				<div class="tracks-footer-controls">
 					<button class="collapse-btn" id="addTrackBtn" title="新增軌道">➕</button>
 					<button class="collapse-btn" id="collapseBtn" title="摺疊/展開控制面板">◀</button>
 				</div>
 			</div>
-            
-            <div class="tracks-sequencer">
-                <div class="position-indicator">
-                    <div class="position-line" id="positionLine"></div>
-                </div>
-                <div id="trackSteps"></div>
-            </div>
-        </div>
+			
+			<!-- (右側) 音序器網格 -->
+			<div class="tracks-sequencer">
+				<!-- 播放位置指示器 -->
+				<div class="position-indicator">
+					<div class="position-line" id="positionLine"></div>
+				</div>
+				
+				<!-- JS 會將所有音軌的節拍格 (steps) 插入到這裡 -->
+				<div id="trackSteps"></div>
+			</div>
+		</div>
 		
 		<div class="author-credit">
         程式作者：徐承佑 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  森巴鼓指導老師：陳仰真
@@ -1241,6 +1288,7 @@
                 this.currentStep = 0;
                 this.currentTrack = 0;
                 this.bpm = 65;
+				this.globalVolume = 0.8; // 預設值 80%，即 0.8 的乘數
                 this.mode = 'ensemble';
                 this.showNumbers = false;
 				this.showMarkers = false; 
@@ -1251,11 +1299,12 @@
                 this.stepsPerBeat = 4;
 
                 this.selectionMode = false;
-                this.selection = {
-                    trackIndex: null,
-                    startStep: null,
-                    endStep: null
-                };
+				this.selection = {
+					startTrack: null,
+					startStep: null,
+					endTrack: null,
+					endStep: null
+				};
                 this.clipboard = {
                     pattern: null
                 };
@@ -1697,12 +1746,19 @@
                 `;
             }
 
+
 			renderTracks() {
+				// 【修正 #1】使用正確的 ID "trackControls"，而不是 "trackControlsContainer"
 				const trackControlsContainer = document.getElementById('trackControls');
+				
+				// 【修正 #2】使用正確的 ID "trackSteps"，而不是 "trackStepsContainer"
 				const trackStepsContainer = document.getElementById('trackSteps');
 				
 				// 如果容器不存在，就直接返回，避免錯誤
-				if (!trackControlsContainer || !trackStepsContainer) return;
+				if (!trackControlsContainer || !trackStepsContainer) {
+					console.error("致命錯誤：找不到 'trackControls' 或 'trackSteps' 容器！");
+					return;
+				}
 
 				trackControlsContainer.innerHTML = '';
 				trackStepsContainer.innerHTML = '';
@@ -1747,6 +1803,8 @@
 					}).join('');
 
 					stepsElement.innerHTML = `<div class="steps">${steps}</div>`;
+					
+					// 【修正 #3】將渲染結果附加到我們在函式開頭獲取的正確容器變數上
 					trackStepsContainer.appendChild(stepsElement);
 				});
 			}
@@ -1756,70 +1814,86 @@
                 document.getElementById('beatsInfo').textContent = `${this.totalBeats}拍`;
             }
 
-            bindEvents() {
-                document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
-
-                document.getElementById('undoBtn').addEventListener('click', () => this.undo());
-                document.getElementById('redoBtn').addEventListener('click', () => this.redo());
-				
+            // ======[ 請用這個正確的版本完整替換 bindEvents ]======
+			bindEvents() {
+				// --- 播放、清除、重置等主控制按鈕 ---
+				document.getElementById('playBtn').addEventListener('click', () => this.togglePlay());
 				document.getElementById('clearBtn').addEventListener('click', () => this.clearAll());
 				document.getElementById('resetBtn').addEventListener('click', () => this.resetAll());
+				document.getElementById('undoBtn').addEventListener('click', () => this.undo());
+				document.getElementById('redoBtn').addEventListener('click', () => this.redo());
 				
-                document.getElementById('resetSounds').addEventListener('click', () => this.resetSounds());
-                document.getElementById('expandBtn').addEventListener('click', () => this.expandBeats());
-                document.getElementById('reduceBtn').addEventListener('click', () => this.reduceBeats());
-                document.getElementById('exportBtn').addEventListener('click', () => this.exportPattern());
-                document.getElementById('importBtn').addEventListener('click', () => document.getElementById('fileInput').click());
-                document.getElementById('exportMp3Btn').addEventListener('click', () => this.exportMP3());
-                document.getElementById('fileInput').addEventListener('change', (e) => this.importPattern(e.target.files[0]));
+				// --- 檔案與軌道管理 ---
+				document.getElementById('exportBtn').addEventListener('click', () => this.exportPattern());
+				document.getElementById('importBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+				document.getElementById('exportMp3Btn').addEventListener('click', () => this.exportMP3());
+				document.getElementById('fileInput').addEventListener('change', (e) => this.importPattern(e.target.files[0]));
+				document.getElementById('addTrackBtn').addEventListener('click', () => this.addTrack());
 
-                document.getElementById('selectBtn').addEventListener('click', () => this.toggleSelectionMode());
-                document.getElementById('copyBtn').addEventListener('click', () => this.copySelection());
-                document.getElementById('pasteBtn').addEventListener('click', () => this.pasteSelection());
+				// --- 摺疊按鈕 ---
+				document.getElementById('collapseBtn').addEventListener('click', () => this.toggleControlsCollapse());
 
-                document.getElementById('bpmInput').addEventListener('change', (e) => {
-                    this.bpm = parseInt(e.target.value);
-                    if (this.isPlaying) {
-                        this.stop();
-                        this.play();
-                    }
-                });
+				// --- 第二排控制列 ---
+				document.getElementById('bpmInput').addEventListener('change', (e) => {
+					this.bpm = parseInt(e.target.value);
+					if (this.isPlaying) { this.stop(); this.play(); }
+				});
+								
+				document.getElementById('globalVolumeInput').addEventListener('change', (e) => {
+					// 確保數值在 0-100 之間
+					const volumeValue = Math.max(0, Math.min(100, parseInt(e.target.value)));
+					e.target.value = volumeValue; // 如果使用者輸入超出範圍，則更新 UI
+					this.globalVolume = volumeValue / 100; // 轉換為 0.0 到 1.0 之間的乘數
+				});
+				
+				document.getElementById('showNumbers').addEventListener('change', (e) => {
+					this.showNumbers = e.target.checked;
+					this.renderTracks();
+				});
+				document.getElementById('showMarkersCheckbox').addEventListener('change', (e) => {
+					this.showMarkers = e.target.checked;
+					document.querySelector('.container').classList.toggle('markers-visible', this.showMarkers);
+				});
+				document.querySelectorAll('.mode-btn').forEach(btn => btn.addEventListener('click', (e) => this.handleModeChange(e)));
+				document.querySelectorAll('.beat-setting-btn').forEach(btn => btn.addEventListener('click', (e) => {
+					document.querySelectorAll('.beat-setting-btn').forEach(b => b.classList.remove('active'));
+					e.target.classList.add('active');
+					this.changeBeatSetting(parseInt(e.target.dataset.beatSetting));
+				}));
+				document.getElementById('expandBtn').addEventListener('click', () => this.expandBeats());
+				document.getElementById('reduceBtn').addEventListener('click', () => this.reduceBeats());
 
-                document.getElementById('collapseBtn').addEventListener('click', () => this.toggleControlsCollapse());
+				// --- 選取與標記模式控制 ---
+				document.getElementById('selectBtn').addEventListener('click', () => this.toggleSelectionMode());
+				document.getElementById('markBtn').addEventListener('click', () => this.toggleMarkingMode());
 
-                document.querySelectorAll('.mode-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        this.mode = btn.dataset.mode;
-                        if (this.isPlaying) {
-                            this.stop();
-                            this.play();
-                        }
-                    });
-                });
+				// --- 選取與標記工具列 ---
+				document.getElementById('copySelectionBtn').addEventListener('click', () => this.copySelection());
+				document.getElementById('pasteSelectionBtn').addEventListener('click', () => this.pasteSelection());
+				document.getElementById('savePatternBtn').addEventListener('click', () => this.saveSelectionAsPattern());
+				document.getElementById('loadPatternBtn').addEventListener('click', () => document.getElementById('patternFileInput').click());
+				document.getElementById('patternFileInput').addEventListener('change', (e) => {
+					this.loadPatternToClipboard(e.target.files[0]);
+					e.target.value = ''; // 清空選擇，以便下次能選同一個檔案
+				});
+				document.getElementById('markerControls').addEventListener('click', (e) => {
+					if (e.target.closest('.marker-btn')) {
+						const btn = e.target.closest('.marker-btn');
+						document.getElementById('markerControls').querySelector('.marker-btn.active').classList.remove('active');
+						btn.classList.add('active');
+						this.currentMarker = btn.dataset.marker;
+					}
+				});
 
-                document.querySelectorAll('.beat-setting-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        document.querySelectorAll('.beat-setting-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        this.changeBeatSetting(parseInt(btn.dataset.beatSetting));
-                    });
-                });
-
-                document.getElementById('showNumbers').addEventListener('change', (e) => {
-                    this.showNumbers = e.target.checked;
-                    this.renderTracks();
-                });
-
-                document.addEventListener('click', (e) => {
+				// --- 事件委派：處理所有在 sequencer 內發生的點擊、改變、雙擊事件 ---
+				const sequencer = document.querySelector('.sequencer');
+				sequencer.addEventListener('click', (e) => {
 					if (e.target.classList.contains('step')) {
 						this.handleStepClick(e.target);
 					}
 					if (e.target.classList.contains('track-control-btn')) {
 						const trackIndex = parseInt(e.target.dataset.track);
 						const type = e.target.dataset.type;
-						
 						if (type === 'remove') {
 							this.removeTrack(trackIndex);
 						} else {
@@ -1827,182 +1901,145 @@
 						}
 					}
 				});
-				
-				// ======[ 請新增以下程式碼到 bindEvents 中 ]======
-				document.getElementById('addTrackBtn').addEventListener('click', () => {
-					this.addTrack();
-				});
-				// ===========================================
 
-                document.addEventListener('change', (e) => {
-                    let stateChanged = false;
-                    if (e.target.classList.contains('drum-select')) {
-                        this.tracks[parseInt(e.target.dataset.track)].drumType = e.target.value;
-                        stateChanged = true;
-                    }
-                    if (e.target.classList.contains('volume-slider')) {
-                        this.tracks[parseInt(e.target.dataset.track)].volume = parseFloat(e.target.value);
-                        stateChanged = true;
-                    }
-                    if (stateChanged) {
+				sequencer.addEventListener('change', (e) => {
+					let stateChanged = false;
+					if (e.target.classList.contains('drum-select')) {
+						this.tracks[parseInt(e.target.dataset.track)].drumType = e.target.value;
+						stateChanged = true;
+					}
+					if (e.target.classList.contains('volume-slider')) {
+						this.tracks[parseInt(e.target.dataset.track)].volume = parseFloat(e.target.value);
+						stateChanged = true;
+					}
+					if (stateChanged) this.saveState();
+				});
+
+				sequencer.addEventListener('dblclick', (e) => {
+					if (e.target.classList.contains('track-number')) {
+						this.handleLabelDoubleClick(e.target);
+					}
+				});
+
+				// --- 彈出視窗 (Modal) 控制 ---
+				this.setupModalEvents('helpModal', 'helpBtn', 'closeHelpModal');
+				this.setupModalEvents('soundPanelOverlay', 'soundAdjustBtn', 'closeSoundPanel');
+				document.getElementById('resetSounds').addEventListener('click', () => this.resetSounds());
+				this.bindSoundPanelEvents();
+
+				// --- 全域事件 ---
+				window.addEventListener('resize', () => this.updateStepSize());
+				this.setupKeyboardShortcuts();
+			}
+			
+            
+
+            handleModeChange(event) {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                event.target.classList.add('active');
+                this.mode = event.target.dataset.mode;
+                if (this.isPlaying) {
+                    this.stop();
+                    this.play();
+                }
+            }
+
+            handleTrackParamChange(target) {
+                const trackIndex = parseInt(target.dataset.track);
+                if (target.classList.contains('drum-select')) {
+                    this.tracks[trackIndex].drumType = target.value;
+                } else if (target.classList.contains('volume-slider')) {
+                    this.tracks[trackIndex].volume = parseFloat(target.value);
+                }
+                this.saveState();
+            }
+
+			toggleMarkingMode() {
+				this.markingMode = !this.markingMode;
+
+				// ======[ 防呆機制：新增此區塊 ]======
+				// 如果我們剛開啟了「標記」模式，而且「選取」模式仍然是開啟的
+				if (this.markingMode && this.selectionMode) {
+					// 就呼叫選取模式的切換函式，把它關掉
+					this.toggleSelectionMode();
+				}
+				// ===================================
+
+				document.getElementById('markBtn').classList.toggle('toggled', this.markingMode);
+				document.getElementById('markerControls').style.display = this.markingMode ? 'flex' : 'none';
+
+				if (this.markingMode) {
+					this.showMarkers = true;
+					document.getElementById('showMarkersCheckbox').checked = true;
+					document.querySelector('.container').classList.add('markers-visible');
+				}
+				// 注意：舊的那行 `if (!this.markingMode && this.selectionMode)` 已經被上面的新邏輯取代，所以這裡不再需要它。
+			}
+
+            handleMarkerToolChange(btn) {
+                document.getElementById('markerControls').querySelector('.marker-btn.active').classList.remove('active');
+                btn.classList.add('active');
+                this.currentMarker = btn.dataset.marker;
+            }
+            
+            handleLabelDoubleClick(trackLabelDiv) {
+                const trackIndex = parseInt(trackLabelDiv.dataset.trackIndex);
+                const originalLabel = this.tracks[trackIndex].label;
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = originalLabel;
+                input.maxLength = 2;
+
+                trackLabelDiv.innerHTML = '';
+                trackLabelDiv.appendChild(input);
+                input.focus();
+                input.select();
+
+                const saveLabel = () => {
+                    const newLabel = input.value.trim().toUpperCase();
+                    trackLabelDiv.textContent = newLabel === '' ? originalLabel : newLabel;
+                    if (newLabel !== '') {
+                        this.tracks[trackIndex].label = newLabel;
                         this.saveState();
                     }
-                });
-				
-					
-					// ======[ 修改：標記模式的控制邏輯 (連動核取方塊) ]======
-					const markBtn = document.getElementById('markBtn');
-					const markerControls = document.getElementById('markerControls');
-					const showMarkersCheckbox = document.getElementById('showMarkersCheckbox');
-
-					markBtn.addEventListener('click', () => {
-						this.markingMode = !this.markingMode;
-						markBtn.classList.toggle('toggled', this.markingMode);
-						markerControls.style.display = this.markingMode ? 'flex' : 'none';
-						
-						// 【核心修改】當進入標記模式時，自動勾選並啟用標記顯示
-						if (this.markingMode) {
-							this.showMarkers = true;
-							showMarkersCheckbox.checked = true;
-							document.querySelector('.container').classList.add('markers-visible');
-						}
-						
-						if (!this.markingMode && this.selectionMode) {
-							this.toggleSelectionMode();
-						}
-					});
-
-					markerControls.querySelectorAll('.marker-btn').forEach(btn => {
-						btn.addEventListener('click', () => {
-							markerControls.querySelector('.marker-btn.active').classList.remove('active');
-							btn.classList.add('active');
-							this.currentMarker = btn.dataset.marker;
-						});
-					});
-					
-					// 【核心新增】為新的核取方塊加上事件監聽
-					showMarkersCheckbox.addEventListener('change', (e) => {
-						this.showMarkers = e.target.checked;
-						document.querySelector('.container').classList.toggle('markers-visible', this.showMarkers);
-					});
-				// ===========================================
+                    input.removeEventListener('blur', saveLabel);
+                    input.removeEventListener('keydown', handleKeydown);
+                };
                 
-                window.addEventListener('resize', () => this.updateStepSize());
+                const handleKeydown = (evt) => {
+                    if (evt.key === 'Enter') input.blur();
+                    else if (evt.key === 'Escape') {
+                        trackLabelDiv.textContent = originalLabel;
+                        input.removeEventListener('blur', saveLabel);
+                        input.removeEventListener('keydown', handleKeydown);
+                    }
+                };
+                
+                input.addEventListener('blur', saveLabel);
+                input.addEventListener('keydown', handleKeydown);
+            }
 
-                // ======[ 使用說明 Modal 的控制邏輯 ]======
-                const helpBtn = document.getElementById('helpBtn');
-				// ======[ 調音面板控制 (修正後) ]======
-				const soundPanelOverlay = document.getElementById('soundPanelOverlay');
-				const closeSoundPanelBtn = document.getElementById('closeSoundPanel');
-				const openSoundPanelBtn = document.getElementById('soundAdjustBtn');
+            setupModalEvents(modalId, openBtnId, closeBtnId) {
+                const modal = document.getElementById(modalId);
+                const openBtn = document.getElementById(openBtnId);
+                const closeBtn = document.getElementById(closeBtnId);
 
-				if (soundPanelOverlay && openSoundPanelBtn && closeSoundPanelBtn) {
-					openSoundPanelBtn.addEventListener('click', () => {
-						soundPanelOverlay.style.display = 'flex';
-					});
-
-					closeSoundPanelBtn.addEventListener('click', () => {
-						soundPanelOverlay.style.display = 'none';
-					});
-
-					// 點擊視窗外的灰色區域也可以關閉
-					soundPanelOverlay.addEventListener('click', (e) => {
-						if (e.target === soundPanelOverlay) {
-							soundPanelOverlay.style.display = 'none';
-						}
-					});
-				}
-				
-                const helpModal = document.getElementById('helpModal');
-                const closeHelpModal = document.getElementById('closeHelpModal');
-
-                if (helpBtn && helpModal && closeHelpModal) {
-                    helpBtn.addEventListener('click', () => {
-                        helpModal.style.display = 'flex';
+                if (modal && openBtn && closeBtn) {
+                    openBtn.addEventListener('click', () => {
+                        modal.style.display = 'flex';
                     });
-
-                    closeHelpModal.addEventListener('click', () => {
-                        helpModal.style.display = 'none';
+                    closeBtn.addEventListener('click', () => {
+                        modal.style.display = 'none';
                     });
-
-                    // 點擊視窗外的灰色區域也可以關閉
-                    helpModal.addEventListener('click', (e) => {
-                        if (e.target === helpModal) {
-                            helpModal.style.display = 'none';
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.style.display = 'none';
                         }
                     });
                 }
-                
-				
-				
-                // ======[ 新增：監聽 ESC 鍵以關閉彈出視窗 ]======
-				document.addEventListener('keydown', (e) => {
-					if (e.key === 'Escape') {
-						const soundPanelOverlay = document.getElementById('soundPanelOverlay'); // 改為監聽 Overlay
-						const helpPanel = document.getElementById('helpModal');
-						if (soundPanelOverlay && soundPanelOverlay.style.display !== 'none') {
-							soundPanelOverlay.style.display = 'none';
-						}
-						if (helpPanel && helpPanel.style.display !== 'none') {
-							helpPanel.style.display = 'none';
-						}
-					}
-				});
-				
-				 const trackControlsContainer = document.getElementById('trackControls');
-					trackControlsContainer.addEventListener('dblclick', (e) => {
-						if (e.target.classList.contains('track-number')) {
-							const trackLabelDiv = e.target;
-							const trackIndex = parseInt(trackLabelDiv.dataset.trackIndex);
-							const originalLabel = this.tracks[trackIndex].label;
-
-							// 創建 input 元素
-							const input = document.createElement('input');
-							input.type = 'text';
-							input.value = originalLabel;
-							input.maxLength = 2; // 限制最多2個字元
-
-							// 清空原 div 並放入 input
-							trackLabelDiv.innerHTML = '';
-							trackLabelDiv.appendChild(input);
-							input.focus();
-							input.select();
-
-							const saveLabel = () => {
-								const newLabel = input.value.trim().toUpperCase();
-								
-								// 如果輸入為空，則還原
-								if (newLabel === '') {
-									trackLabelDiv.textContent = originalLabel;
-								} else {
-									this.tracks[trackIndex].label = newLabel;
-									trackLabelDiv.textContent = newLabel;
-									this.saveState(); // 觸發歷史紀錄
-								}
-								
-								// 移除事件監聽，避免重複觸發
-								input.removeEventListener('blur', saveLabel);
-								input.removeEventListener('keydown', handleKeydown);
-							};
-							
-							const handleKeydown = (evt) => {
-								if (evt.key === 'Enter') {
-									input.blur(); // 觸發 blur 事件來儲存
-								} else if (evt.key === 'Escape') {
-									trackLabelDiv.textContent = originalLabel; // 按 ESC 取消
-									input.removeEventListener('blur', saveLabel);
-									input.removeEventListener('keydown', handleKeydown);
-								}
-							};
-							
-							input.addEventListener('blur', saveLabel);
-							input.addEventListener('keydown', handleKeydown);
-						}
-					});	
-				
-				this.setupKeyboardShortcuts();
-				
             }
+            
 
             bindSoundPanelEvents() {
                  const soundPanel = document.getElementById('soundAdjustPanel');
@@ -2215,17 +2252,19 @@
                 }
                 return this.getFirstEnabledTrack();
             }
-
+			
 			updateBeatNumbers() {
 				const positionLine = document.getElementById('positionLine');
-				
-				// 🔧 修正：確保只在右側音軌序列區域中操作
-				const tracksSequencer = document.querySelector('.tracks-sequencer');
-				if (!tracksSequencer) return;
-				
-				// 🔧 修正：只在 trackSteps 容器中尋找第一個步驟
-				const trackStepsContainer = document.getElementById('trackSteps');
-				const firstStep = trackStepsContainer ? trackStepsContainer.querySelector('.step') : null;
+				const trackStepsContainer = document.getElementById('trackSteps'); // 獲取容器
+
+				// 【核心修正】在這裡加上一個「防衛敘述」
+				// 如果因為任何原因找不到這個容器，就立刻停止執行此函式，避免報錯。
+				if (!trackStepsContainer) {
+					console.error("錯誤：在 updateBeatNumbers 中找不到 #trackSteps 容器。");
+					return; 
+				}
+
+				const firstStep = trackStepsContainer.querySelector('.step');
 				
 				if (firstStep) {
 					const stepWidth = firstStep.offsetWidth;
@@ -2233,10 +2272,9 @@
 					positionLine.style.left = `${this.currentStep * (stepWidth + gap)}px`;
 				}
 				
-				// 清除之前的播放狀態 - 只清除右側序列區域的
+				// 因為我們已經在前面檢查過 trackStepsContainer，所以這裡的程式碼現在是安全的。
 				trackStepsContainer.querySelectorAll('.step.playing').forEach(el => el.classList.remove('playing'));
 				
-				// 🔧 修正：只在右側音軌序列區域中標記播放中的步驟
 				const playingSteps = this.mode === 'ensemble'
 					? trackStepsContainer.querySelectorAll(`.step[data-step="${this.currentStep}"]`)
 					: trackStepsContainer.querySelectorAll(`.step[data-track="${this.currentTrack}"][data-step="${this.currentStep}"]`);
@@ -2283,39 +2321,43 @@
 				sequencer.scrollTo({ left: scrollTarget, behavior: 'smooth' });
 			}
 
-            expandBeats(beatsToAdd = 4) {
-                if (this.isPlaying) this.stop();
-                const oldBeats = this.totalBeats;
-                this.totalBeats += beatsToAdd;
-                this.tracks.forEach(track => {
-                    track.steps.push(...Array(beatsToAdd * this.stepsPerBeat).fill(false));
-                });
-                this.renderTracks();
-                this.updateExpandButton();
-                this.updateSelectionUI();
-                setTimeout(() => this.scrollToBeats(oldBeats + 1), 100);
-                this.saveState();
-            }
+			expandBeats(beatsToAdd = 4) {
+				if (this.isPlaying) this.stop();
+				const oldBeats = this.totalBeats;
+				this.totalBeats += beatsToAdd;
+				this.tracks.forEach(track => {
+					track.steps.push(...Array(beatsToAdd * this.stepsPerBeat).fill(false));
+					// 修正點：同步擴充 markers 陣列
+					track.markers.push(...Array(beatsToAdd * this.stepsPerBeat).fill(null));
+				});
+				this.renderTracks();
+				this.updateExpandButton();
+				this.updateSelectionUI();
+				setTimeout(() => this.scrollToBeats(oldBeats + 1), 100);
+				this.saveState();
+			}
 
-            reduceBeats() {
-                if (this.totalBeats <= this.minBeats) return;
-                if (this.isPlaying) this.stop();
-                this.clearSelection();
-                this.totalBeats -= 4;
-                this.tracks.forEach(track => {
-                    track.steps.length = this.totalBeats * this.stepsPerBeat;
-                });
-                this.renderTracks();
-                this.updateExpandButton();
-                setTimeout(() => {
-                    const sequencer = document.querySelector('.tracks-sequencer');
-                    const maxScroll = sequencer.scrollWidth - sequencer.clientWidth;
-                    if (sequencer.scrollLeft > maxScroll) {
-                        sequencer.scrollTo({ left: maxScroll, behavior: 'smooth' });
-                    }
-                }, 100);
-                this.saveState();
-            }
+			reduceBeats() {
+				if (this.totalBeats <= this.minBeats) return;
+				if (this.isPlaying) this.stop();
+				this.clearSelection();
+				this.totalBeats -= 4;
+				this.tracks.forEach(track => {
+					track.steps.length = this.totalBeats * this.stepsPerBeat;
+					// 修正點：同步縮減 markers 陣列
+					track.markers.length = this.totalBeats * this.stepsPerBeat;
+				});
+				this.renderTracks();
+				this.updateExpandButton();
+				setTimeout(() => {
+					const sequencer = document.querySelector('.tracks-sequencer');
+					const maxScroll = sequencer.scrollWidth - sequencer.clientWidth;
+					if (sequencer.scrollLeft > maxScroll) {
+						sequencer.scrollTo({ left: maxScroll, behavior: 'smooth' });
+					}
+				}, 100);
+				this.saveState();
+			}
 
             testSound(drumType) {
                 this.playSound(drumType, true, 0.8);
@@ -2333,154 +2375,237 @@
                 this.scheduleSound(this.audioContext, now, drumType, soundEnabled, volume);
             }
             
-            handleStepClick(stepElement) {
-                const trackIndex = parseInt(stepElement.dataset.track);
-                const stepIndex = parseInt(stepElement.dataset.step);
-				
-				if (this.markingMode) {
-				const currentMarkerValue = this.tracks[trackIndex].markers[stepIndex];
-				let newMarkerValue = null;
+			handleStepClick(stepElement) {
+				const trackIndex = parseInt(stepElement.dataset.track);
+				const stepIndex = parseInt(stepElement.dataset.step);
 
-				if (this.currentMarker === 'eraser') {
-					newMarkerValue = null;
-				} else {
-					// 如果再次點擊同一個標記，則取消標記，否則設定新標記
-					newMarkerValue = currentMarkerValue === this.currentMarker ? null : this.currentMarker;
-				}
-				
-				this.tracks[trackIndex].markers[stepIndex] = newMarkerValue;
-				
-				// 更新 UI
-				const markerTextElement = stepElement.querySelector('.marker-text');
-				if (newMarkerValue) {
-					if (markerTextElement) {
-						markerTextElement.textContent = newMarkerValue;
+				// --- 標記模式的邏輯 (不變) ---
+				if (this.markingMode) {
+					// ... (這部分的程式碼是正確的，無需修改，保持原樣即可)
+					const currentMarkerValue = this.tracks[trackIndex].markers[stepIndex];
+					let newMarkerValue = null;
+					if (this.currentMarker === 'eraser') {
+						newMarkerValue = null;
 					} else {
-						stepElement.insertAdjacentHTML('beforeend', `<span class="marker-text">${newMarkerValue}</span>`);
+						newMarkerValue = currentMarkerValue === this.currentMarker ? null : this.currentMarker;
 					}
-				} else {
-					if (markerTextElement) {
-						markerTextElement.remove();
+					this.tracks[trackIndex].markers[stepIndex] = newMarkerValue;
+					const markerTextElement = stepElement.querySelector('.marker-text');
+					if (newMarkerValue) {
+						if (markerTextElement) {
+							markerTextElement.textContent = newMarkerValue;
+						} else {
+							stepElement.insertAdjacentHTML('beforeend', `<span class="marker-text">${newMarkerValue}</span>`);
+						}
+					} else {
+						if (markerTextElement) {
+							markerTextElement.remove();
+						}
 					}
+					this.saveState();
+					return;
 				}
-				this.saveState();
-				return; // 標記模式下，操作完畢後直接返回，不執行後續的 toggleStep
+
+				// --- 選取模式的【全新】邏輯 ---
+				if (this.selectionMode) {
+					// 檢查是否已經完成了一個矩形選取 (起點和終點不同)
+					const isSelectionMade = this.selection.startTrack !== null &&
+										  (this.selection.startTrack !== this.selection.endTrack ||
+										   this.selection.startStep !== this.selection.endStep);
+
+					// 如果已經有選區，則這次點擊代表「重置並開始新選取」
+					if (isSelectionMade) {
+						this.clearSelection();
+					}
+
+					// 開始或繼續選取
+					if (this.selection.startTrack === null) {
+						// 第一次點擊 (或重置後的第一次點擊)
+						this.selection.startTrack = trackIndex;
+						this.selection.startStep = stepIndex;
+						this.selection.endTrack = trackIndex;
+						this.selection.endStep = stepIndex;
+					} else {
+						// 第二次點擊，完成矩形選取
+						this.selection.endTrack = trackIndex;
+						this.selection.endStep = stepIndex;
+					}
+					this.updateSelectionUI();
+				} else {
+					// --- 一般模式的邏輯 (不變) ---
+					this.toggleStep(trackIndex, stepIndex);
+				}
 			}
-			
-				
-                if (this.selectionMode) {
-                    if (this.selection.trackIndex === null || this.selection.trackIndex !== trackIndex) {
-                        this.clearSelection();
-                        this.selection.trackIndex = trackIndex;
-                        this.selection.startStep = stepIndex;
-                    } else if (this.selection.endStep === null) {
-                        this.selection.endStep = stepIndex;
-                    } else {
-                        this.clearSelection();
-                        this.selection.trackIndex = trackIndex;
-                        this.selection.startStep = stepIndex;
-                    }
-                    this.updateSelectionUI();
-                } else {
-                    this.toggleStep(trackIndex, stepIndex);
-                }
-            }
+
+
             
             toggleSelectionMode() {
                 this.selectionMode = !this.selectionMode;
+				
+				  // 如果我們剛開啟了「選取」模式，而且「標記」模式仍然是開啟的
+				if (this.selectionMode && this.markingMode) {
+					// 就呼叫標記模式的切換函式，把它關掉
+					this.toggleMarkingMode(); 
+				}
+				
                 document.getElementById('selectBtn').classList.toggle('toggled', this.selectionMode);
+                document.getElementById('selectionControls').style.display = this.selectionMode ? 'flex' : 'none';
+                
                 if (!this.selectionMode) {
                     this.clearSelection();
+                } else {
+                    // 進入選取模式時，先清除單點選取，等待使用者框選
+                    this.clearSelection(); 
                 }
             }
             
             clearSelection() {
-                this.selection.trackIndex = null;
+                this.selection.startTrack = null;
                 this.selection.startStep = null;
+                this.selection.endTrack = null;
                 this.selection.endStep = null;
                 this.updateSelectionUI();
             }
 
             updateSelectionUI() {
                 document.querySelectorAll('.step.selected').forEach(el => el.classList.remove('selected'));
-                if (this.selection.trackIndex === null || this.selection.startStep === null) return;
-                const start = Math.min(this.selection.startStep, this.selection.endStep ?? this.selection.startStep);
-                const end = Math.max(this.selection.startStep, this.selection.endStep ?? this.selection.startStep);
-                for (let i = start; i <= end; i++) {
-                    const el = document.querySelector(`.step[data-track="${this.selection.trackIndex}"][data-step="${i}"]`);
-                    if (el) el.classList.add('selected');
-                }
-            }
+                if (this.selection.startTrack === null) return;
 
-            copySelection() {
-                if (this.selection.trackIndex === null || this.selection.startStep === null || this.selection.endStep === null) {
-                    alert('請先完成一個選區！');
-                    return;
-                }
-                const start = Math.min(this.selection.startStep, this.selection.endStep);
-                const end = Math.max(this.selection.startStep, this.selection.endStep);
-                this.clipboard.pattern = this.tracks[this.selection.trackIndex].steps.slice(start, end + 1);
-				this.clipboard.markers = this.tracks[this.selection.trackIndex].markers.slice(start, end + 1);
-                alert(`已複製 ${this.clipboard.pattern.length} 格的樣式！`);
-            }
+                const startTrack = Math.min(this.selection.startTrack, this.selection.endTrack);
+                const endTrack = Math.max(this.selection.startTrack, this.selection.endTrack);
+                const startStep = Math.min(this.selection.startStep, this.selection.endStep);
+                const endStep = Math.max(this.selection.startStep, this.selection.endStep);
 
-            pasteSelection() {
-                if (!this.clipboard.pattern) {
-                    alert('剪貼簿是空的！請先複製一個選區。');
-                    return;
-                }
-                if (this.selection.startStep === null || this.selection.trackIndex === null || this.selection.endStep !== null) {
-                    alert('請先在目標音軌點擊一個儲存格作為貼上的起點。');
-                    return;
-                }
-                const targetTrackIndex = this.selection.trackIndex;
-				
-                const pasteStartStep = this.selection.startStep;
-                const pasteEndStep = pasteStartStep + this.clipboard.pattern.length - 1;
-                const totalSteps = this.totalBeats * this.stepsPerBeat;
-
-                if (pasteEndStep >= totalSteps) {
-                    const stepsNeeded = pasteEndStep - totalSteps + 1;
-                    const beatsNeeded = Math.ceil(stepsNeeded / this.stepsPerBeat);
-                    const beatsToAdd = Math.ceil(beatsNeeded / 4) * 4;
-                    if (window.confirm(`貼上內容會超出範圍，是否要自動擴充 ${beatsToAdd} 拍？`)) {
-                        this.expandBeats(beatsToAdd);
-                    } else {
-                        return;
+                for (let t = startTrack; t <= endTrack; t++) {
+                    for (let s = startStep; s <= endStep; s++) {
+                        const el = document.querySelector(`.step[data-track="${t}"][data-step="${s}"]`);
+                        if (el) el.classList.add('selected');
                     }
                 }
-                
-                const targetTrack = this.tracks[targetTrackIndex];
-                for (let i = 0; i < this.clipboard.pattern.length; i++) {
-                    const stepIndex = pasteStartStep + i;
-                    if (stepIndex < targetTrack.steps.length) {
-                        targetTrack.steps[stepIndex] = this.clipboard.pattern[i];
-						if (this.clipboard.markers) { // 檢查是否有 markers 資料可貼
-                       targetTrack.markers[stepIndex] = this.clipboard.markers[i]; // <--- 新增
-					   }
-                    }
-                }
-
-                for (let i = 0; i < this.clipboard.pattern.length; i++) {
-                     const stepIndex = pasteStartStep + i;
-                     const stepElement = document.querySelector(`.step[data-track="${targetTrackIndex}"][data-step="${stepIndex}"]`);
-                     if (stepElement) {
-                        stepElement.classList.toggle('active', targetTrack.steps[stepIndex]);
-                         if (this.showNumbers) {
-                            const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
-                            stepElement.textContent = targetTrack.steps[stepIndex] ? beatNumber : '';
-                        }
-                     }
-                }
-                
-				
-				 // 為了簡化，直接重新渲染整個軌道來顯示貼上的標記
-				this.renderTracks(); 
-				
-                this.clearSelection();
-                alert('貼上成功！');
-                this.saveState();	
             }
+
+			copySelection() {
+				if (this.selection.startTrack === null || this.selection.endTrack === null) {
+					alert('請先點擊兩個格子來框選一個區域！');
+					return;
+				}
+				
+				const startTrack = Math.min(this.selection.startTrack, this.selection.endTrack);
+				const endTrack = Math.max(this.selection.startTrack, this.selection.endTrack);
+				const startStep = Math.min(this.selection.startStep, this.selection.endStep);
+				const endStep = Math.max(this.selection.startStep, this.selection.endStep);
+
+				const patternData = {
+					steps: [],
+					markers: []
+				};
+
+				for (let t = startTrack; t <= endTrack; t++) {
+					patternData.steps.push(this.tracks[t].steps.slice(startStep, endStep + 1));
+					patternData.markers.push(this.tracks[t].markers.slice(startStep, endStep + 1));
+				}
+
+				this.clipboard.pattern = patternData;
+				alert(`已複製 ${endTrack - startTrack + 1} 軌 x ${endStep - startStep + 1} 格的樣式！`);
+			}
+
+			async pasteSelection() {
+				if (!this.clipboard.pattern) {
+					alert('剪貼簿是空的！請先複製或載入一個樣式。');
+					return;
+				}
+				// 【核心修改】檢查使用者是否只點擊了「一個」格子
+				if (this.selection.startTrack === null ||
+					this.selection.startTrack !== this.selection.endTrack ||
+					this.selection.startStep !== this.selection.endStep) {
+					alert('請先在目標音軌【單次點擊】一個儲存格作為貼上的左上角起點。');
+					return;
+				}
+
+				const pasteStartTrack = this.selection.startTrack;
+				const pasteStartStep = this.selection.startStep;
+				
+				// ... (這部分貼上的核心邏輯是正確的，無需修改，保持原樣)
+				const patternHeight = this.clipboard.pattern.steps.length;
+				const patternWidth = this.clipboard.pattern.steps[0].length;
+				const tracksNeeded = (pasteStartTrack + patternHeight) - this.tracks.length;
+				if (tracksNeeded > 0) {
+					if ((this.tracks.length + tracksNeeded) > this.maxTracks) {
+						alert(`貼上需要 ${tracksNeeded} 個新音軌，已超過 ${this.maxTracks} 軌的數量上限，無法執行貼上。`);
+						return;
+					}
+					if (window.confirm(`貼上內容會超出音軌範圍，是否要自動新增 ${tracksNeeded} 個音軌？`)) {
+						for (let i = 0; i < tracksNeeded; i++) this.addTrack();
+					} else {
+						return;
+					}
+				}
+				const pasteEndStep = pasteStartStep + patternWidth - 1;
+				if (pasteEndStep >= this.totalBeats * this.stepsPerBeat) {
+					const stepsNeeded = pasteEndStep - (this.totalBeats * this.stepsPerBeat) + 1;
+					const beatsNeeded = Math.ceil(stepsNeeded / this.stepsPerBeat);
+					const beatsToAdd = Math.ceil(beatsNeeded / 4) * 4;
+					if (window.confirm(`貼上內容會超出拍數範圍，是否要自動擴充 ${beatsToAdd} 拍？`)) {
+						this.expandBeats(beatsToAdd);
+					} else {
+						return;
+					}
+				}
+				for (let t = 0; t < patternHeight; t++) {
+					const targetTrackIndex = pasteStartTrack + t;
+					if (this.tracks[targetTrackIndex]) {
+						for (let s = 0; s < patternWidth; s++) {
+							const targetStepIndex = pasteStartStep + s;
+							if (targetStepIndex < this.tracks[targetTrackIndex].steps.length) {
+								this.tracks[targetTrackIndex].steps[targetStepIndex] = this.clipboard.pattern.steps[t][s];
+								this.tracks[targetTrackIndex].markers[targetStepIndex] = this.clipboard.pattern.markers[t][s];
+							}
+						}
+					}
+				}
+				// ... (貼上邏輯結束)
+
+				this.renderTracks();
+				this.saveState();
+				alert('貼上成功！');
+				
+				// 【新增】貼上成功後，自動清除選取狀態，方便進行下一步操作
+				this.clearSelection(); 
+			}
+
+            saveSelectionAsPattern() {
+                if (this.selection.startTrack === null || this.selection.endTrack === null) {
+                    alert('請先點擊兩個格子來框選一個區域！');
+                    return;
+                }
+                this.copySelection();
+                if (!this.clipboard.pattern) return;
+
+                const dataStr = JSON.stringify(this.clipboard.pattern, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `beatmaker-style-${new Date().toISOString().slice(0, 10)}.pa`;
+                link.click();
+            }
+
+            async loadPatternToClipboard(file) {
+                if (!file) return;
+                try {
+                    const text = await file.text();
+                    const patternData = JSON.parse(text);
+
+                    if (!patternData.steps || !patternData.markers || !Array.isArray(patternData.steps)) {
+                         throw new Error('無效的 .pa 檔案格式');
+                    }
+                    
+                    this.clipboard.pattern = patternData;
+                    alert('樣式已成功載入到剪貼簿！現在可以選擇一個起始點並貼上。');
+                } catch (error) {
+                    alert('載入樣式失敗：' + error.message);
+                }
+            }
+
 
             handleSoundModeChange(drumKey, newMode) {
                 if (drumKey && newMode) {
@@ -2534,8 +2659,8 @@
                 if(radioToCheck) radioToCheck.checked = true;
 
                 // Update system sample availability
-                const systemLabel = itemContainer.querySelector('label:has(input[value="system"])');
-                const systemInput = itemContainer.querySelector('input[value="system"]');
+				const systemInput = itemContainer.querySelector('input[value="system"]');
+				const systemLabel = systemInput ? systemInput.closest('label') : null;
                 if (systemLabel && systemInput) {
                     const isSystemAvailable = !!sound.defaultSampleBuffer;
                     systemLabel.classList.toggle('disabled', !isSystemAvailable && !sound.isLoadingDefault);
@@ -2606,12 +2731,14 @@
 
             exportPattern() {
                 const pattern = {
-                    version: '2.2-dynamic-tracks', 
+					version: '2.4-global-volume', 
 					trackCount: this.tracks.length, 
                     totalBeats: this.totalBeats,
                     bpm: this.bpm,
+					globalVolume: this.globalVolume,
                     mode: this.mode,
                     showNumbers: this.showNumbers,
+					showMarkers: this.showMarkers, 
                     stepsPerBeat: this.stepsPerBeat,
                     tracks: this.tracks.map(track => ({
 						label: track.label, 
@@ -2637,90 +2764,100 @@
                 link.click();
             }
 
-            async importPattern(file) {
-                if (!file) return;
-                if (!window.confirm('匯入新鼓譜將會覆蓋目前的內容，確定要繼續嗎？')) {
-                    document.getElementById('fileInput').value = ''; // 清空選擇，以便下次能選同一個檔案
-                    return;
-                }
+			async importPattern(file) {
+				if (!file) return;
+				if (!window.confirm('匯入新鼓譜將會覆蓋目前的內容，確定要繼續嗎？')) {
+					document.getElementById('fileInput').value = '';
+					return;
+				}
 
-                try {
-                    const text = await file.text();
-                    const pattern = JSON.parse(text);
+				try {
+					const text = await file.text();
+					const pattern = JSON.parse(text);
 
-                    if (!pattern.version || !pattern.tracks) {
-                        throw new Error('無效的檔案格式或檔案已損壞');
-                    }
-                    if (this.isPlaying) this.stop();
+					if (!pattern.version || !pattern.tracks) {
+						throw new Error('無效的檔案格式或檔案已損壞');
+					}
+					if (this.isPlaying) this.stop();
 
-                    // --- 核心修改：完全根據檔案來重建狀態 ---
-                    this.totalBeats = pattern.totalBeats || 8;
-                    this.bpm = pattern.bpm || 65;
-                    this.mode = pattern.mode || 'ensemble';
-                    this.showNumbers = pattern.showNumbers || false;
-                    this.stepsPerBeat = pattern.stepsPerBeat || 4;
-                    
-                    // 1. 清空現有音軌
-                    this.tracks = []; 
-                    
-                    // 2. 根據檔案中的 tracks 數據重新建立音軌
-                    this.tracks = pattern.tracks.map((trackData, index) => ({
-                        id: index,
-                        label: trackData.label || this.defaultTrackLabels[index] || `T${index + 1}`,
-                        drumType: trackData.drumType || this.defaultDrums[index] || 'agogo',
-                        steps: trackData.steps || Array(this.totalBeats * this.stepsPerBeat).fill(false),
-                        markers: trackData.markers || Array(this.totalBeats * this.stepsPerBeat).fill(null),
-                        enabled: trackData.enabled !== undefined ? trackData.enabled : true,
-                        soundEnabled: trackData.soundEnabled !== undefined ? trackData.soundEnabled : true,
-                        volume: trackData.volume !== undefined ? trackData.volume : 0.8
-                    }));
+					// --- 核心修改：完全根據檔案來重建狀態 ---
+					this.totalBeats = pattern.totalBeats || 8;
+					this.bpm = pattern.bpm || 65;
 
-                    // 向下相容舊版沒有 trackCount 的檔案
-                    if (!pattern.trackCount && this.tracks.length < this.minTracks) {
-                        while (this.tracks.length < this.minTracks) { this.addTrack(); }
-                    }
-                    // --- 修改結束 ---
+					// ======[ 核心修改 #1：讀取全域音量 ]======
+					// 使用 ?? (Nullish Coalescing Operator) 來處理舊檔案
+					// 這樣即使 volume 是 0 也能正確讀取，只有在 null 或 undefined 時才使用預設值
+					this.globalVolume = pattern.globalVolume ?? 0.8; 
+					// =========================================
 
-                    if (pattern.drumSounds) {
-                         Object.keys(pattern.drumSounds).forEach(key => {
-                            if (this.drumSounds[key]) {
-                                const defaults = this.getDefaultSoundParams();
-                                const imported = pattern.drumSounds[key];
-                                this.drumSounds[key] = { ...defaults, ...this.drumSounds[key], ...imported };
-                                this.drumSounds[key].userSampleBuffer = null;
-                                this.drumSounds[key].userSampleFileName = imported.userSampleFileName || '';
-                            }
-                        });
-                        this.initSoundAdjustPanel();
-                    }
+					this.mode = pattern.mode || 'ensemble';
+					this.showNumbers = pattern.showNumbers || false;
+					this.showMarkers = pattern.showMarkers || false; 
+					this.stepsPerBeat = pattern.stepsPerBeat || 4;
+					
+					// ... (後續的 tracks 和 drumSounds 處理邏輯保持不變) ...
+					this.tracks = []; 
+					this.tracks = pattern.tracks.map((trackData, index) => ({
+						id: index,
+						label: trackData.label || this.defaultTrackLabels[index] || `T${index + 1}`,
+						drumType: trackData.drumType || this.defaultDrums[index] || 'agogo',
+						steps: trackData.steps || Array(this.totalBeats * this.stepsPerBeat).fill(false),
+						markers: trackData.markers || Array(this.totalBeats * this.stepsPerBeat).fill(null),
+						enabled: trackData.enabled !== undefined ? trackData.enabled : true,
+						soundEnabled: trackData.soundEnabled !== undefined ? trackData.soundEnabled : true,
+						volume: trackData.volume !== undefined ? trackData.volume : 0.8
+					}));
+					if (!pattern.trackCount && this.tracks.length < this.minTracks) {
+						while (this.tracks.length < this.minTracks) { this.addTrack(); }
+					}
+					if (pattern.drumSounds) {
+						 Object.keys(pattern.drumSounds).forEach(key => {
+							if (this.drumSounds[key]) {
+								const defaults = this.getDefaultSoundParams();
+								const imported = pattern.drumSounds[key];
+								this.drumSounds[key] = { ...defaults, ...this.drumSounds[key], ...imported };
+								this.drumSounds[key].userSampleBuffer = null;
+								this.drumSounds[key].userSampleFileName = imported.userSampleFileName || '';
+							}
+						});
+						this.initSoundAdjustPanel();
+					}
 
-                    document.getElementById('bpmInput').value = this.bpm;
-                    document.getElementById('showNumbers').checked = this.showNumbers;
-                    document.querySelectorAll('.mode-btn').forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.mode === this.mode);
-                    });
-                    document.querySelectorAll('.beat-setting-btn').forEach(btn => {
-                        btn.classList.toggle('active', parseInt(btn.dataset.beatSetting) === this.stepsPerBeat);
-                    });
+					// --- 更新 UI 介面 ---
+					document.getElementById('bpmInput').value = this.bpm;
+					
+					// ======[ 核心修改 #2：更新音量輸入框的 UI ]======
+					document.getElementById('globalVolumeInput').value = Math.round(this.globalVolume * 100);
+					// ===============================================
 
-                    this.updateExpandButton();
-                    this.renderTracks();
-                    this.initScrollPosition();
-                    this.updateStepSize();
-                    this.clearSelection();
-                    this.saveState(true); 
-                    alert('鼓譜匯入成功！');
-                } catch (error) {
-                    alert('匯入失敗：' + error.message);
-                }
-                document.getElementById('fileInput').value = '';
-            }
+					document.getElementById('showNumbers').checked = this.showNumbers;
+					document.getElementById('showMarkersCheckbox').checked = this.showMarkers;
+					document.querySelector('.container').classList.toggle('markers-visible', this.showMarkers);
+					document.querySelectorAll('.mode-btn').forEach(btn => {
+						btn.classList.toggle('active', btn.dataset.mode === this.mode);
+					});
+					document.querySelectorAll('.beat-setting-btn').forEach(btn => {
+						btn.classList.toggle('active', parseInt(btn.dataset.beatSetting) === this.stepsPerBeat);
+					});
+
+					this.updateExpandButton();
+					this.renderTracks();
+					this.initScrollPosition();
+					this.updateStepSize();
+					this.clearSelection();
+					this.saveState(true); 
+					alert('鼓譜匯入成功！');
+				} catch (error) {
+					alert('匯入失敗：' + error.message);
+				}
+				document.getElementById('fileInput').value = '';
+			}
 
 	        async exportMP3() {
 				const loopCountSelect = document.getElementById('loopCountSelect');
 				let loopCount = parseInt(loopCountSelect.value) || 1;
 				
-                if (typeof lamejs === 'UNundefined') {
+                if (typeof lamejs === 'undefined') {
                     alert('MP3 編碼函式庫 (lame.min.js) 載入失敗！請檢查您的網路連線或 CDN 連結是否正確。');
                     return;
                 }
@@ -2833,194 +2970,200 @@
 			
 			scheduleSound(context, time, drumType, soundEnabled = true, trackVolume = 1.0) {
 				if (!soundEnabled) return;
-				
-                const sound = this.drumSounds[drumType];
-                if (!sound) return;
-				
-
-				//判斷是否為拖拍樂器
+				const sound = this.drumSounds[drumType];
+				if (!sound) return;
 
 				if (drumType.includes('-drag')) {
 					this.scheduleDrumRoll(context, time, drumType, soundEnabled, trackVolume);
-					return; // 呼叫完專用函式後，直接結束，不再執行下面的舊邏輯
+					return;
 				}
 
-                let source;
-                let bufferToPlay = null;
+				let source;
+				let bufferToPlay = null;
 
-                if (sound.mode === 'system' && sound.defaultSampleBuffer) {
-                    bufferToPlay = sound.defaultSampleBuffer;
-                } else if (sound.mode === 'user' && sound.userSampleBuffer) {
-                    bufferToPlay = sound.userSampleBuffer;
-                }
-                
-                if (bufferToPlay) {
-                    source = context.createBufferSource();
-                    source.buffer = bufferToPlay;
-                    const playbackRate = Math.pow(2, sound.detune / 1200);
-                    source.playbackRate.setValueAtTime(playbackRate, time);
-                } else { // Synth mode
-                    source = context.createOscillator();
-                    source.type = sound.synthType;
-                    source.frequency.setValueAtTime(sound.synthBaseFreq, time);
-                    source.detune.setValueAtTime(sound.detune, time);
-                     if (drumType === 'cuica') source.frequency.exponentialRampToValueAtTime(sound.synthBaseFreq * 0.5, time + sound.release);
-                     if (drumType === 'pandeiro') source.frequency.exponentialRampToValueAtTime(sound.synthBaseFreq * 0.7, time + sound.release * 0.5);
-                }
+				if (sound.mode === 'system' && sound.defaultSampleBuffer) {
+					bufferToPlay = sound.defaultSampleBuffer;
+				} else if (sound.mode === 'user' && sound.userSampleBuffer) {
+					bufferToPlay = sound.userSampleBuffer;
+				}
+				
+				if (bufferToPlay) {
+					source = context.createBufferSource();
+					source.buffer = bufferToPlay;
+					const playbackRate = Math.pow(2, sound.detune / 1200);
+					source.playbackRate.setValueAtTime(playbackRate, time);
+				} else { 
+					source = context.createOscillator();
+					source.type = sound.synthType;
+					source.frequency.setValueAtTime(sound.synthBaseFreq, time);
+					source.detune.setValueAtTime(sound.detune, time);
+					 if (drumType === 'cuica') source.frequency.exponentialRampToValueAtTime(sound.synthBaseFreq * 0.5, time + sound.release);
+					 if (drumType === 'pandeiro') source.frequency.exponentialRampToValueAtTime(sound.synthBaseFreq * 0.7, time + sound.release * 0.5);
+				}
 
-                const envelopeGain = context.createGain();
-                envelopeGain.gain.setValueAtTime(0, time);
-                envelopeGain.gain.linearRampToValueAtTime(sound.gain * trackVolume, time + sound.attack);
-                envelopeGain.gain.linearRampToValueAtTime(0, time + sound.attack + sound.release);
+				// ======[ 核心修改：計算最終音量 ]======
+				let finalGain = sound.gain * trackVolume;
+				// 只有在即時播放時 (context 是 this.audioContext)，才套用全域音量
+				if (context === this.audioContext) {
+					finalGain *= this.globalVolume;
+				}
+				// ===================================
 
-                const panner = new StereoPannerNode(context, { pan: sound.pan });
-                
-                const filter = context.createBiquadFilter();
-                filter.type = "lowpass";
-                filter.frequency.setValueAtTime(sound.filterFreq, time);
-                filter.Q.setValueAtTime(sound.filterQ, time);
+				const envelopeGain = context.createGain();
+				envelopeGain.gain.setValueAtTime(0, time);
+				envelopeGain.gain.linearRampToValueAtTime(finalGain, time + sound.attack); // 使用 finalGain
+				envelopeGain.gain.linearRampToValueAtTime(0, time + sound.attack + sound.release);
 
-                source.connect(filter).connect(panner).connect(envelopeGain).connect(context.destination);
-                
-                source.start(time);
-                const stopTime = time + sound.attack + sound.release + 0.1;
-                // Oscillator must be stopped, BufferSource stops automatically
-                if (source.constructor.name === "OscillatorNode") {
-                    source.stop(stopTime);
-                }
+				const panner = new StereoPannerNode(context, { pan: sound.pan });
+				const filter = context.createBiquadFilter();
+				filter.type = "lowpass";
+				filter.frequency.setValueAtTime(sound.filterFreq, time);
+				filter.Q.setValueAtTime(sound.filterQ, time);
+
+				source.connect(filter).connect(panner).connect(envelopeGain).connect(context.destination);
+				source.start(time);
+				if (source.constructor.name === "OscillatorNode") {
+					source.stop(time + sound.attack + sound.release + 0.1);
+				}
 			}
 			
 
             // 專門用來排程連續敲擊音效 (鼓卷/拖拍) 的函式
-
 			scheduleDrumRoll(context, time, drumType, soundEnabled = true, trackVolume = 1.0) {
-                if (!soundEnabled) return;
-                
-                const sound = this.drumSounds[drumType];
-                if (!sound) return;
+				if (!soundEnabled) return;
+				const sound = this.drumSounds[drumType];
+				if (!sound) return;
 
-                // --- 修改：從 sound 物件讀取參數，如果不存在則使用預設值 ---
-                const numBounces = sound.dragBounces || 5;
-                const rollDuration = sound.dragDuration || 0.15;
-                const gainDecay = sound.dragGainDecay || 0.5;
-                const timeStretch = sound.dragTimeStretch || 1.4;
+				const numBounces = sound.dragBounces || 5;
+				const rollDuration = sound.dragDuration || 0.15;
+				const gainDecay = sound.dragGainDecay || 0.5;
+				const timeStretch = sound.dragTimeStretch || 1.4;
 
-                let currentTimeOffset = 0;
-                let currentGain = sound.gain * trackVolume;
-                let currentInterval = rollDuration / (numBounces * 1.5);
+				let currentTimeOffset = 0;
+				
+				// ======[ 核心修改：計算初始音量 ]======
+				let currentGain = sound.gain * trackVolume;
+				// 只有在即時播放時，才套用全域音量
+				if (context === this.audioContext) {
+					currentGain *= this.globalVolume;
+				}
+				// ===================================
 
-                if (!this.whiteNoiseBuffer) {
-                    const bufferSize = context.sampleRate * 2;
-                    const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
-                    let output = buffer.getChannelData(0);
-                    for (let i = 0; i < bufferSize; i++) {
-                        output[i] = Math.random() * 2 - 1;
-                    }
-                    this.whiteNoiseBuffer = buffer;
-                }
+				let currentInterval = rollDuration / (numBounces * 1.5);
 
-                for (let i = 0; i < numBounces; i++) {
-                    const bounceTime = time + currentTimeOffset;
+				if (!this.whiteNoiseBuffer) {
+					const bufferSize = context.sampleRate * 2;
+					const buffer = context.createBuffer(1, bufferSize, context.sampleRate);
+					let output = buffer.getChannelData(0);
+					for (let i = 0; i < bufferSize; i++) {
+						output[i] = Math.random() * 2 - 1;
+					}
+					this.whiteNoiseBuffer = buffer;
+				}
 
-                    const osc = context.createOscillator();
-                    osc.type = sound.synthType;
-                    const baseFreq = sound.synthBaseFreq * (i === 0 ? 1 : 0.9);
-                    osc.frequency.setValueAtTime(baseFreq, bounceTime);
-                    osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, bounceTime + 0.05);
+				for (let i = 0; i < numBounces; i++) {
+					// ... (後續的 for 迴圈內程式碼保持不變) ...
+					const bounceTime = time + currentTimeOffset;
 
-                    const noiseSource = context.createBufferSource();
-                    noiseSource.buffer = this.whiteNoiseBuffer;
+					const osc = context.createOscillator();
+					osc.type = sound.synthType;
+					const baseFreq = sound.synthBaseFreq * (i === 0 ? 1 : 0.9);
+					osc.frequency.setValueAtTime(baseFreq, bounceTime);
+					osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.5, bounceTime + 0.05);
 
-                    const envelope = context.createGain();
-                    envelope.gain.setValueAtTime(0, bounceTime);
-                    envelope.gain.linearRampToValueAtTime(currentGain, bounceTime + 0.01);
-                    envelope.gain.linearRampToValueAtTime(0, bounceTime + 0.04);
-                    
-                    const filter = context.createBiquadFilter();
-                    filter.type = "lowpass";
-                    filter.frequency.setValueAtTime(sound.filterFreq, bounceTime);
-                    filter.Q.setValueAtTime(sound.filterQ, time);
-                    
-                    const panner = new StereoPannerNode(context, { pan: sound.pan });
+					const noiseSource = context.createBufferSource();
+					noiseSource.buffer = this.whiteNoiseBuffer;
 
-                    osc.connect(envelope);
-                    noiseSource.connect(envelope);
-                    envelope.connect(filter).connect(panner).connect(context.destination);
+					const envelope = context.createGain();
+					envelope.gain.setValueAtTime(0, bounceTime);
+					envelope.gain.linearRampToValueAtTime(currentGain, bounceTime + 0.01);
+					envelope.gain.linearRampToValueAtTime(0, bounceTime + 0.04);
+					
+					const filter = context.createBiquadFilter();
+					filter.type = "lowpass";
+					filter.frequency.setValueAtTime(sound.filterFreq, bounceTime);
+					filter.Q.setValueAtTime(sound.filterQ, time);
+					
+					const panner = new StereoPannerNode(context, { pan: sound.pan });
 
-                    osc.start(bounceTime);
-                    noiseSource.start(bounceTime);
-                    osc.stop(bounceTime + 0.1);
-                    noiseSource.stop(bounceTime + 0.1);
+					osc.connect(envelope);
+					noiseSource.connect(envelope);
+					envelope.connect(filter).connect(panner).connect(context.destination);
 
-                    currentGain *= gainDecay;
-                    currentTimeOffset += currentInterval;
-                    currentInterval *= timeStretch;
-                }
-            }
+					osc.start(bounceTime);
+					noiseSource.start(bounceTime);
+					osc.stop(bounceTime + 0.1);
+					noiseSource.stop(bounceTime + 0.1);
+
+					currentGain *= gainDecay;
+					currentTimeOffset += currentInterval;
+					currentInterval *= timeStretch;
+				}
+			}
 			
 
-            setupKeyboardShortcuts() {
-                document.addEventListener('keydown', (e) => {
-                    // 如果正在編輯軌道標籤或BPM，則不觸發大部分快速鍵
-                    if (e.target.tagName === 'INPUT') {
-                         if (e.key === 'Escape') e.target.blur(); // ESC 可以取消編輯
-                         if (e.key === 'Enter') e.target.blur(); // Enter 可以確認編輯
-                        return;
-                    }
-                    
-                    if (e.ctrlKey || e.metaKey) { // MetaKey for Mac
-                        switch(e.key.toLowerCase()) {
-                            case 's': e.preventDefault(); this.exportPattern(); break;
-                            case 'z': e.preventDefault(); e.shiftKey ? this.redo() : this.undo(); break;
-                            case 'y': e.preventDefault(); this.redo(); break;
-                            case 'c': if(this.selectionMode) { e.preventDefault(); this.copySelection(); } break;
-                            case 'v': if(this.selectionMode) { e.preventDefault(); this.pasteSelection(); } break;
-                        }
-                    } else {
-                        // 處理標記模式下的專屬快速鍵
-                        if (this.markingMode) {
-                            const markerControls = document.getElementById('markerControls');
-                            let markerToSelect = null;
-
-                            switch(e.key.toLowerCase()) {
-                                case 'r': markerToSelect = 'R'; break;
-                                case 'l': markerToSelect = 'L'; break;
-                                case 'x': markerToSelect = 'eraser'; break;
-                            }
-
-                            if (markerToSelect) {
-                                e.preventDefault();
-                                markerControls.querySelector('.marker-btn.active').classList.remove('active');
-                                const newActiveBtn = markerControls.querySelector(`.marker-btn[data-marker="${markerToSelect}"]`);
-                                if (newActiveBtn) {
-                                    newActiveBtn.classList.add('active');
-                                    this.currentMarker = markerToSelect;
-                                }
-                                return; // 處理完畢，不再執行後續 switch
-                            }
-                        }
-                        
-                        //處理一般模式下的快速鍵
-                        switch(e.key) {
-                            case ' ': e.preventDefault(); this.togglePlay(); break;
-                            case 's': // 新增：切換選擇模式
-                                e.preventDefault();
-                                document.getElementById('selectBtn').click();
-                                break;
-                            case 'm': // 新增：切換標記模式
-                                e.preventDefault();
-                                document.getElementById('markBtn').click();
-                                break;
-                            case 'Escape':
-                                if (this.selectionMode) { this.toggleSelectionMode(); }
-                                if (this.markingMode) { document.getElementById('markBtn').click(); }
-                                break;
-                            case 'ArrowUp': e.preventDefault(); this.adjustBPM(5); break;
-                            case 'ArrowDown': e.preventDefault(); this.adjustBPM(-5); break;
-                        }
-                    }
-                });
-            }
+			setupKeyboardShortcuts() {
+				document.addEventListener('keydown', (e) => {
+					// 如果正在編輯軌道標籤或BPM，則不觸發大部分快速鍵
+					if (e.target.tagName === 'INPUT') {
+						 if (e.key === 'Escape' || e.key === 'Enter') e.target.blur();
+						return;
+					}
+					
+					if (e.ctrlKey || e.metaKey) { // MetaKey for Mac
+						switch(e.key.toLowerCase()) {
+							case 's': e.preventDefault(); this.exportPattern(); break;
+							case 'z': e.preventDefault(); e.shiftKey ? this.redo() : this.undo(); break;
+							case 'y': e.preventDefault(); this.redo(); break;
+							case 'c': if(this.selectionMode) { e.preventDefault(); this.copySelection(); } break;
+							case 'v': if(this.selectionMode) { e.preventDefault(); this.pasteSelection(); } break;
+						}
+					} else {
+						// 處理標記模式下的專屬快速鍵
+						if (this.markingMode) {
+							let markerToSelect = null;
+							switch(e.key.toLowerCase()) {
+								case 'r': markerToSelect = 'R'; break;
+								case 'l': markerToSelect = 'L'; break;
+								case 'x': markerToSelect = 'eraser'; break;
+							}
+							if (markerToSelect) {
+								e.preventDefault();
+								const markerControls = document.getElementById('markerControls');
+								markerControls.querySelector('.marker-btn.active').classList.remove('active');
+								const newActiveBtn = markerControls.querySelector(`.marker-btn[data-marker="${markerToSelect}"]`);
+								if (newActiveBtn) {
+									newActiveBtn.classList.add('active');
+									this.currentMarker = markerToSelect;
+								}
+								return;
+							}
+						}
+						
+						//處理一般模式下的快速鍵
+						switch(e.key) {
+							case ' ': e.preventDefault(); this.togglePlay(); break;
+							case 's':
+								e.preventDefault();
+								document.getElementById('selectBtn').click();
+								break;
+							case 'm':
+								e.preventDefault();
+								document.getElementById('markBtn').click();
+								break;
+							case 'Escape':
+								if (this.selectionMode) this.toggleSelectionMode();
+								if (this.markingMode) document.getElementById('markBtn').click();
+								break;
+							// 【核心修改】重新綁定上下左右鍵
+							case 'ArrowRight': e.preventDefault(); this.adjustBPM(1); break;
+							case 'ArrowLeft': e.preventDefault(); this.adjustBPM(-1); break;
+							case 'ArrowUp': e.preventDefault(); this.adjustGlobalVolume(1); break;
+							case 'ArrowDown': e.preventDefault(); this.adjustGlobalVolume(-1); break;
+						}
+					}
+				});
+			}
 
             adjustBPM(delta) {
                 const bpmInput = document.getElementById('bpmInput');
@@ -3035,6 +3178,15 @@
                     this.play();
                 }
             }
+			
+			adjustGlobalVolume(delta) {
+				const volumeInput = document.getElementById('globalVolumeInput');
+				let newVolume = parseInt(volumeInput.value) + delta;
+				newVolume = Math.max(0, Math.min(100, newVolume)); // 限制在 0-100 之間
+				
+				this.globalVolume = newVolume / 100;
+				volumeInput.value = newVolume;
+			}			
             // ===========================================
 			
         }
