@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SambaBeatmaker - 森巴鼓團練習程式(Pro)</title>
-	
+
 	<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
-	
+
     <style>
         :root {
             --step-size: 30px;
@@ -94,7 +94,7 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
         }
-        
+
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -106,8 +106,8 @@
 			background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
 			box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
         }
-       
-		
+
+
         .btn.warning {
             background: linear-gradient(135deg, #ffc107 0%, #ffa000 100%);
         }
@@ -115,7 +115,7 @@
         .btn.warning:hover:not(:disabled) {
             box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
         }
-        
+
         .btn.action-btn {
             background: linear-gradient(135deg, #33aaff 0%, #0088cc 100%);
         }
@@ -201,7 +201,7 @@
 			background: rgba(255, 255, 255, 0.1);
 			border: 2px solid #00ff88;
 			color: #00ff88;
-			width: 34px; 
+			width: 34px;
 			height: 34px;
 			padding: 0;
 			display: flex;
@@ -244,7 +244,7 @@
             backdrop-filter: blur(10px);
             position: relative;
             display: flex;
-            height: auto; 
+            height: auto;
         }
 
 		.tracks-controls {
@@ -252,7 +252,7 @@
 			flex-shrink: 0;
 			background: rgba(0, 0, 0, 0.5);
 			border-radius: 10px;
-			padding: 8px; 
+			padding: 8px;
 			margin-right: 10px;
 			margin-top: 20px;
 			overflow-y: auto;
@@ -260,18 +260,18 @@
 			transition: width 0.3s ease, padding 0.3s ease;
 			position: relative;
             display: flex;
-            flex-direction: column; 
+            flex-direction: column;
 		}
-        
+
         #trackControls {
-            flex-grow: 1; 
+            flex-grow: 1;
         }
 
 		.tracks-controls.collapsed {
 			width: 60px;
 			padding: 8px 4px;
 		}
-		
+
 		.collapse-btn {
 			background: rgba(0, 255, 136, 0.2);
 			border: 1px solid #00ff88;
@@ -286,8 +286,8 @@
 			justify-content: center;
 			transition: all 0.3s ease;
 			z-index: 10;
-            flex-shrink: 0; 
-            margin: 8px 0 0 auto; 
+            flex-shrink: 0;
+            margin: 8px 0 0 auto;
 		}
 
 		.collapse-btn:hover {
@@ -298,8 +298,8 @@
 			width: 32px;
 			height: 32px;
             margin-top: 5px;
-			margin-left: auto;  
-			margin-right: auto;  
+			margin-left: auto;
+			margin-right: auto;
 		}
 
         .tracks-sequencer {
@@ -323,15 +323,15 @@
             min-height: 42px;
 			transition: all 0.3s ease;
         }
-		
+
 		.tracks-controls.collapsed .track-control-item {
 			padding: 5px 4px;
-			margin-bottom: 5px; 
+			margin-bottom: 5px;
 			min-height: 42px;
 			justify-content: center;
 			align-items: center;
 		}
-		
+
 		.tracks-controls.collapsed .drum-select,
 		.tracks-controls.collapsed .track-controls,
 		.tracks-controls.collapsed .volume-control {
@@ -581,7 +581,7 @@
             gap: 10px;
             margin-bottom: 10px;
         }
-		
+
 
         .sound-control-item {
             padding: 15px;
@@ -645,7 +645,7 @@
             flex-direction: column;
             gap: 5px;
         }
-        
+
         .unified-sound-params label.disabled {
             opacity: 0.4;
             pointer-events: none;
@@ -664,7 +664,7 @@
             padding: 4px;
             border-radius: 4px;
         }
-        
+
         .param-value-display {
             font-weight: bold;
             color: #00ff88;
@@ -677,11 +677,11 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .sample-controls {
             margin-top: 15px;
         }
-        
+
         .sample-controls .btn-small {
             padding: 6px 12px;
             font-size: 12px;
@@ -699,7 +699,7 @@
             text-overflow: ellipsis;
             vertical-align: middle;
         }
-        
+
         .test-btn {
             background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
             border: none;
@@ -750,14 +750,14 @@
                 flex-direction: column;
                 height: auto;
             }
-            
+
             .tracks-controls {
                 width: 100%;
                 margin-right: 0;
                 margin-bottom: 15px;
                 max-height: 350px;
             }
-            
+
             .tracks-sequencer {
                 height: 400px;
             }
@@ -765,10 +765,10 @@
 
 		@media (max-width: 800px) {
             .step {
-                font-size: 8px; 
+                font-size: 8px;
             }
         }
-        
+
 		.btn.loading {
             cursor: wait;
             background: linear-gradient(135deg, #555 0%, #333 100%);
@@ -782,7 +782,7 @@
 			color: rgba(255, 255, 255, 0.5);
 			font-size: 14px;
 		}
-		
+
         @media (min-width: 801px) {
             .steps {
                 gap: 2px;
@@ -858,7 +858,7 @@
 			height: 100%;
 			border: none;
 		}
-		
+
 		.beats-info-container {
 			display: flex;
 			align-items: center;
@@ -867,7 +867,7 @@
 		.beats-info-container .beat-setting-label {
 			margin-right: 5px; /* 縮小文字和數字間的距離 */
 		}
-	
+
 		/* 1. 定義新的按鈕顏色 */
 
 		/* 資訊按鈕 (紫色) - 用於 "使用說明" */
@@ -885,7 +885,7 @@
 		.btn.btn-special:hover:not(:disabled) {
 			box-shadow: 0 5px 15px rgba(26, 188, 156, 0.4);
 		}
-		
+
 		.btn.btn-marking {
 			background: linear-gradient(135deg, #26c6da 0%, #00acc1 100%);
 		}
@@ -940,8 +940,8 @@
 		.btn.btn-help:hover:not(:disabled) {
 			box-shadow: 0 5px 15px rgba(233, 30, 99, 0.4);
 		}
-		
-				
+
+
 		.tracks-footer-controls {
             display: flex;
             justify-content: center; /* 讓按鈕居中 */
@@ -987,7 +987,7 @@
             align-items: center;
             justify-content: center;
         }
-		
+
 		.marker-controls #clearBtn {
 			background: transparent;
 			border: 2px solid #e74c3c; /* 紅色邊框，表示危險操作 */
@@ -1040,15 +1040,15 @@
             pointer-events: none; /* 讓標記文字不會干擾點擊 */
             text-shadow: 0 0 5px black;
         }
-        
+
         /* 當格子同時被啟用時，稍微降低標記的透明度以突顯背景 */
         .step.active .marker-text {
             opacity: 0.85;
         }
-		
+
 		/* 預設隱藏標記文字 */
         .step .marker-text {
-            display: none; 
+            display: none;
         }
 
         /* 當 .container 擁有 .markers-visible 類別時，才顯示標記文字 */
@@ -1065,7 +1065,7 @@
             right: 4px;     /* 靠右對齊 */
             transform: none; /* 取消置中用的 transform */
         }
-		
+
 		 .track-number input {
             width: 100%;
             height: 100%;
@@ -1108,7 +1108,7 @@
             color: #ff9900;
             border-color: #ff9900;
         }
-		
+
     </style>
 
 
@@ -1123,7 +1123,7 @@
 				<div class="control-group">
 					<button class="btn btn-help" id="helpBtn">? 使用說明</button>
 				</div>
-				
+
 				<!-- Group: 調音  -->
 				<div class="control-group">
 					<button class="btn btn-special" id="soundAdjustBtn">🎵 調音</button>
@@ -1136,7 +1136,7 @@
 
 				<!-- Group: 危險操作 -->
 				<div class="control-group">
-					
+
 					<button class="btn btn-danger" id="resetBtn">重置音格</button>
 				</div>
 
@@ -1162,9 +1162,9 @@
 
                 <div class="control-group">
                     <button class="btn btn-marking" id="markBtn">LR 標記</button>
-					
+
                 </div>
-				
+
 				<div id="markerControls" class="marker-controls" style="display: none;">
 					<button class="btn btn-marking" id="clearBtn">清除標記</button>
 					<button class="marker-btn" data-marker="R">R</button>
@@ -1173,7 +1173,7 @@
 						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
 					</button>
 				</div>
-				
+
 				<!-- Group: 檔案操作 (紫色) -->
 				<div class="control-group">
 					<button class="btn btn-info" id="exportBtn">存檔</button>
@@ -1181,9 +1181,9 @@
 					<button class="btn btn-info" id="exportMp3Btn">匯出MP3</button>
 					<input type="file" class="file-input" id="fileInput" accept=".json">
 				</div>
-				
 
-				
+
+
 				<!-- Group: 循環次數 -->
 				<div class="control-group">
 					<label for="loopCountSelect" style="color: white;">循環次數:</label>
@@ -1239,7 +1239,7 @@
                 <label for="showMarkersCheckbox">LR顯示</label>
             </div>
 
-			
+
         </div>
 
 		<div class="sequencer">
@@ -1247,32 +1247,32 @@
 			<div class="tracks-controls" id="tracksControls">
 				<!-- JS 會將所有音軌的控制項 (樂器選擇、音量等) 插入到這裡 -->
 				<div id="trackControls"></div>
-				
+
 				<!-- 面板底部的按鈕 (新增軌道、收合) -->
 				<div class="tracks-footer-controls">
 					<button class="collapse-btn" id="addTrackBtn" title="新增軌道">➕</button>
 					<button class="collapse-btn" id="collapseBtn" title="摺疊/展開控制面板">◀</button>
 				</div>
 			</div>
-			
+
 			<!-- (右側) 音序器網格 -->
 			<div class="tracks-sequencer">
 				<!-- 播放位置指示器 -->
 				<div class="position-indicator">
 					<div class="position-line" id="positionLine"></div>
 				</div>
-				
+
 				<!-- JS 會將所有音軌的節拍格 (steps) 插入到這裡 -->
 				<div id="trackSteps"></div>
 			</div>
 		</div>
-		
+
 		<div class="author-credit">
         程式作者：徐承佑 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  森巴鼓指導老師：陳仰真
 		</div>
     </div>
 	<!--  Sound Panel Overlay 背景 -->
-	<div class="sound-panel-overlay" id="soundPanelOverlay">	
+	<div class="sound-panel-overlay" id="soundPanelOverlay">
 		<div class="sound-panel" id="soundAdjustPanel">
 			<h3 style="margin-bottom: 20px; color: #00ff88; text-align: center;">🎵 樂器音色調整</h3>
 			<div class="sound-controls-grid" id="soundControlsContainer">
@@ -1283,26 +1283,26 @@
 				<button class="btn warning" id="resetSounds">重置音色</button>
 			</div>
 		</div>
-	</div>	
+	</div>
     <script>
-		 
+
         class AudioCache {
             constructor() {
                 this.cache = new Map();
             }
-            
+
             async getSample(url, audioContext) {
                 if (this.cache.has(url)) {
                     return this.cache.get(url);
                 }
-                
+
                 try {
                     const response = await fetch(url);
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    
+
                     const arrayBuffer = await response.arrayBuffer();
                     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                    
+
                     this.cache.set(url, audioBuffer);
                     return audioBuffer;
                 } catch (error) {
@@ -1311,12 +1311,12 @@
                 }
             }
         }
-       
 
-        
+
+
         class Beatmaker {
             constructor() {
-				this.audioCache = new AudioCache(); 
+				this.audioCache = new AudioCache();
 			    this.maxTracks = 16; // 最大軌道數
 				this.minTracks = 4;  // 最小軌道數
                 this.isPlaying = false;
@@ -1326,7 +1326,7 @@
 				this.globalVolume = 0.8; // 預設值 80%，即 0.8 的乘數
                 this.mode = 'ensemble';
                 this.showNumbers = false;
-				this.showMarkers = false; 
+				this.showMarkers = false;
 				this.stepInterval = null;
                 this.tracks = [];
                 this.totalBeats = 8;
@@ -1343,19 +1343,19 @@
                 this.clipboard = {
                     pattern: null
                 };
-				
+
 				this.markingMode = false;
 				this.currentMarker = 'eraser'; // 預設工具
-                
+
                 this.history = [];
                 this.historyIndex = -1;
-                this.maxHistory = 50; 
+                this.maxHistory = 50;
 
                 this.defaultTrackLabels  = ['S1', 'S2', 'S3', 'C', 'C', 'R', 'R', 'A'];
                 this.defaultDrums = ['surdo1', 'surdo2', 'surdo3', 'caixa', 'caixa', 'repinique', 'repinique', 'agogo'];
-                
+
                 this.defaultSampleUrls = {
-                    'repinique': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3', 
+                    'repinique': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3',
                     'surdo1': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3',
                     'surdo2': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3',
                     'surdo3': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3',
@@ -1365,7 +1365,7 @@
                     'agogo': '',
                     'pandeiro': ''
                 }
-                
+
                 this.initDrumSounds();
 
                 this.audioContext = null;
@@ -1374,7 +1374,7 @@
                 });
                 this.initTracks();
                 this.initUI();
-				
+
 				document.addEventListener('visibilitychange', () => {
 					if (document.visibilityState === 'visible' && this.audioContext) {
 						if (this.audioContext.state === 'suspended') {
@@ -1407,7 +1407,7 @@
                     userSampleBuffer: null,
                     userSampleFileName: '',
                 };
-            }         
+            }
 
 			initDrumSounds() {
 						this.drumSounds = {
@@ -1448,7 +1448,7 @@
 							}
 						};
 					}
-            
+
 
             saveState(force = false) {
                 const currentState = JSON.stringify({
@@ -1467,16 +1467,16 @@
                 });
 
                 if (!force && this.history.length > 0 && currentState === this.history[this.historyIndex]) {
-                    return; 
+                    return;
                 }
-                
+
                 if (this.historyIndex < this.history.length - 1) {
-                    this.history.splice(this.historyIndex + 1); 
+                    this.history.splice(this.historyIndex + 1);
                 }
 
                 this.history.push(currentState);
                 this.historyIndex++;
-                
+
                 if (this.history.length > this.maxHistory) {
                     this.history.shift();
                     this.historyIndex--;
@@ -1488,10 +1488,10 @@
             loadState(stateString) {
                 if (!stateString) return;
                 const state = JSON.parse(stateString);
-                
+
                 this.totalBeats = state.totalBeats;
                 this.stepsPerBeat = state.stepsPerBeat;
-								
+
                  // 核心修改：確保能正確還原包含 markers 的 tracks 數據
                 this.tracks = state.tracks.map((trackData, index) => ({
                     ...trackData,
@@ -1499,7 +1499,7 @@
                     // 向下相容，如果舊的狀態沒有 markers，就給一個空陣列
                     markers: trackData.markers || Array(this.totalBeats * this.stepsPerBeat).fill(null)
                 }));
-                
+
                 this.updateExpandButton();
                 document.querySelectorAll('.beat-setting-btn').forEach(btn => {
                     btn.classList.toggle('active', parseInt(btn.dataset.beatSetting) === this.stepsPerBeat);
@@ -1538,17 +1538,17 @@
 					console.warn('Web Audio API not supported');
 				}
 			}
-            
+
 				async loadDefaultSamples() {
 					for (const key in this.drumSounds) {
 						const sound = this.drumSounds[key];
 						if (sound.defaultSampleUrl && this.audioContext) {
 							sound.isLoadingDefault = true;
 							this.updateSoundControlUI(key);
-							
+
 							// 使用快取系統來獲取音訊
 							const buffer = await this.audioCache.getSample(sound.defaultSampleUrl, this.audioContext);
-							
+
 							if (buffer) {
 								sound.defaultSampleBuffer = buffer;
 								sound.mode = 'system';
@@ -1600,19 +1600,19 @@
 					volume: 0.8
 				}));
 			}
-			
+
 			addTrack() {
                 if (this.tracks.length >= this.maxTracks) {
                     alert(`最多只能有 ${this.maxTracks} 個軌道`);
                     return false;
                 }
-                
+
                 if (this.isPlaying) this.stop();
-                
+
                 const newTrackIndex = this.tracks.length;
                 const newTrack = {
                     id: newTrackIndex,
-                    label: 'UN', // 
+                    label: 'UN', //
                     drumType: this.defaultDrums[newTrackIndex] || 'agogo',
                     steps: Array(this.totalBeats * this.stepsPerBeat).fill(false),
                     markers: Array(this.totalBeats * this.stepsPerBeat).fill(null),
@@ -1620,7 +1620,7 @@
                     soundEnabled: true,
                     volume: 0.8
                 };
-                
+
                 this.tracks.push(newTrack);
                 this.renderTracks();
                 this.saveState();
@@ -1632,25 +1632,25 @@
                     alert(`最少需要保留 ${this.minTracks} 個軌道`);
                     return false;
                 }
-                
+
                 if (!window.confirm(`確定要刪除軌道 "${this.tracks[trackIndex].label}" 嗎？`)) {
                     return false;
                 }
-                
+
                 if (this.isPlaying) this.stop();
-                
+
                 this.tracks.splice(trackIndex, 1);
-                
+
                 // 重新分配 ID
                 this.tracks.forEach((track, index) => {
                     track.id = index;
                 });
-                
+
                 this.renderTracks();
                 this.saveState();
                 return true;
             }
-            // ===========================================			
+            // ===========================================
 
             initUI() {
                 this.renderTracks();
@@ -1659,7 +1659,7 @@
                 this.updateExpandButton();
                 this.initScrollPosition();
                 this.updateStepSize();
-                this.saveState(true); 
+                this.saveState(true);
             }
 
             initScrollPosition() {
@@ -1670,7 +1670,7 @@
 			initSoundAdjustPanel() {
 				const drumKeys = Object.keys(this.drumSounds);
 				const container = document.getElementById('soundControlsContainer'); // 改為獲取新的容器
-				
+
 				container.innerHTML = ''; // 清空容器
 
 				// 直接用一個迴圈把所有樂器面板都加進同一個容器
@@ -1706,7 +1706,7 @@
                                 <span>合成音效</span>
                             </label>
                         </div>
-                        
+
                         <div class="sample-controls" style="display: ${sound.mode === 'user' ? 'block' : 'none'}">
                             <input type="file" id="sample-input-${key}" class="file-input sample-input" data-drum="${key}" accept=".mp3,.wav,.ogg">
                             <button class="btn btn-small action-btn upload-sample-btn">匯入取樣</button>
@@ -1753,7 +1753,7 @@
                                 </select>
                             </label>
                         </div>
-						
+
 						<!-- ======[ 新增：拖拍參數專用區塊 ]====== -->
                         <div class="unified-sound-params drag-params" style="display: ${isDragInstrument ? 'grid' : 'none'}; border-top: 1px solid rgba(255,255,255,0.2); margin-top: 15px; padding-top: 15px;">
                              <label>
@@ -1773,7 +1773,7 @@
                                 <input type="range" min="1.0" max="2.5" step="0.05" value="${sound.dragTimeStretch}" data-param="dragTimeStretch">
                             </label>
                         </div>
-                        
+
                         <div style="text-align: right; margin-top: 15px;">
                              <button class="test-btn">試聽</button>
                         </div>
@@ -1785,10 +1785,10 @@
 			renderTracks() {
 				// 【修正 #1】使用正確的 ID "trackControls"，而不是 "trackControlsContainer"
 				const trackControlsContainer = document.getElementById('trackControls');
-				
+
 				// 【修正 #2】使用正確的 ID "trackSteps"，而不是 "trackStepsContainer"
 				const trackStepsContainer = document.getElementById('trackSteps');
-				
+
 				// 如果容器不存在，就直接返回，避免錯誤
 				if (!trackControlsContainer || !trackStepsContainer) {
 					console.error("致命錯誤：找不到 'trackControls' 或 'trackSteps' 容器！");
@@ -1801,8 +1801,8 @@
 				this.tracks.forEach((track, trackIndex) => {
 					const controlElement = document.createElement('div');
 					controlElement.className = 'track-control-item';
-					
-					const drumOptions = Object.keys(this.drumSounds).map(key => 
+
+					const drumOptions = Object.keys(this.drumSounds).map(key =>
 						`<option value="${key}" ${track.drumType === key ? 'selected' : ''}>${this.drumSounds[key].name}</option>`
 					).join('');
 
@@ -1818,17 +1818,17 @@
 							<input type="range" class="volume-slider" min="0" max="1" step="0.1" value="${track.volume}" data-track="${trackIndex}">
 						</div>
 					`;
-					
+
 					trackControlsContainer.appendChild(controlElement);
-					
+
 					const stepsElement = document.createElement('div');
 					stepsElement.className = `track-steps ${!track.enabled ? 'disabled' : ''}`;
-					
+
 					const steps = track.steps.map((active, stepIndex) => {
 						const marker = track.markers[stepIndex];
 						const markerHTML = marker ? `<span class="marker-text">${marker}</span>` : '';
 						let numberHTML = '';
-						
+
 						if (this.showNumbers && active) {
 							const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
 							numberHTML = beatNumber;
@@ -1838,7 +1838,7 @@
 					}).join('');
 
 					stepsElement.innerHTML = `<div class="steps">${steps}</div>`;
-					
+
 					// 【修正 #3】將渲染結果附加到我們在函式開頭獲取的正確容器變數上
 					trackStepsContainer.appendChild(stepsElement);
 				});
@@ -1857,7 +1857,7 @@
 				document.getElementById('resetBtn').addEventListener('click', () => this.resetAll());
 				document.getElementById('undoBtn').addEventListener('click', () => this.undo());
 				document.getElementById('redoBtn').addEventListener('click', () => this.redo());
-				
+
 				// --- 檔案與軌道管理 ---
 				document.getElementById('exportBtn').addEventListener('click', () => this.exportPattern());
 				document.getElementById('importBtn').addEventListener('click', () => document.getElementById('fileInput').click());
@@ -1873,14 +1873,14 @@
 					this.bpm = parseInt(e.target.value);
 					if (this.isPlaying) { this.stop(); this.play(); }
 				});
-								
+
 				document.getElementById('globalVolumeInput').addEventListener('change', (e) => {
 					// 確保數值在 0-100 之間
 					const volumeValue = Math.max(0, Math.min(100, parseInt(e.target.value)));
 					e.target.value = volumeValue; // 如果使用者輸入超出範圍，則更新 UI
 					this.globalVolume = volumeValue / 100; // 轉換為 0.0 到 1.0 之間的乘數
 				});
-				
+
 				document.getElementById('showNumbers').addEventListener('change', (e) => {
 					this.showNumbers = e.target.checked;
 					this.renderTracks();
@@ -1966,8 +1966,8 @@
 				window.addEventListener('resize', () => this.updateStepSize());
 				this.setupKeyboardShortcuts();
 			}
-			
-            
+
+
 
             handleModeChange(event) {
                 document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -2016,7 +2016,7 @@
                 btn.classList.add('active');
                 this.currentMarker = btn.dataset.marker;
             }
-            
+
             handleLabelDoubleClick(trackLabelDiv) {
                 const trackIndex = parseInt(trackLabelDiv.dataset.trackIndex);
                 const originalLabel = this.tracks[trackIndex].label;
@@ -2041,7 +2041,7 @@
                     input.removeEventListener('blur', saveLabel);
                     input.removeEventListener('keydown', handleKeydown);
                 };
-                
+
                 const handleKeydown = (evt) => {
                     if (evt.key === 'Enter') input.blur();
                     else if (evt.key === 'Escape') {
@@ -2050,7 +2050,7 @@
                         input.removeEventListener('keydown', handleKeydown);
                     }
                 };
-                
+
                 input.addEventListener('blur', saveLabel);
                 input.addEventListener('keydown', handleKeydown);
             }
@@ -2074,7 +2074,7 @@
                     });
                 }
             }
-            
+
 
             bindSoundPanelEvents() {
                  const soundPanel = document.getElementById('soundAdjustPanel');
@@ -2087,7 +2087,7 @@
                         const param = e.target.dataset.param;
                         let value = e.target.type === 'range' ? parseFloat(e.target.value) : e.target.value;
                         this.drumSounds[drumKey][param] = value;
-                        
+
                         const display = e.target.previousElementSibling.querySelector('.param-value-display');
                         if(display) display.textContent = value;
                     }
@@ -2131,10 +2131,10 @@
                 const paddingX = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
                 const contentWidth = sequencer.clientWidth - paddingX;
                 const isSmallScreen = window.innerWidth < 800;
-                
+
                 const MIN_STEP_SIZE = isSmallScreen ? 14 : 20;
-                const MAX_STEP_SIZE = isSmallScreen ? 22 : 35;				
-                const STEP_GAP = isSmallScreen ? 1 : 2; 
+                const MAX_STEP_SIZE = isSmallScreen ? 22 : 35;
+                const STEP_GAP = isSmallScreen ? 1 : 2;
                 const stepsToFit = 8 * this.stepsPerBeat;
                 const totalGapWidth = (stepsToFit - 1) * STEP_GAP;
                 const idealStepSize = (contentWidth - totalGapWidth) / stepsToFit;
@@ -2146,7 +2146,7 @@
 				const tracksControls = document.getElementById('tracksControls');
 				const collapseBtn = document.getElementById('collapseBtn');
 				tracksControls.classList.toggle('collapsed');
-				
+
 				if (tracksControls.classList.contains('collapsed')) {
 					collapseBtn.textContent = '▶';
 					collapseBtn.title = '展開控制面板';
@@ -2176,9 +2176,9 @@
                 });
                 this.renderTracks();
                 this.updateStepSize();
-                this.saveState(); 
+                this.saveState();
             }
-            
+
             toggleStep(trackIndex, stepIndex) {
                 this.tracks[trackIndex].steps[stepIndex] = !this.tracks[trackIndex].steps[stepIndex];
                 const stepElement = document.querySelector(`.step[data-track="${trackIndex}"][data-step="${stepIndex}"]`);
@@ -2189,14 +2189,14 @@
                         stepElement.textContent = this.tracks[trackIndex].steps[stepIndex] ? beatNumber : '';
                     }
                 }
-                this.saveState(); 
+                this.saveState();
             }
 
             toggleTrackControl(trackIndex, type) {
                 const track = this.tracks[trackIndex];
                 const controlBtn = document.querySelector(`.track-control-btn[data-track="${trackIndex}"][data-type="${type}"]`);
                 const stepsElement = document.querySelectorAll('.track-steps')[trackIndex];
-                
+
                 if (type === 'enable') {
                     track.enabled = !track.enabled;
                     controlBtn.classList.toggle('active', track.enabled);
@@ -2225,10 +2225,10 @@
                 this.currentStep = 0;
                 if (this.mode === 'sequential') {
                     this.currentTrack = this.getFirstEnabledTrack();
-                   
+
                 }
                 this.scrollToBeginning();
-                
+
                 const stepDuration = (60 / this.bpm) / this.stepsPerBeat * 1000;
                 this.stepInterval = setInterval(() => {
                     this.updateStep();
@@ -2237,7 +2237,7 @@
                         this.scrollToBeginning();
                         if (this.mode === 'sequential') {
                             this.currentTrack = this.getNextEnabledTrack();
-                           
+
                         }
                     }
                 }, stepDuration);
@@ -2287,7 +2287,7 @@
                 }
                 return this.getFirstEnabledTrack();
             }
-			
+
 			updateBeatNumbers() {
 				const positionLine = document.getElementById('positionLine');
 				const trackStepsContainer = document.getElementById('trackSteps'); // 獲取容器
@@ -2296,24 +2296,24 @@
 				// 如果因為任何原因找不到這個容器，就立刻停止執行此函式，避免報錯。
 				if (!trackStepsContainer) {
 					console.error("錯誤：在 updateBeatNumbers 中找不到 #trackSteps 容器。");
-					return; 
+					return;
 				}
 
 				const firstStep = trackStepsContainer.querySelector('.step');
-				
+
 				if (firstStep) {
 					const stepWidth = firstStep.offsetWidth;
 					const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
 					positionLine.style.left = `${this.currentStep * (stepWidth + gap)}px`;
 				}
-				
+
 				// 因為我們已經在前面檢查過 trackStepsContainer，所以這裡的程式碼現在是安全的。
 				trackStepsContainer.querySelectorAll('.step.playing').forEach(el => el.classList.remove('playing'));
-				
+
 				const playingSteps = this.mode === 'ensemble'
 					? trackStepsContainer.querySelectorAll(`.step[data-step="${this.currentStep}"]`)
 					: trackStepsContainer.querySelectorAll(`.step[data-track="${this.currentTrack}"][data-step="${this.currentStep}"]`);
-					
+
 				playingSteps.forEach(el => el.classList.add('playing'));
 			}
 
@@ -2325,9 +2325,9 @@
 				const sequencer = document.querySelector('.tracks-sequencer');
 				const trackStepsContainer = document.getElementById('trackSteps');
 				const firstStep = trackStepsContainer ? trackStepsContainer.querySelector('.step') : null;
-				
+
 				if (!firstStep || !sequencer) return;
-				
+
 				const stepWidth = firstStep.offsetWidth;
 				const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
 				const fullStepWidth = stepWidth + gap;
@@ -2335,20 +2335,20 @@
 				const clientWidth = sequencer.clientWidth;
 				const playheadPosition = this.currentStep * fullStepWidth;
 				const scrollTriggerPoint = scrollLeft + (clientWidth * 0.8);
-				
+
 				if (playheadPosition > scrollTriggerPoint && (scrollLeft + clientWidth) < sequencer.scrollWidth) {
 					const newScrollLeft = playheadPosition - (clientWidth * 0.1);
 					sequencer.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
 				}
 			}
-			
+
 			scrollToBeats(startBeat) {
 				const sequencer = document.querySelector('.tracks-sequencer');
 				const trackStepsContainer = document.getElementById('trackSteps');
 				const firstStep = trackStepsContainer ? trackStepsContainer.querySelector('.step') : null;
-				
+
 				if (!firstStep || !sequencer) return;
-				
+
 				const stepWidth = firstStep.offsetWidth;
 				const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
 				const fullStepWidth = stepWidth + gap;
@@ -2405,11 +2405,11 @@
                     try { await this.audioContext.resume(); } catch (e) { console.warn('Failed to resume audio context in playSound:', e); return; }
                 }
                 if (this.audioContext.state !== 'running') return;
-                
+
                 const now = this.audioContext.currentTime;
                 this.scheduleSound(this.audioContext, now, drumType, soundEnabled, volume);
             }
-            
+
 			handleStepClick(stepElement) {
 				const trackIndex = parseInt(stepElement.dataset.track);
 				const stepIndex = parseInt(stepElement.dataset.step);
@@ -2473,27 +2473,27 @@
 			}
 
 
-            
+
             toggleSelectionMode() {
                 this.selectionMode = !this.selectionMode;
-				
+
 				  // 如果我們剛開啟了「選取」模式，而且「標記」模式仍然是開啟的
 				if (this.selectionMode && this.markingMode) {
 					// 就呼叫標記模式的切換函式，把它關掉
-					this.toggleMarkingMode(); 
+					this.toggleMarkingMode();
 				}
-				
+
                 document.getElementById('selectBtn').classList.toggle('toggled', this.selectionMode);
                 document.getElementById('selectionControls').style.display = this.selectionMode ? 'flex' : 'none';
-                
+
                 if (!this.selectionMode) {
                     this.clearSelection();
                 } else {
                     // 進入選取模式時，先清除單點選取，等待使用者框選
-                    this.clearSelection(); 
+                    this.clearSelection();
                 }
             }
-            
+
             clearSelection() {
                 this.selection.startTrack = null;
                 this.selection.startStep = null;
@@ -2524,7 +2524,7 @@
 					alert('請先點擊兩個格子來框選一個區域！');
 					return;
 				}
-				
+
 				const startTrack = Math.min(this.selection.startTrack, this.selection.endTrack);
 				const endTrack = Math.max(this.selection.startTrack, this.selection.endTrack);
 				const startStep = Math.min(this.selection.startStep, this.selection.endStep);
@@ -2559,7 +2559,7 @@
 
 				const pasteStartTrack = this.selection.startTrack;
 				const pasteStartStep = this.selection.startStep;
-				
+
 				// ... (這部分貼上的核心邏輯是正確的，無需修改，保持原樣)
 				const patternHeight = this.clipboard.pattern.steps.length;
 				const patternWidth = this.clipboard.pattern.steps[0].length;
@@ -2603,9 +2603,9 @@
 				this.renderTracks();
 				this.saveState();
 				alert('貼上成功！');
-				
+
 				// 【新增】貼上成功後，自動清除選取狀態，方便進行下一步操作
-				this.clearSelection(); 
+				this.clearSelection();
 			}
 
             saveSelectionAsPattern() {
@@ -2633,7 +2633,7 @@
                     if (!patternData.steps || !patternData.markers || !Array.isArray(patternData.steps)) {
                          throw new Error('無效的 .pa 檔案格式');
                     }
-                    
+
                     this.clipboard.pattern = patternData;
                     alert('樣式已成功載入到剪貼簿！現在可以選擇一個起始點並貼上。');
                 } catch (error) {
@@ -2655,16 +2655,16 @@
                 try {
                     const arrayBuffer = await file.arrayBuffer();
                     const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-                    
+
                     // 將用戶上傳的檔案也加入快取，這裡用檔案名+大小作為 key
                     const cacheKey = `user_${file.name}_${file.size}`;
                     this.audioCache.cache.set(cacheKey, audioBuffer);
-                    
+
                     this.drumSounds[drumKey].userSampleBuffer = audioBuffer;
                     this.drumSounds[drumKey].userSampleFileName = file.name;
                     this.drumSounds[drumKey].mode = 'user';
 
-                    this.updateSoundControlUI(drumKey); 
+                    this.updateSoundControlUI(drumKey);
                     alert(`樂器 "${this.drumSounds[drumKey].name}" 的取樣 "${file.name}" 已成功載入！`);
 
                 } catch (error) {
@@ -2675,7 +2675,7 @@
 
             removeSample(drumKey) {
                 if (!drumKey || !this.drumSounds[drumKey]) return;
-                
+
                 const sound = this.drumSounds[drumKey];
                 sound.userSampleBuffer = null;
                 sound.userSampleFileName = '';
@@ -2683,7 +2683,7 @@
                 this.updateSoundControlUI(drumKey);
                 alert(`樂器 "${sound.name}" 的匯入取樣已被移除。`);
             }
-            
+
             updateSoundControlUI(drumKey) {
                 const sound = this.drumSounds[drumKey];
                 const itemContainer = document.getElementById(`sound-control-item-${drumKey}`);
@@ -2702,7 +2702,7 @@
                     systemLabel.classList.toggle('loading-indicator', sound.isLoadingDefault);
                     systemInput.disabled = !isSystemAvailable;
                 }
-                
+
                 // Show/hide user sample controls
                 itemContainer.querySelector('.sample-controls').style.display = sound.mode === 'user' ? 'block' : 'none';
                 itemContainer.querySelector('.remove-sample-btn').style.display = !!sound.userSampleBuffer ? 'inline-block' : 'none';
@@ -2717,10 +2717,10 @@
 
             resetSounds() {
                 if (!window.confirm('確定要重置所有音色為預設值嗎？這將會移除所有您匯入的聲音取樣，並將音源模式與參數重設。')) return;
-                
+
                 this.initDrumSounds(); // Re-initializes all sound params to default
                 this.loadDefaultSamples(); // This will re-load samples and set modes correctly
-                
+
                 alert('音色已重置。');
             }
 
@@ -2744,42 +2744,42 @@
 				if (!window.confirm('您確定要重置所有節拍點與 R/L 標記嗎？\n此操作將保留您的總拍數、音量與音色設定。')) {
 					return;
 				}
-				
+
 				if (this.isPlaying) this.stop();
 				if (this.selectionMode) this.toggleSelectionMode();
 
-				
+
 				this.tracks.forEach(track => {
 					track.steps.fill(false);
-					track.markers.fill(null); 
+					track.markers.fill(null);
 				});
 
 				this.currentStep = 0;
 				this.currentTrack = 0;
-				
+
 				// 重新渲染以更新介面
 				this.renderTracks();
 				this.initScrollPosition();
-				
-				this.saveState(true); 
+
+				this.saveState(true);
 			}
 
             exportPattern() {
                 const pattern = {
-					version: '2.4-global-volume', 
-					trackCount: this.tracks.length, 
+					version: '2.4-global-volume',
+					trackCount: this.tracks.length,
                     totalBeats: this.totalBeats,
                     bpm: this.bpm,
 					globalVolume: this.globalVolume,
                     mode: this.mode,
                     showNumbers: this.showNumbers,
-					showMarkers: this.showMarkers, 
+					showMarkers: this.showMarkers,
                     stepsPerBeat: this.stepsPerBeat,
                     tracks: this.tracks.map(track => ({
-						label: track.label, 
+						label: track.label,
                         drumType: track.drumType,
                         steps: track.steps,
-						markers: track.markers, 	
+						markers: track.markers,
                         enabled: track.enabled,
                         soundEnabled: track.soundEnabled,
                         volume: track.volume
@@ -2822,16 +2822,16 @@
 					// ======[ 核心修改 #1：讀取全域音量 ]======
 					// 使用 ?? (Nullish Coalescing Operator) 來處理舊檔案
 					// 這樣即使 volume 是 0 也能正確讀取，只有在 null 或 undefined 時才使用預設值
-					this.globalVolume = pattern.globalVolume ?? 0.8; 
+					this.globalVolume = pattern.globalVolume ?? 0.8;
 					// =========================================
 
 					this.mode = pattern.mode || 'ensemble';
 					this.showNumbers = pattern.showNumbers || false;
-					this.showMarkers = pattern.showMarkers || false; 
+					this.showMarkers = pattern.showMarkers || false;
 					this.stepsPerBeat = pattern.stepsPerBeat || 4;
-					
+
 					// ... (後續的 tracks 和 drumSounds 處理邏輯保持不變) ...
-					this.tracks = []; 
+					this.tracks = [];
 					this.tracks = pattern.tracks.map((trackData, index) => ({
 						id: index,
 						label: trackData.label || this.defaultTrackLabels[index] || `T${index + 1}`,
@@ -2860,7 +2860,7 @@
 
 					// --- 更新 UI 介面 ---
 					document.getElementById('bpmInput').value = this.bpm;
-					
+
 					// ======[ 核心修改 #2：更新音量輸入框的 UI ]======
 					document.getElementById('globalVolumeInput').value = Math.round(this.globalVolume * 100);
 					// ===============================================
@@ -2880,7 +2880,7 @@
 					this.initScrollPosition();
 					this.updateStepSize();
 					this.clearSelection();
-					this.saveState(true); 
+					this.saveState(true);
 					alert('鼓譜匯入成功！');
 				} catch (error) {
 					alert('匯入失敗：' + error.message);
@@ -2891,14 +2891,14 @@
 	        async exportMP3() {
 				const loopCountSelect = document.getElementById('loopCountSelect');
 				let loopCount = parseInt(loopCountSelect.value) || 1;
-				
+
                 if (typeof lamejs === 'undefined') {
                     alert('MP3 編碼函式庫 (lame.min.js) 載入失敗！請檢查您的網路連線或 CDN 連結是否正確。');
                     return;
                 }
 
                 if (this.isPlaying) this.stop();
-                
+
                 const exportBtn = document.getElementById('exportMp3Btn');
                 const originalText = exportBtn.textContent;
                 exportBtn.textContent = '處理中...';
@@ -2915,7 +2915,7 @@
 
 					if (this.mode === 'ensemble') {
 						totalDuration = durationOfOneLoop * loopCount;
-					} else { 
+					} else {
 						if (enabledTracks.length === 0) {
                             throw new Error("在循環模式下，沒有啟用的音軌可供匯出。");
                         }
@@ -2926,7 +2926,7 @@
 						alert("無法匯出時長為零的音訊。請確保有設定拍子。");
 						throw new Error("Calculated total duration is zero or less.");
 					}
-					totalDuration += 1.0; 
+					totalDuration += 1.0;
 
 					const offlineContext = new OfflineAudioContext(2, Math.ceil(sampleRate * totalDuration), sampleRate);
 					const stepDurationInSeconds = (60 / this.bpm) / this.stepsPerBeat;
@@ -2969,9 +2969,9 @@
                         leftInt16[i] = Math.max(-1, Math.min(1, leftFloat[i])) * 32767;
                         rightInt16[i] = Math.max(-1, Math.min(1, rightFloat[i])) * 32767;
                     }
-                    
+
                     const mp3Data = [];
-                    const bufferSize = 1152; 
+                    const bufferSize = 1152;
 
                     for (let i = 0; i < leftInt16.length; i += bufferSize) {
                         const leftChunk = leftInt16.subarray(i, i + bufferSize);
@@ -3002,7 +3002,7 @@
                     exportBtn.classList.remove('loading');
                 }
             }
-			
+
 			scheduleSound(context, time, drumType, soundEnabled = true, trackVolume = 1.0) {
 				if (!soundEnabled) return;
 				const sound = this.drumSounds[drumType];
@@ -3021,13 +3021,13 @@
 				} else if (sound.mode === 'user' && sound.userSampleBuffer) {
 					bufferToPlay = sound.userSampleBuffer;
 				}
-				
+
 				if (bufferToPlay) {
 					source = context.createBufferSource();
 					source.buffer = bufferToPlay;
 					const playbackRate = Math.pow(2, sound.detune / 1200);
 					source.playbackRate.setValueAtTime(playbackRate, time);
-				} else { 
+				} else {
 					source = context.createOscillator();
 					source.type = sound.synthType;
 					source.frequency.setValueAtTime(sound.synthBaseFreq, time);
@@ -3061,7 +3061,7 @@
 					source.stop(time + sound.attack + sound.release + 0.1);
 				}
 			}
-			
+
 
             // 專門用來排程連續敲擊音效 (鼓卷/拖拍) 的函式
 			scheduleDrumRoll(context, time, drumType, soundEnabled = true, trackVolume = 1.0) {
@@ -3075,7 +3075,7 @@
 				const timeStretch = sound.dragTimeStretch || 1.4;
 
 				let currentTimeOffset = 0;
-				
+
 				// ======[ 核心修改：計算初始音量 ]======
 				let currentGain = sound.gain * trackVolume;
 				// 只有在即時播放時，才套用全域音量
@@ -3113,12 +3113,12 @@
 					envelope.gain.setValueAtTime(0, bounceTime);
 					envelope.gain.linearRampToValueAtTime(currentGain, bounceTime + 0.01);
 					envelope.gain.linearRampToValueAtTime(0, bounceTime + 0.04);
-					
+
 					const filter = context.createBiquadFilter();
 					filter.type = "lowpass";
 					filter.frequency.setValueAtTime(sound.filterFreq, bounceTime);
 					filter.Q.setValueAtTime(sound.filterQ, time);
-					
+
 					const panner = new StereoPannerNode(context, { pan: sound.pan });
 
 					osc.connect(envelope);
@@ -3135,7 +3135,7 @@
 					currentInterval *= timeStretch;
 				}
 			}
-			
+
 
 			setupKeyboardShortcuts() {
 				document.addEventListener('keydown', (e) => {
@@ -3144,7 +3144,7 @@
 						 if (e.key === 'Escape' || e.key === 'Enter') e.target.blur();
 						return;
 					}
-					
+
 					if (e.ctrlKey || e.metaKey) { // MetaKey for Mac
 						switch(e.key.toLowerCase()) {
 							case 's': e.preventDefault(); this.exportPattern(); break;
@@ -3174,7 +3174,7 @@
 								return;
 							}
 						}
-						
+
 						//處理一般模式下的快速鍵
 						switch(e.key) {
 							case ' ': e.preventDefault(); this.togglePlay(); break;
@@ -3204,26 +3204,26 @@
                 const bpmInput = document.getElementById('bpmInput');
                 let newBPM = parseInt(bpmInput.value) + delta;
                 newBPM = Math.max(60, Math.min(200, newBPM)); // 限制在 60-200 之間
-                
+
                 this.bpm = newBPM;
                 bpmInput.value = newBPM;
-                
+
                 if (this.isPlaying) {
                     this.stop();
                     this.play();
                 }
             }
-			
+
 			adjustGlobalVolume(delta) {
 				const volumeInput = document.getElementById('globalVolumeInput');
 				let newVolume = parseInt(volumeInput.value) + delta;
 				newVolume = Math.max(0, Math.min(100, newVolume)); // 限制在 0-100 之間
-				
+
 				this.globalVolume = newVolume / 100;
 				volumeInput.value = newVolume;
-			}			
+			}
             // ===========================================
-			
+
         }
 
         let beatmaker;
