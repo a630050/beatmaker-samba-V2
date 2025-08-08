@@ -885,6 +885,19 @@
 		.btn.btn-special:hover:not(:disabled) {
 			box-shadow: 0 5px 15px rgba(26, 188, 156, 0.4);
 		}
+		
+		.btn.btn-marking {
+			background: linear-gradient(135deg, #26c6da 0%, #00acc1 100%);
+		}
+		.btn.btn-marking:hover:not(:disabled) {
+			box-shadow: 0 5px 15px rgba(38, 198, 218, 0.4);
+		}
+
+		/* 標記按鈕在 "toggled" 狀態下的顏色 (使用深橙色作為啟用對比) */
+		.btn.btn-marking.toggled {
+			background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+			box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+		}
 
 
 		/* 2. 修改 .controls 容器以加大群組間距 */
@@ -974,6 +987,26 @@
             align-items: center;
             justify-content: center;
         }
+		
+		.marker-controls #clearBtn {
+			background: transparent;
+			border: 2px solid #e74c3c; /* 紅色邊框，表示危險操作 */
+			color: #e74c3c; /* 紅色文字 */
+			padding: 0 12px; /* 調整左右邊距，讓文字不會太擠 */
+			height: 36px; /* 與 R/L 按鈕高度一致 */
+			font-size: 14px;
+			font-weight: bold;
+			border-radius: 8px; /* 與 R/L 按鈕圓角一致 */
+			transition: all 0.2s ease;
+			cursor: pointer;
+		}
+
+		/* "清除標記" 按鈕的滑鼠懸停效果 */
+		.marker-controls #clearBtn:hover {
+			background: rgba(231, 76, 60, 0.2); /* 淡紅色背景 */
+			color: #ff6b5a;
+			border-color: #ff6b5a;
+		}
 
         /* 標記工具按鈕被選中時的樣式 */
         .marker-btn.active {
@@ -1103,7 +1136,7 @@
 
 				<!-- Group: 危險操作 -->
 				<div class="control-group">
-					<button class="btn btn-danger" id="clearBtn">清除標記</button>
+					
 					<button class="btn btn-danger" id="resetBtn">重置音格</button>
 				</div>
 
@@ -1115,7 +1148,7 @@
 
 				<!-- Group: 選取/編輯 -->
 				<div class="control-group">
-					 <button class="btn action-btn" id="selectBtn">選取</button>
+					 <button class="btn action-btn" id="selectBtn">進階編輯</button>
 				</div>
 
 				<!-- 這就是新的工具列，它預設是隱藏的 -->
@@ -1128,10 +1161,12 @@
 				</div>
 
                 <div class="control-group">
-                    <button class="btn action-btn" id="markBtn">LR 標記</button>
+                    <button class="btn btn-marking" id="markBtn">LR 標記</button>
+					
                 </div>
 				
 				<div id="markerControls" class="marker-controls" style="display: none;">
+					<button class="btn btn-marking" id="clearBtn">清除標記</button>
 					<button class="marker-btn" data-marker="R">R</button>
 					<button class="marker-btn" data-marker="L">L</button>
 					<button class="marker-btn active" data-marker="eraser">
