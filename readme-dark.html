@@ -164,47 +164,13 @@
             border: 0;
         }
         
-        /* TOC 樣式 */
-        .ui-toc, .ui-affix-toc {
-            background-color: #2a2a2a;
-            border: 1px solid #444;
-            border-radius: 6px;
-        }
-        
-        .ui-toc a, .ui-affix-toc a {
-            color: #e6e6e6;
-        }
-        
-        .ui-toc a:hover, .ui-affix-toc a:hover {
-            color: #58a6ff;
-            background-color: #333;
-        }
-        
-        .toc-menu a {
-            color: #999;
-        }
-        
-        .toc-menu a:hover {
-            color: #58a6ff;
-        }
-        
-        /* 響應式設計 */
         @media (max-width: 767px) {
             body {
                 padding: 10px;
             }
-            
-            .markdown-body h1 {
-                font-size: 1.6em;
-            }
-            
-            .markdown-body h2 {
-                font-size: 1.4em;
-            }
-            
-            .markdown-body h3 {
-                font-size: 1.125em;
-            }
+            .markdown-body h1 { font-size: 1.6em; }
+            .markdown-body h2 { font-size: 1.4em; }
+            .markdown-body h3 { font-size: 1.125em; }
         }
     </style>
 </head>
@@ -212,283 +178,275 @@
 <body>
     <div class="container">
         <div class="markdown-body">
-            <h1>Beatmaker - 森巴鼓團練習程序使用說明</h1>
+            
 
-            <h2>快速開始</h2>
+            <p>這是一個專為森巴鼓團設計的線上編曲與練習工具。無論您是指導老師、學生或對森巴打擊樂充滿熱情的玩家，這個工具都能幫助您輕鬆創建、視覺化、分享和練習森巴鼓的節奏。</p>
+            <p>透過直覺的圖形化介面，您可以編排多達16個聲部的鼓譜，調整各種樂器的音色，並以不同的模式進行播放練習。此外，程式還支援完整的儲存、讀取、匯出MP3以及快捷鍵操作，旨在成為您森巴鼓學習與創作上的最佳夥伴。</p>
+            
+            <hr>
 
-            <h3>1. 基本編曲</h3>
+            <h2>✨ 主要功能</h2>
             <ul>
-                <li><strong>點擊格子</strong>：在音軌上點擊任意格子來開啟/關閉節拍點</li>
-                <li><strong>播放音樂</strong>：點擊「▶ 播放」按鈕聆聽你的編曲</li>
-                <li><strong>停止播放</strong>：再次點擊變成「⏸ 停止」的按鈕</li>
-            </ul>
-
-            <h3>2. 調整節拍速度</h3>
-            <ul>
-                <li>在右上角的 <strong>BPM</strong> 欄位輸入數值（60-200）</li>
-                <li>數值越大節拍越快，越小越慢</li>
-                <li>森巴鼓建議速度：65-120 BPM</li>
-            </ul>
-
-            <h2>界面說明</h2>
-
-            <h3>主控制區</h3>
-            <ul>
-                <li><strong>播放/停止</strong>：控制音樂播放</li>
-                <li><strong>清除</strong>：清空所有節拍點</li>
-                <li><strong>重置</strong>：恢復到初始狀態</li>
-                <li><strong>上一步/下一步</strong>：支援多層復原與重做，包含打拍、標記、貼上等操作</li>
-                <li><strong>調音</strong>：開啟音色調整面板</li>
-            </ul>
-
-            <h3>模式選擇</h3>
-            <ul>
-                <li><strong>合奏模式</strong>：所有音軌同時播放（推薦）</li>
-                <li><strong>循環模式</strong>：音軌依序輪流播放</li>
-            </ul>
-
-            <h3>拍子設定</h3>
-            <ul>
-                <li><strong>2格一拍</strong>：適合簡單節拍</li>
-                <li><strong>4格一拍</strong>：標準設定（推薦）</li>
-                <li><strong>8格一拍</strong>：適合複雜節拍</li>
-            </ul>
-
-            <h2>音軌操作</h2>
-
-            <h3>左側控制面板</h3>
-            <p>每個音軌都有以下控制：</p>
-            <ol>
-                <li><strong>音軌編號</strong>：S1, S2, S3（Surdo）, C（Caixa）, R（Repinique）, A（Agogô）</li>
-                <li><strong>樂器選擇</strong>：下拉選單可選擇不同樂器</li>
-                <li><strong>控制按鈕</strong>：
+                <li><strong>多軌音序器</strong>：支援最多16個獨立音軌，可自由新增、刪除及命名。</li>
+                <li><strong>專業音色調校</strong>：內建「調音」面板，可針對每種樂器調整音高、聲像、起音、釋放、濾波等參數，並支援系統預設、使用者自行匯入音檔、合成音效三種模式。</li>
+                <li><strong>進階播放模式</strong>：
                     <ul>
-                        <li><strong>●</strong>：開啟/關閉整個音軌</li>
-                        <li><strong>🔊</strong>：開啟/關閉音軌聲音</li>
+                        <li><strong>合奏模式</strong>：所有啟用的聲部同時播放。</li>
+                        <li><strong>輪奏模式</strong>：一次一個聲部，依序循環播放。</li>
                     </ul>
                 </li>
-                <li><strong>音軌刪除</strong>：刪除該音軌</li>
-                <li><strong>音量滑桿</strong>：調整各音軌音量</li>
-            </ol>
-
-            <h3>軌道擴充與編號編輯</h3>
-            <ul>
-                <li>最多可新增至 <strong>16 軌</strong></li>
-                <li>最少需保留 <strong>4 軌</strong></li>
-                <li>點擊左側控制面板下方「➕」可新增軌道</li>
-                <li>軌道可刪除，並自動重新編號</li>
-                <li>雙擊音軌編號即可手動修改名稱</li>
-            </ul>
-
-            <h3>摺疊面板</h3>
-            <ul>
-                <li>點擊左下角的 <strong>◀</strong> 按鈕可摺疊控制面板</li>
-                <li>摺疊後只顯示音軌編號，節省空間</li>
-            </ul>
-
-            <h2>進階功能</h2>
-
-            <h3>進階編輯</h3>
-            <ol>
-                <li><strong>選擇模式</strong>：點擊「進階編輯」按鈕進入進階編輯模式</li>
-                <li><strong>框選區域</strong>：拖拽滑鼠選取多個格子(可以跨音軌選取)</li>
-                <li><strong>複製</strong>：選取後點擊「複製」</li>
-                <li><strong>貼上</strong>：在目標位置點擊「貼上」</li>
-                <li><strong>儲存樣式</strong>：導出框選區域之音格樣式</li>
-                <li><strong>載入樣式</strong>：導入之前存好的音格樣式</li>
-            </ol>
-
-            <h3>標記功能（LR 標記）</h3>
-            <ul>
-                <li>點擊「LR 標記」按鈕可啟用標記工具列</li>
-                <li>可在每個格子上標註 <code>R</code>（右手）、<code>L</code>（左手）或使用橡皮擦清除標記</li>
-                <li>勾選「LR顯示」可在節拍格中顯示目前標記</li>
-                <li>格子上可同時顯示拍數與標記，標記會自動移至右上角顯示</li>
-            </ul>
-
-            <h3>拍數調整</h3>
-            <ul>
-                <li><strong>+/-按鈕</strong>：增加或減少總拍數</li>
-                <li><strong>最少4拍</strong>，可擴展到更多拍數</li>
-                <li>右側顯示當前拍數</li>
-            </ul>
-
-            <h3>音色調整</h3>
-            <p>點擊「🎵 調音」按鈕開啟調音面板：</p>
-
-            <h4>音源模式</h4>
-            <ul>
-                <li><strong>系統預設</strong>：使用內建音檔（推薦）</li>
-                <li><strong>匯入音檔</strong>：上傳自己的 MP3/WAV 檔案</li>
-                <li><strong>合成音效</strong>：使用合成器音效</li>
-            </ul>
-
-            <h4>參數調整</h4>
-            <ul>
-                <li><strong>音高 (Pitch)</strong>：調整音調高低</li>
-                <li><strong>聲像 (Pan)</strong>：調整左右聲道平衡</li>
-                <li><strong>增益 (Gain)</strong>：調整音量大小</li>
-                <li><strong>起音 (Attack)</strong>：調整聲音開始的速度</li>
-                <li><strong>釋放 (Release)</strong>：調整聲音結束的速度</li>
-                <li><strong>濾波 (Filter)</strong>：調整音色明亮度</li>
-                <li><strong>波形</strong>：選擇合成器波形（僅人工音效模式）</li>
-            </ul>
-
-            <h4>拖拍音色（目前支援 Caixa 與 Repinique）</h4>
-            <ul>
-                <li>拖拍音色使用合成器模擬連打效果</li>
-                <li>可個別調整以下參數：
+                <li><strong>視覺化標記系統</strong>：獨特的「標記」模式，可直接在節拍格上標記左右手(R/L)及強弱重音(&gt; / () )，對練習手法至關重要。</li>
+                <li><strong>靈活的節奏設定</strong>：可自由設定BPM、總拍數、以及每一拍由幾格組成(2/4/8)，適應不同曲風與練習需求。</li>
+                <li><strong>完整的專案管理</strong>：
                     <ul>
-                        <li><strong>彈跳次數（Drag Bounces）</strong></li>
-                        <li><strong>拖拍時間（Duration）</strong></li>
-                        <li><strong>音量遞減率（Gain Decay）</strong></li>
-                        <li><strong>時間延展（Stretch）</strong></li>
+                        <li><strong>存檔/載入</strong>：可將整個鼓譜(<code>.json</code>)儲存下來，隨時讀取。</li>
+                        <li><strong>樣式庫</strong>：可將選取的節奏片段(<code>.pa</code>)存成樣式，方便在不同專案中重複使用。</li>
                     </ul>
                 </li>
-                <li>適合製作更具節奏感與律動的樂句</li>
-            </ul>
-
-            <h3>檔案管理</h3>
-            <ul>
-                <li><strong>存檔</strong>：將編曲儲存為 JSON 檔案</li>
-                <li><strong>載入</strong>：載入之前儲存的編曲</li>
-                <li><strong>匯出MP3</strong>：將編曲轉換為音頻檔案 (支援設定當前播放長度之循環次數為mp3聲音檔)</li>
-            </ul>
-
-            <h2>實用技巧</h2>
-
-            <h3>編曲建議</h3>
-            <ol>
-                <li><strong>從基本節拍開始</strong>：先設定 Surdo 的基本節拍</li>
-                <li><strong>逐步添加</strong>：依序加入 Caixa、Repinique 等樂器</li>
-                <li><strong>注意平衡</strong>：調整各音軌音量，避免某個樂器過於突出</li>
-            </ol>
-
-            <h3>視覺輔助</h3>
-            <ul>
-                <li><strong>勾選「數字提醒」</strong>：在啟用的格子上顯示拍數</li>
-                <li><strong>節拍標記</strong>：每拍第一格有橘色邊框</li>
-                <li><strong>播放指示器</strong>：紅線顯示當前播放位置</li>
-            </ul>
-
-            <h3>循環設定</h3>
-            <ul>
-                <li>右上角可設定<strong>循環次數</strong>（1-8次）→ 本項係設定匯出mp3功能需重複的次數</li>
-                <li>適合練習時重複播放</li>
-            </ul>
-
-            <h3>鍵盤快速鍵</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>快速鍵</th>
-                        <th>功能說明(均使用英文小寫)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Space</td>
-                        <td>播放 / 停止切換</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + Z</td>
-                        <td>復原（Undo）</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + Y</td>
-                        <td>重做（Redo）</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + C</td>
-                        <td>複製所選區域</td>
-                    </tr>
-                    <tr>
-                        <td>Ctrl + V</td>
-                        <td>貼上至目前所選起點</td>
-                    </tr>
-                    <tr>
-                        <td>Esc</td>
-                        <td>跳出視窗</td>
-                    </tr>
-                    <tr>
-                        <td>↑ / ↓</td>
-                        <td>調整音量</td>
-                    </tr>
-                    <tr>
-                        <td>← / →</td>
-                        <td>調整速度</td>
-                    </tr>
-                    <tr>
-                        <td>S</td>
-                        <td>進入 / 取消【選擇】狀態</td>
-                    </tr>
-                    <tr>
-                        <td>M</td>
-                        <td>進入 / 取消【LR標註】狀態</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <p><strong>【LR標註】模式下：</strong></p>
-            <ul>
-                <li>L：選擇L標記</li>
-                <li>R：選擇R標記</li>
-                <li>X：橡皮擦</li>
-            </ul>
-
-            <h2>常見問題</h2>
-
-            <h3>沒有聲音？</h3>
-            <ol>
-                <li>確認瀏覽器允許音頻播放</li>
-                <li>檢查音軌的🔊按鈕是否開啟</li>
-                <li>確認系統音量設定</li>
-            </ol>
-
-            <h3>節拍不準確？</h3>
-            <ol>
-                <li>檢查 BPM 設定是否正確</li>
-                <li>確認拍子設定（建議使用4格一拍）</li>
-                <li>重新載入頁面試試</li>
-            </ol>
-
-            <h3>拖拍樂器沒有聲音？</h3>
-            <ol>
-                <li>拖拍樂器使用合成音效，請確認未切換至「匯入音檔」</li>
-                <li>檢查彈跳參數設定是否為零或拖拍長度過短</li>
-                <li>拖拍效果較適合中慢速 BPM，建議 60-100 範圍測試</li>
-            </ol>
-
-            <h3>想要更多樂器？</h3>
-            <ul>
-                <li>在音軌的下拉選單中可選擇9種不同的森巴樂器</li>
-                <li>每個音軌都可以獨立設定樂器類型</li>
+                <li><strong>MP3匯出</strong>：可將您的創作匯出為 MP3 音檔，方便分享或離線聆聽。</li>
+                <li><strong>高效編輯工具</strong>：提供「編輯」模式，可框選、複製、貼上節奏片段，大幅提升編曲效率。</li>
+                <li><strong>操作歷史紀錄</strong>：完整的上一步(Undo)/下一步(Redo)功能，讓您安心嘗試各種修改。</li>
+                <li><strong>豐富的快捷鍵</strong>：支援大量快捷鍵，讓您幾乎可以脫離滑鼠進行所有操作。</li>
             </ul>
 
             <hr>
 
-            <p><strong>程式作者</strong>：徐承佑<br>
-            <strong>森巴鼓指導老師</strong>：陳仰真</p>
+            <h2>🚀 如何開始</h2>
+            <ol>
+                <li><strong>添加音符</strong>：在右側的節拍網格中，直接用滑鼠點擊格子即可添加或移除音符。</li>
+                <li><strong>播放/暫停</strong>：點擊上方的 <strong>▶ 播放</strong> 按鈕或按下 <code>空白鍵</code> / <code>P</code> 鍵來播放音樂。再次點擊或按鍵則會暫停。</li>
+                <li><strong>停止播放</strong>：按下 <code>S</code> 鍵可隨時停止播放並將播放軸歸零。</li>
+                <li><strong>選擇樂器</strong>：在左側的音軌控制面板中，使用下拉選單為每個音軌選擇不同的森巴鼓樂器。</li>
+                <li><strong>調整BPM</strong>：在中間的控制列中找到 <code>BPM</code> 輸入框，直接修改數字或使用鍵盤 <code>↑</code> / <code>↓</code> 鍵微調速度。</li>
+                <li><strong>標記手法</strong>：點擊 <strong>標記</strong> 按鈕 (或按 <code>M</code> 鍵) 進入標記模式，選擇 <code>R</code>、<code>L</code> 或其他記號，然後點擊格子即可標上。</li>
+                <li><strong>儲存你的創作</strong>：點擊 <strong>存檔</strong> 按鈕 (或按 <code>Ctrl + S</code>) 將您的心血結晶完整保存下來！</li>
+            </ol>
+            
+            <hr>
 
-            <blockquote>
-                <p>這個工具特別適合森巴鼓團練習、教學示範和創意編曲。建議先從簡單的節拍模式開始，逐步熟悉各項功能！</p>
-            </blockquote>
+            <h2>⚙️ 功能詳解</h2>
+
+            <h3>主控制列 (上方)</h3>
+            <ul>
+                <li><strong>? 指引</strong>：打開使用說明文件。</li>
+                <li><strong>🎵 調音</strong>：打開專業音色調整面板，可對所有樂器進行細膩的聲音設計。</li>
+                <li><strong>▶ 播放</strong>：播放或暫停音樂。</li>
+                <li><strong>重置</strong>：清除所有音符與標記，但保留音軌設定。</li>
+                <li><strong>上一步/下一步</strong>：復原或重做您的操作。</li>
+                <li><strong>編輯</strong> (<code>E</code> 鍵)：進入/退出選取模式。啟用後會出現工具列：
+                    <ul>
+                        <li><strong>複製 (<code>Ctrl+C</code>)</strong>：複製框選的節奏。</li>
+                        <li><strong>貼上 (<code>Ctrl+V</code>)</strong>：貼上已複製的節奏。</li>
+                        <li><strong>儲存/載入樣式</strong>：將選取範圍存成 <code>.pa</code> 檔案，或讀取已存的樣式檔。</li>
+                    </ul>
+                </li>
+                <li><strong>標記</strong> (<code>M</code> 鍵)：進入/退出標記模式。啟用後會出現標記工具列，可選擇左右手、強弱音或橡皮擦。</li>
+                <li><strong>檔案操作</strong>：
+                    <ul>
+                        <li><strong>存檔 (<code>Ctrl+S</code>)</strong>：將整個專案存為 <code>.json</code> 檔。</li>
+                        <li><strong>載入</strong>：讀取 <code>.json</code> 專案檔。</li>
+                        <li><strong>匯出MP3</strong>：將當前編曲匯出為 MP3。</li>
+                    </ul>
+                </li>
+                <li><strong>循環次數</strong>：設定匯出MP3時，樂句要重複的次數。</li>
+            </ul>
+
+            <h3>節奏設定列 (中間)</h3>
+            <ul>
+                <li><strong>合奏/輪奏</strong>：切換播放模式。</li>
+                <li><strong>一拍長度</strong>：設定每一拍由多少個格子組成，數字越大，代表解析度越高。</li>
+                <li><strong>節拍長度</strong>：使用 <code>+</code> / <code>-</code> 增加或減少總拍數。</li>
+                <li><strong>BPM / 音量</strong>：設定全域的曲速與音量。</li>
+                <li><strong>顯示選項</strong>：
+                    <ul>
+                        <li><strong>拍數顯示</strong>：在有音符的格子上顯示其屬於第幾拍。</li>
+                        <li><strong>LR顯示</strong>：顯示/隱藏左右手標記。</li>
+                        <li><strong>記號顯示</strong>：顯示/隱藏強弱音記號。</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <h3>音序器面板 (下方)</h3>
+            <h4>左側音軌控制</h4>
+            <ul>
+                <li><strong>軌道標籤</strong>：雙擊標籤 (如 <code>S1</code>) 可自訂名稱 (最多2個字元)。</li>
+                <li><strong>樂器選擇</strong>：下拉選單選擇該軌道的樂器。</li>
+                <li><strong>啟用軌道 (●)</strong>：點擊可讓此軌道靜音(Mute)。</li>
+                <li><strong>啟用聲音 (🔊)</strong>：點擊可讓此軌道在播放時不出聲，但保留視覺效果。</li>
+                <li><strong>刪除軌道 (✖)</strong>：當軌道數大於4時，可刪除軌道。</li>
+                <li><strong>音量條</strong>：獨立調整該軌道的音量。</li>
+                <li><strong>新增/摺疊按鈕</strong>：<code>➕</code> 可新增軌道，<code>◀</code> / <code>▶</code> 可收合/展開左側面板。</li>
+            </ul>
+
+            <h4>右側節拍網格</h4>
+            <ul>
+                <li><strong>格子(Step)</strong>：編曲的核心區域，點擊以放置音符。</li>
+                <li><strong>播放軸 (Seek Bar)</strong>：頂部的灰色長條。在非播放狀態下，點擊任意位置可將紅色播放軸移動到該處，並高亮對應的欄位。按下 <code>播放</code> 將從該位置開始。</li>
+            </ul>
+
+            <hr>
+
+            <h2>⌨️ 快速鍵清單</h2>
+
+            <h3>一、 播放控制</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>功能</th>
+                        <th>按鍵</th>
+                        <th>說明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>播放 / 暫停</strong></td>
+                        <td><code>Space</code> 或 <code>P</code></td>
+                        <td>開始播放或在目前位置暫停。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>停止並回到開頭</strong></td>
+                        <td><code>S</code></td>
+                        <td>無論在哪個位置，立即停止播放並將播放軸歸零。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>從頭播放</strong></td>
+                        <td><code>B</code></td>
+                        <td>立即從第一拍開始播放。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>增加 / 減少 BPM</strong></td>
+                        <td><code>↑</code> / <code>↓</code></td>
+                        <td>微調曲速。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>增加 / 減少 總音量</strong></td>
+                        <td><code>→</code> / <code>←</code></td>
+                        <td>微調主音量。</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>二、 模式與編輯</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>功能</th>
+                        <th>按鍵</th>
+                        <th>說明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>切換 [編輯] 模式</strong></td>
+                        <td><code>E</code></td>
+                        <td>進入或退出用於複製/貼上的「編輯」模式。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>切換 [標記] 模式</strong></td>
+                        <td><code>M</code></td>
+                        <td>進入或退出用於標記手法的「標記」模式。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>複製選取範圍</strong></td>
+                        <td><code>Ctrl</code> + <code>C</code></td>
+                        <td>在 [編輯] 模式下，複製已選取的格子。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>貼上樣式</strong></td>
+                        <td><code>Ctrl</code> + <code>V</code></td>
+                        <td>在 [編輯] 模式下，貼上已複製的樣式。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>上一步</strong></td>
+                        <td><code>Ctrl</code> + <code>Z</code></td>
+                        <td>復原上一個操作。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>下一步</strong></td>
+                        <td><code>Ctrl</code> + <code>Y</code></td>
+                        <td>重做上一個復原的操作。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>退出模式 / 取消</strong></td>
+                        <td><code>Esc</code></td>
+                        <td>關閉 [編輯] 或 [標記] 模式，或取消播放軸高亮。</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>三、 標記工具快捷鍵 (需先按 <code>M</code> 進入標記模式)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>功能</th>
+                        <th>按鍵</th>
+                        <th>說明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>選擇 'R' 標記</strong></td>
+                        <td><code>R</code></td>
+                        <td>切換到右手 (R) 標記工具。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>選擇 'L' 標記</strong></td>
+                        <td><code>L</code></td>
+                        <td>切換到左手 (L) 標記工具。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>選擇 '&gt;' 強音記號</strong></td>
+                        <td><code>.</code> (句點)</td>
+                        <td>切換到強音 (&gt;) 記號工具。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>選擇 '()' 弱音記號</strong></td>
+                        <td><code>O</code></td>
+                        <td>切換到弱音 (ghost note) 記號工具。</td>
+                    </tr>
+                    <tr>
+                        <td><strong>選擇橡皮擦</strong></td>
+                        <td><code>X</code></td>
+                        <td>切換到橡皮擦工具。</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h3>四、 檔案操作</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>功能</th>
+                        <th>按鍵</th>
+                        <th>說明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>儲存鼓譜</strong></td>
+                        <td><code>Ctrl</code> + <code>S</code></td>
+                        <td>將目前的鼓譜匯出為 <code>.json</code> 檔案。</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <hr>
+
+            <h2>📂 檔案格式說明</h2>
+            <ul>
+                <li><code>.json</code>：完整的專案檔。包含所有音軌、音符、標記、BPM、音色設定等所有資訊。用於儲存和分享整個編曲。</li>
+                <li><code>.pa</code> (Pattern)：樣式檔。只包含選取範圍內的音符與標記資訊。用於儲存常用的節奏片段，方便在不同專案中快速呼叫使用。</li>
+            </ul>
+
+            <hr>
+
+            <h2>👨‍💻 作者</h2>
+            <p>
+                <strong>程式作者</strong>：徐承佑<br>
+                <strong>森巴鼓指導老師</strong>：陳仰真
+            </p>
+
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const links = document.querySelectorAll('a[href^="#"]');
-            links.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        e.preventDefault();
-                        target.scrollIntoView({ behavior: 'smooth' });
-                    }
-                });
-            });
-        });
-    </script>
 </body>
 </html>
