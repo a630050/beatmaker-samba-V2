@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-tw">
 <head>
@@ -36,9 +37,9 @@
 
 		.header {
 			display: flex;
-			flex-direction: column;      /* <--- 新增：將主軸改為垂直方向 */
-			align-items: flex-start;     /* <--- 修改：讓項目從左邊開始對齊 */
-			gap: 20px;                   /* <--- 修改：調整 Logo 和按鈕之間的垂直間距 */
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 20px;
 			margin-bottom: 20px;
 			padding: 20px;
 			background: rgba(0, 0, 0, 0.3);
@@ -508,7 +509,6 @@
             z-index: 2;
         }
 
-		/* 【需求 3】新增的 Highlight 樣式 */
         .step.step-highlighted {
             background-color: rgba(255, 255, 0, 0.25) !important;
             border-color: #f1c40f !important;
@@ -527,18 +527,18 @@
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
             min-width: fit-content;
-			cursor: pointer; /* 【需求 3】新增鼠標指標 */
+			cursor: pointer;
         }
 
 		.position-line {
 			position: absolute;
 			top: 0;
-			width: var(--step-size); /* 寬度與音格同步 */
-			height: 100%; /* 高度填滿其父容器 (position-indicator) */
-			background: #ff4444; /* 使用更實的顏色 */
+			width: var(--step-size);
+			height: 100%;
+			background: #ff4444;
 			border-radius: 1px;
 			transition: left 0.1s linear;
-			pointer-events: none; /* 讓紅線本身不接收點擊事件 */
+			pointer-events: none;
 			z-index: 5;
 		}
 
@@ -552,35 +552,33 @@
             display: none;
         }
 
-		/* Sound Panel 的全螢幕背景樣式 */
 		.sound-panel-overlay {
-			display: none; /* 預設隱藏 */
+			display: none;
 			position: fixed;
 			top: 0;
 			left: 0;
 			width: 100%;
 			height: 100%;
 			background: rgba(0, 0, 0, 0.7);
-			backdrop-filter: blur(5px); /* 模糊效果移到這裡 */
+			backdrop-filter: blur(5px);
 			z-index: 1000;
 			justify-content: center;
 			align-items: center;
-			padding: 20px; /* 給視窗一些邊距 */
+			padding: 20px;
 		}
 
-		/* Sound Panel 的內容視窗樣式 */
 		.sound-panel {
-			background: #1a1a1a; /* 統一樣式 */
+			background: #1a1a1a;
 			padding: 30px;
 			border-radius: 15px;
 			color: white;
-			width: 100%; /* 寬度佔滿背景 */
-			max-width: 1200px; /* 最大寬度限制 */
-			height: 100%; /* 高度佔滿背景 */
+			width: 100%;
+			max-width: 1200px;
+			height: 100%;
 			overflow-y: auto;
-			border: 1px solid #00ff88; /* 統一樣式 */
-			box-shadow: 0 10px 40px rgba(0, 255, 136, 0.25); /* 統一樣式 */
-			display: flex; /* 讓內部元素可以更好地佈局 */
+			border: 1px solid #00ff88;
+			box-shadow: 0 10px 40px rgba(0, 255, 136, 0.25);
+			display: flex;
 			flex-direction: column;
 		}
 
@@ -799,7 +797,7 @@
         }
 
 		.modal-overlay {
-			display: none; /* 預設隱藏*/
+			display: none;
 			position: fixed;
 			top: 0;
 			left: 0;
@@ -874,12 +872,9 @@
 		}
 
 		.beats-info-container .beat-setting-label {
-			margin-right: 5px; /* 縮小文字和數字間的距離 */
+			margin-right: 5px;
 		}
 
-		/* 1. 定義新的按鈕顏色 */
-
-		/* 資訊按鈕 (紫色) - 用於 "使用說明" */
 		.btn.btn-info {
 			background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
 		}
@@ -887,7 +882,6 @@
 			box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
 		}
 
-		/* 特殊功能按鈕 (青色) - 用於 "調音" */
 		.btn.btn-special {
 			background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
 		}
@@ -902,31 +896,25 @@
 			box-shadow: 0 5px 15px rgba(38, 198, 218, 0.4);
 		}
 
-		/* 標記按鈕在 "toggled" 狀態下的顏色 (使用深橙色作為啟用對比) */
 		.btn.btn-marking.toggled {
 			background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
 			box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
 		}
 
-
-		/* 2. 修改 .controls 容器以加大群組間距 */
 		.controls {
 			display: flex;
 			align-items: center;
-			gap: 20px; /* 加大群組間的間距 */
+			gap: 20px;
 			flex-wrap: wrap;
 		}
 
-		/* 3. 新增 .control-group 樣式來定義組內間距 */
 		.control-group {
 			display: flex;
 			align-items: center;
-			gap: 10px; /* 組內按鈕的間距 */
+			gap: 10px;
 			flex-wrap: wrap;
 		}
-		/* 1. 定義新的按鈕顏色 */
 
-		/* 危險按鈕 (紅色) */
 		.btn.btn-danger {
 			background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
 		}
@@ -934,7 +922,6 @@
 			box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
 		}
 
-		/* 次要按鈕 (灰色) */
 		.btn.btn-secondary {
 			background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
 		}
@@ -942,7 +929,6 @@
 			box-shadow: 0 5px 15px rgba(189, 195, 199, 0.4);
 		}
 
-		/* --- CSS 新增結束 --- */
 		.btn.btn-help {
 			background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
 		}
@@ -953,15 +939,14 @@
 
 		.tracks-footer-controls {
             display: flex;
-            justify-content: center; /* 讓按鈕居中 */
-            gap: 10px; /* 按鈕之間的間距 */
-            margin-top: 8px; /* 與上方音軌列表的間距 */
+            justify-content: center;
+            gap: 10px;
+            margin-top: 8px;
             flex-shrink: 0;
         }
 
-        /* 收摺後，隱藏新增軌道按鈕 */
         .tracks-controls.collapsed .tracks-footer-controls {
-            flex-direction: column; /* 垂直排列 */
+            flex-direction: column;
             gap: 5px;
         }
 
@@ -970,7 +955,6 @@
         }
 
 
-        /* 標記工具列的容器 */
         .marker-controls {
             display: flex;
             gap: 10px;
@@ -980,7 +964,6 @@
             border: 1px solid #ff9900;
         }
 
-        /* 標記工具按鈕 (R, L, 橡皮擦) 的樣式 */
         .marker-btn {
             background: transparent;
             border: 1px solid #ff9900;
@@ -999,25 +982,23 @@
 
 		.marker-controls #clearBtn {
 			background: transparent;
-			border: 2px solid #e74c3c; /* 紅色邊框，表示危險操作 */
-			color: #e74c3c; /* 紅色文字 */
-			padding: 0 12px; /* 調整左右邊距，讓文字不會太擠 */
-			height: 36px; /* 與 R/L 按鈕高度一致 */
+			border: 2px solid #e74c3c;
+			color: #e74c3c;
+			padding: 0 12px;
+			height: 36px;
 			font-size: 14px;
 			font-weight: bold;
-			border-radius: 8px; /* 與 R/L 按鈕圓角一致 */
+			border-radius: 8px;
 			transition: all 0.2s ease;
 			cursor: pointer;
 		}
 
-		/* "清除標記" 按鈕的滑鼠懸停效果 */
 		.marker-controls #clearBtn:hover {
-			background: rgba(231, 76, 60, 0.2); /* 淡紅色背景 */
+			background: rgba(231, 76, 60, 0.2);
 			color: #ff6b5a;
 			border-color: #ff6b5a;
 		}
 
-        /* 標記工具按鈕被選中時的樣式 */
         .marker-btn.active {
             background: rgba(0, 255, 136, 0.2);
             border-color: #00ff88;
@@ -1037,49 +1018,43 @@
              stroke: #fff;
         }
 
-        /* 網格中 R/L 標記的文字樣式 */
         .step .marker-text {
-            font-size: 18px; /* 根據需要調整大小 */
+            font-size: 18px;
             font-weight: bold;
-            color: #ffc107; /* 使用醒目的黃色 */
+            color: #ffc107;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            pointer-events: none; /* 讓標記文字不會干擾點擊 */
+            pointer-events: none;
             text-shadow: 0 0 5px black;
         }
 
-        /* 當格子同時被啟用時，稍微降低標記的透明度以突顯背景 */
         .step.active .marker-text {
             opacity: 0.85;
         }
 
-		/* 預設隱藏標記文字 */
         .step .marker-text {
             display: none;
         }
 
-        /* 當 .container 擁有 .markers-visible 類別時，才顯示標記文字 */
         .container.markers-visible .step .marker-text {
             display: block;
         }
 
-        /* 當格子內有數字時，為了避免標記(R/L)完全覆蓋數字，
-           我們讓標記稍微縮小並移到右上角。*/
         .container.markers-visible .step:not(:empty) .marker-text {
-            font-size: 12px; /* 縮小字體 */
-            top: 5px;       /* 向上移動 */
-            left: auto;     /* 取消水平置中 */
-            right: 4px;     /* 靠右對齊 */
-            transform: none; /* 取消置中用的 transform */
+            font-size: 12px;
+            top: 5px;
+            left: auto;
+            right: 4px;
+            transform: none;
         }
 
 		 .track-number input {
             width: 100%;
             height: 100%;
             background: transparent;
-            border: 1px dotted #00ff88; /* 編輯時給予一個虛線框提示 */
+            border: 1px dotted #00ff88;
             color: #00ff88;
             text-align: center;
             font-size: 14px;
@@ -1089,7 +1064,6 @@
             box-sizing: border-box;
         }
 
-        /* 選取工具列容器 */
         .selection-controls {
             display: flex;
             gap: 10px;
@@ -1099,7 +1073,6 @@
             border: 1px solid #ff9900;
         }
 
-        /* 選取工具列按鈕樣式 */
         .selection-btn {
             background: transparent;
             border: 2px solid rgba(255, 153, 0, 0.6);
@@ -1118,35 +1091,37 @@
             border-color: #ff9900;
         }
 
-
-		/* 左下角強弱音記號的樣式 */
 		.step .accent-marker {
 			font-size: 16px;
 			font-weight: bold;
-			color: black; /* 純黑色 */
+			color: black;
 			position: absolute;
 			bottom: 2px;
 			left: 4px;
 			pointer-events: none;
-			text-shadow: 0 0 2px white, 0 0 4px white; /* 增加白色外發光以確保在深色背景上可見 */
+			text-shadow: 0 0 2px white, 0 0 4px white;
 		}
 
-		/* 預設隱藏強弱音記號 */
 		.step .accent-marker {
 			display: none;
 		}
 
-		/* 當 .container 擁有 .accents-visible 類別時，才顯示強弱音記號 */
 		.container.accents-visible .step .accent-marker {
 			display: block;
 		}
 
-		/* 當格子同時被啟用時，稍微改變強弱音記號的發光顏色以突顯 */
 		.step.active .accent-marker {
 			text-shadow: 0 0 3px #00ff88, 0 0 5px #00ff88;
 		}
 		
-		/* 全域記號音量調整的容器樣式 */
+		.global-accent-controls {
+			background: rgba(0, 0, 0, 0.3);
+			border: 1px solid rgba(0, 255, 136, 0.3);
+			border-radius: 10px;
+			padding: 15px 25px;
+			margin-bottom: 25px;
+		}
+		
 		.global-accent-controls {
 			background: rgba(0, 0, 0, 0.3);
 			border: 1px solid rgba(0, 255, 136, 0.3);
@@ -1155,56 +1130,42 @@
 			margin-bottom: 25px;
 		}
 
-
-		
-		
-		/* 全域記號音量調整的容器樣式 */
-		.global-accent-controls {
-			background: rgba(0, 0, 0, 0.3);
-			border: 1px solid rgba(0, 255, 136, 0.3);
-			border-radius: 10px;
-			padding: 15px 25px;
-			margin-bottom: 25px;
-		}
-
-		/* 新增：用來包裹兩個滑桿的 Flex 容器 */
 		.accent-controls-wrapper {
 			display: flex;
-			justify-content: space-around; /* 讓兩個項目平均分布空間 */
+			justify-content: space-around;
 			align-items: center;
-			gap: 30px; /* 兩個滑桿區塊之間的間距 */
-			flex-wrap: wrap; /* 在小螢幕上可以換行 */
+			gap: 30px;
+			flex-wrap: wrap;
 		}
 
-		/* 修改：每個滑桿的容器 */
 		.accent-slider-container {
 			display: flex;
 			align-items: center;
-			gap: 10px; /* 標籤和滑桿之間的間距 */
-			flex-grow: 1; /* 讓每個容器都試圖擴展 */
-			min-width: 250px; /* 每個容器的最小寬度，防止過度擠壓 */
+			gap: 10px;
+			flex-grow: 1;
+			min-width: 250px;
 		}
 
 		.accent-slider-container label {
-			flex-shrink: 0; /* 防止標籤文字被壓縮 */
+			flex-shrink: 0;
 			font-size: 14px;
 			color: #e0e0e0;
-			width: 150px; /* 固定標籤寬度以對齊 */
+			width: 150px;
 		}
 
 		.accent-slider-container span {
 			color: #00ff88;
 			font-weight: bold;
-			display: inline-block; /* 確保寬度設定有效 */
-			width: 35px; /* 給予數字一個固定寬度，防止滑動時版面跳動 */
+			display: inline-block;
+			width: 35px;
 		}
 
 		.accent-slider-container input[type="range"] {
-			width: 100%; /* 讓滑桿填滿其容器的剩餘空間 */
+			width: 100%;
 		}		
-	
-
-
+		.step.active.step-dimmed {
+				opacity: 0.65;
+		}
 	
     </style>
 
@@ -1228,13 +1189,13 @@
 
 				<!-- Group: 播放 -->
 				<div class="control-group">
-					<button class="btn" id="playBtn" title="播放/暫停 (Space)">▶ 播放</button>
+					<button class="btn" id="playBtn" title="播放/暫停 (Space 或 P)">▶ 播放</button>
 				</div>
 
 				<!-- Group: 危險操作 -->
 				<div class="control-group">
 
-					<button class="btn btn-danger" id="resetBtn">重置</button>
+					<button class="btn btn-danger" id="resetBtn">重設</button>
 				</div>
 
 				<!-- Group: 歷史紀錄 -->
@@ -1315,7 +1276,7 @@
 			<div class="expand-controls">
 				<button class="expand-btn reduce" id="reduceBtn">-</button>
 				<button class="expand-btn" id="expandBtn">+</button>
-				<div class="beats-info-container"> <!-- 新增的容器 -->
+				<div class="beats-info-container">
 					<span class="beat-setting-label">節拍長度：</span>
 					<span class="beats-info" id="beatsInfo">8拍</span>
 				</div>
@@ -1324,10 +1285,10 @@
                 <span>BPM:</span>
                 <input type="number" class="bpm-input" id="bpmInput" value="65" min="40" max="200">
             </div>
-			<div class="bpm-control"> <!-- 我們可以沿用 bpm-control 的樣式 -->
+			<div class="bpm-control">
 				<span>音量:</span>
 				<input type="number" class="bpm-input" id="globalVolumeInput" value="80" min="0" max="100">
-				<span style="margin-left: -10px;">%</span> <!-- 加上百分比符號 -->
+				<span style="margin-left: -10px;">%</span>
 			</div>
             <div class="checkbox-container">
                 <input type="checkbox" class="checkbox" id="showNumbers">
@@ -1341,31 +1302,31 @@
 				<input type="checkbox" class="checkbox" id="showAccentsCheckbox" checked>
 				<label for="showAccentsCheckbox">記號顯示</label>
 			</div>
-
+			<div class="beat-setting-controls">
+                <span class="beat-setting-label">色差提示:</span>
+                <button class="beat-setting-btn color-hint-btn" data-hint-mode="lr">左右</button>
+                <button class="beat-setting-btn color-hint-btn" data-hint-mode="accent">強弱</button>
+            </div>
 
         </div>
 
 		<div class="sequencer">
-			<!-- (左側) 音軌控制面板 -->
+			<!-- (左側) 音軌控製麵板 -->
 			<div class="tracks-controls" id="tracksControls">
-				<!-- JS 會將所有音軌的控制項 (樂器選擇、音量等) 插入到這裡 -->
 				<div id="trackControls"></div>
 
-				<!-- 面板底部的按鈕 (新增軌道、收合) -->
 				<div class="tracks-footer-controls">
 					<button class="collapse-btn" id="addTrackBtn" title="新增軌道">➕</button>
-					<button class="collapse-btn" id="collapseBtn" title="摺疊/展開控制面板">◀</button>
+					<button class="collapse-btn" id="collapseBtn" title="摺疊/展開控製麵板">◀</button>
 				</div>
 			</div>
 
 			<!-- (右側) 音序器網格 -->
 			<div class="tracks-sequencer">
-				<!-- 播放位置指示器 -->
 				<div class="position-indicator" id="positionIndicator">
 					<div class="position-line" id="positionLine"></div>
 				</div>
 
-				<!-- JS 會將所有音軌的節拍格 (steps) 插入到這裡 -->
 				<div id="trackSteps"></div>
 			</div>
 		</div>
@@ -1382,7 +1343,6 @@
 				<h4 style="color: #00ff88; margin-bottom: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px;">
 					全域記號音量調整
 				</h4>
-				<!-- ======[ 新增這個父容器 div ]====== -->
 				<div class="accent-controls-wrapper">
 					<div class="accent-slider-container">
 						<label for="accentVolumeSlider">強音 (>) 音量: <span id="accentVolumeDisplay">500</span>%</label>
@@ -1393,14 +1353,12 @@
 						<input type="range" id="ghostVolumeSlider" min="0" max="100" value="30" step="5">
 					</div>
 				</div>
-				<!-- ================================== -->
 			</div>
 			<div class="sound-controls-grid" id="soundControlsContainer">
-				<!-- JavaScript 將會把所有樂器面板直接插入到這裡 -->
 			</div>
 			<div class="panel-buttons">
 				<button class="btn" id="closeSoundPanel">關閉</button>
-				<button class="btn warning" id="resetSounds">重置音色</button>
+				<button class="btn warning" id="resetSounds">重設音色</button>
 			</div>
 		</div>
 	</div>
@@ -1437,15 +1395,16 @@
         class Beatmaker {
             constructor() {
 				this.audioCache = new AudioCache();
-			    this.maxTracks = 16; // 最大軌道數
-				this.minTracks = 4;  // 最小軌道數
+			    this.maxTracks = 16;
+				this.minTracks = 4;
                 this.isPlaying = false;
+				this.colorHintMode = null;
                 this.currentStep = 0;
                 this.currentTrack = 0;
                 this.bpm = 65;
-				this.globalVolume = 0.8; // 預設值 80%，即 0.8 的乘數
-				this.accentVolumeMultiplier = 5.0; // 強音音量乘數，預設 500%
-				this.ghostVolumeMultiplier = 0.3;  // 弱音音量乘數，預設 30%
+				this.globalVolume = 0.8;
+				this.accentVolumeMultiplier = 5.0;
+				this.ghostVolumeMultiplier = 0.3;
                 this.mode = 'ensemble';
                 this.showNumbers = false;
 				this.showMarkers = false;
@@ -1624,7 +1583,7 @@
                 }));
 
                 this.updateExpandButton();
-                document.querySelectorAll('.beat-setting-btn').forEach(btn => {
+                document.querySelectorAll('.beat-setting-btn[data-beat-setting]').forEach(btn => {
                     btn.classList.toggle('active', parseInt(btn.dataset.beatSetting) === this.stepsPerBeat);
                 });
                 this.renderTracks();
@@ -1725,7 +1684,7 @@
 
 			addTrack() {
                 if (this.tracks.length >= this.maxTracks) {
-                    alert(`最多只能有 ${this.maxTracks} 個軌道`);
+                    alert(`最多隻能有 ${this.maxTracks} 個軌道`);
                     return false;
                 }
 
@@ -1737,7 +1696,7 @@
                     label: 'UN',
                     drumType: this.defaultDrums[newTrackIndex] || 'agogo',
                     steps: Array(this.totalBeats * this.stepsPerBeat).fill(false),
-                    markers: Array.from({ length: this.totalBeats * this.stepsPerBeat }, () => ({})), // <--- 正確的寫法
+                    markers: Array.from({ length: this.totalBeats * this.stepsPerBeat }, () => ({})),
                     enabled: true,
                     soundEnabled: true,
                     volume: 0.8
@@ -1779,7 +1738,7 @@
                 this.updateExpandButton();
                 this.initScrollPosition();
                 this.updateStepSize();
-				this.updateBeatNumbers(); // Draw initial position line
+				this.updateBeatNumbers();
                 this.saveState(true);
             }
 
@@ -1957,6 +1916,7 @@
 					stepsElement.innerHTML = `<div class="steps">${steps}</div>`;
 					trackStepsContainer.appendChild(stepsElement);
 				});
+				this.updateColorHints();
 			}
 
             updateExpandButton() {
@@ -1966,7 +1926,6 @@
 
 			bindEvents() {
 			
-				// ======[ 新增：綁定強弱音滑桿事件 ]======
 				const accentSlider = document.getElementById('accentVolumeSlider');
 				const accentDisplay = document.getElementById('accentVolumeDisplay');
 				accentSlider.addEventListener('input', (e) => {
@@ -2023,15 +1982,16 @@
 				});
 				
 				document.querySelectorAll('.mode-btn').forEach(btn => btn.addEventListener('click', (e) => this.handleModeChange(e)));
-				document.querySelectorAll('.beat-setting-btn').forEach(btn => btn.addEventListener('click', (e) => {
-					document.querySelectorAll('.beat-setting-btn').forEach(b => b.classList.remove('active'));
+				
+				document.querySelectorAll('.beat-setting-btn[data-beat-setting]').forEach(btn => btn.addEventListener('click', (e) => {
+					document.querySelectorAll('.beat-setting-btn[data-beat-setting]').forEach(b => b.classList.remove('active'));
 					e.target.classList.add('active');
 					this.changeBeatSetting(parseInt(e.target.dataset.beatSetting));
 				}));
+
 				document.getElementById('expandBtn').addEventListener('click', () => this.expandBeats());
 				document.getElementById('reduceBtn').addEventListener('click', () => this.reduceBeats());
 
-				// 【需求 3】綁定點擊播放軸事件
 				document.getElementById('positionIndicator').addEventListener('click', (e) => this.handleSeek(e));
 
 				document.getElementById('selectBtn').addEventListener('click', () => this.toggleSelectionMode());
@@ -2107,18 +2067,34 @@
 
 				window.addEventListener('resize', () => {
 					this.updateStepSize();
-					this.updateBeatNumbers(); // Re-calculate position line on resize
+					setTimeout(() => this.updateBeatNumbers(), 0);
 				});
+				
+                document.querySelectorAll('.beat-setting-btn[data-hint-mode]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const clickedBtn = e.currentTarget;
+                        const hintMode = clickedBtn.dataset.hintMode;
+
+                        if (clickedBtn.classList.contains('active')) {
+                            clickedBtn.classList.remove('active');
+                            this.colorHintMode = null;
+                        } else {
+                            document.querySelectorAll('.beat-setting-btn[data-hint-mode]').forEach(b => b.classList.remove('active'));
+                            clickedBtn.classList.add('active');
+                            this.colorHintMode = hintMode;
+                        }
+                        
+                        this.updateColorHints();
+                    });
+                });
+                
 				this.setupKeyboardShortcuts();
 			}
 
-			// 【需求 3】處理點擊播放軸的新函式
             handleSeek(event) {
                 if (this.isPlaying) return;
 
-                // 如果在輪奏模式下點擊，自動切換回合奏模式
                 if (this.mode === 'sequential') {
-                    // 找到合奏按鈕並模擬點擊，以觸發所有相關的UI和邏輯更新
                     const ensembleBtn = document.querySelector('.mode-btn[data-mode="ensemble"]');
                     if (ensembleBtn) ensembleBtn.click();
                 }
@@ -2129,12 +2105,10 @@
                 const firstStepElement = document.querySelector('.step');
                 if (!firstStepElement) return;
 
-                // 計算每個格子的總寬度 (包含間隙)
                 const stepWidth = firstStepElement.offsetWidth;
                 const gap = parseFloat(getComputedStyle(firstStepElement.parentElement).gap) || 2;
                 const fullStepWidth = stepWidth + gap;
 
-                // 根據點擊位置計算目標格子索引
                 const targetStep = Math.min(
                     Math.floor(clickX / fullStepWidth),
                     (this.totalBeats * this.stepsPerBeat) - 1
@@ -2142,25 +2116,20 @@
                 
                 if (targetStep >= 0) {
                     this.currentStep = targetStep;
-                    this.updateSeekHighlight(this.currentStep); // 更新整欄的高亮
-                    this.updateBeatNumbers(); // 移動紅色播放軸到新位置
+                    this.updateSeekHighlight(this.currentStep);
+                    this.updateBeatNumbers();
                 }
             }
 
-			// 【需求 3】更新高亮列的新函式
             updateSeekHighlight(stepIndex) {
-                // 移除先前所有的高亮
                 document.querySelectorAll('.step.step-highlighted').forEach(el => el.classList.remove('step-highlighted'));
 
-                // 如果傳入的索引為 null (例如開始播放或停止時)，或正在播放中，就直接返回
                 if (stepIndex === null || this.isPlaying) return;
 
-                // 將指定索引的那一整欄格子都加上高亮樣式
                 document.querySelectorAll(`.step[data-step="${stepIndex}"]`).forEach(el => el.classList.add('step-highlighted'));
             }
 
             handleModeChange(event) {
-                // 當模式改變時，清除可能存在的高亮
                 this.updateSeekHighlight(null);
                 document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
                 event.target.classList.add('active');
@@ -2336,10 +2305,10 @@
 
 				if (tracksControls.classList.contains('collapsed')) {
 					collapseBtn.textContent = '▶';
-					collapseBtn.title = '展開控制面板';
+					collapseBtn.title = '展開控製麵板';
 				} else {
 					collapseBtn.textContent = '◀';
-					collapseBtn.title = '摺疊控制面板';
+					collapseBtn.title = '摺疊控製麵板';
 				}
                 setTimeout(() => {
 					this.updateStepSize();
@@ -2365,7 +2334,7 @@
                     track.steps = newSteps;
                 });
 				
-				this.currentStep = 0; // Reset playhead on setting change
+				this.currentStep = 0;
                 this.renderTracks();
                 this.updateStepSize();
 				this.updateBeatNumbers();
@@ -2379,10 +2348,11 @@
                     stepElement.classList.toggle('active', this.tracks[trackIndex].steps[stepIndex]);
                     if (this.showNumbers) {
                         const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
-                        const markerHTML = stepElement.innerHTML.replace(/\d+/g, ''); // Keep markers
+                        const markerHTML = stepElement.innerHTML.replace(/\d+/g, '');
                         stepElement.innerHTML = this.tracks[trackIndex].steps[stepIndex] ? `${beatNumber}${markerHTML}` : markerHTML;
                     }
                 }
+				this.updateColorHints();
                 this.saveState();
             }
 
@@ -2418,7 +2388,7 @@
 				}
 
                 this.isPlaying = true;
-				this.updateSeekHighlight(null); // 【需求 3】開始播放時，清除高亮
+				this.updateSeekHighlight(null);
                 document.getElementById('playBtn').classList.add('active');
                 document.getElementById('playBtn').textContent = '⏸ 暫停';
 				
@@ -2426,27 +2396,23 @@
                     this.currentTrack = this.getFirstEnabledTrack();
                 }
 
-				this.snapScrollToCurrentStep(); // 【需求 3】將視圖滾動到當前播放點
+				this.snapScrollToCurrentStep();
 
                 const stepDuration = (60 / this.bpm) / this.stepsPerBeat * 1000;
 
-				// 【需求 2】優化播放延遲
-                // 立即執行並播放當前格的聲音和視覺效果
                 this.updateStep();
 
-                // 將播放頭推進到下一格，為 setInterval 做準備
                 const totalSteps = this.totalBeats * this.stepsPerBeat;
                 this.currentStep = (this.currentStep + 1) % totalSteps;
 				if (this.currentStep === 0) {
 					if (this.mode === 'sequential') this.currentTrack = this.getNextEnabledTrack();
 				}
 
-                // 設定計時器，從下一格開始規律播放
                 this.stepInterval = setInterval(() => {
 					this.updateStep();
 					this.currentStep = (this.currentStep + 1) % totalSteps;
                     
-					if (this.currentStep === 0) { // 當循環回到起點
+					if (this.currentStep === 0) {
                         this.scrollToBeginning();
                         if (this.mode === 'sequential') {
                             this.currentTrack = this.getNextEnabledTrack();
@@ -2463,8 +2429,6 @@
                 if (this.stepInterval) clearInterval(this.stepInterval);
                 this.stepInterval = null;
                 document.querySelectorAll('.playing').forEach(el => el.classList.remove('playing'));
-                // document.querySelectorAll('.current-playing').forEach(el => el.classList.remove('current-playing')); // <--- 註解此行
-                // 注意：這裡我們不重置 this.currentStep
             }
 
 			stop() {
@@ -2477,9 +2441,8 @@
                 this.currentTrack = 0;
                 this.scrollToBeginning();
                 document.querySelectorAll('.playing').forEach(el => el.classList.remove('playing'));
-                // document.querySelectorAll('.current-playing').forEach(el => el.classList.remove('current-playing')); // <--- 註解此行
 				this.updateSeekHighlight(null);
-                this.updateBeatNumbers(); // 在最後更新視覺，確保紅軸回到原點
+                this.updateBeatNumbers();
             }
 
             updateStep() {
@@ -2539,41 +2502,51 @@
 					const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
 					const totalStepWidth = stepWidth + gap;
 					positionLine.style.left = `${this.currentStep * totalStepWidth}px`;
-
-					// 【需求 3】讓紅色播放軸的寬度和音格一致
 					document.documentElement.style.setProperty('--step-size', `${stepWidth}px`);
 				}
 
-				// 清除上一拍的播放動畫
 				document.querySelectorAll('.step.playing').forEach(el => el.classList.remove('playing'));
-				// document.querySelectorAll('.track-control-item.current-playing').forEach(el => el.classList.remove('current-playing')); // <--- 註解此行
 
 				if (this.isPlaying) {
-					// 根據模式點亮當前播放的格子 (不再點亮音軌)
 					if (this.mode === 'ensemble') {
 						document.querySelectorAll(`.step[data-step="${this.currentStep}"]`).forEach(el => el.classList.add('playing'));
-						/*  // <--- 註解掉整個區塊
-						document.querySelectorAll(`.track-control-item`).forEach((el, index) => {
-							if (this.tracks[index].enabled && this.tracks[index].steps[this.currentStep]) {
-								el.classList.add('current-playing');
-							}
-						});
-						*/
-					} else { // sequential mode
+					} else {
 						document.querySelectorAll(`.step[data-track="${this.currentTrack}"][data-step="${this.currentStep}"]`).forEach(el => el.classList.add('playing'));
-						/* // <--- 註解掉整個區塊
-						const trackControl = document.querySelectorAll('.track-control-item')[this.currentTrack];
-						if (trackControl) trackControl.classList.add('current-playing');
-						*/
 					}
 				}
 			}
+			
+			
+			updateColorHints() {
+                document.querySelectorAll('.step.active.step-dimmed').forEach(el => el.classList.remove('step-dimmed'));
+
+                if (!this.colorHintMode) return;
+
+                this.tracks.forEach((track, trackIndex) => {
+                    track.steps.forEach((isActive, stepIndex) => {
+                        if (!isActive) return;
+
+                        const marker = track.markers[stepIndex] || {};
+                        let shouldDim = false;
+
+                        if (this.colorHintMode === 'lr' && marker.hand === 'L') {
+                            shouldDim = true;
+                        } else if (this.colorHintMode === 'accent' && marker.accent === '()') {
+                            shouldDim = true;
+                        }
+
+                        if (shouldDim) {
+                            const stepEl = document.querySelector(`.step[data-track="${trackIndex}"][data-step="${stepIndex}"]`);
+                            if (stepEl) stepEl.classList.add('step-dimmed');
+                        }
+                    });
+                });
+            }
 
             scrollToBeginning() {
                 document.querySelector('.tracks-sequencer').scrollTo({ left: 0, behavior: 'smooth' });
             }
 
-			// 【需求 3】新增: 將視圖滾動到當前播放頭
             snapScrollToCurrentStep() {
                 const sequencer = document.querySelector('.tracks-sequencer');
                 const firstStep = document.querySelector('.step');
@@ -2585,7 +2558,6 @@
 
                 const scrollTarget = this.currentStep * fullStepWidth;
 
-                // 將目標位置置於視窗約 1/4 處，而不是最左邊，體驗更好
                 const scrollOffset = sequencer.clientWidth / 4;
                 
                 sequencer.scrollTo({ 
@@ -2654,7 +2626,6 @@
 					track.markers.length = this.totalBeats * this.stepsPerBeat;
 				});
 
-				// 如果播放頭超出縮減後的範圍，將其重置
 				if (this.currentStep >= this.totalBeats * this.stepsPerBeat) {
 					this.currentStep = 0;
 					this.updateBeatNumbers();
@@ -2831,7 +2802,6 @@
 				const patternWidth = this.clipboard.pattern.steps[0].length;
 				const tracksNeeded = (pasteStartTrack + patternHeight) - this.tracks.length;
 
-				// 自動新增音軌，不詢問
 				if (tracksNeeded > 0) {
 					if ((this.tracks.length + tracksNeeded) > this.maxTracks) {
 						alert(`貼上需要 ${tracksNeeded} 個新音軌，已超過 ${this.maxTracks} 軌的數量上限，無法執行貼上。`);
@@ -2842,7 +2812,6 @@
 
 				const pasteEndStep = pasteStartStep + patternWidth - 1;
 
-				// 自動擴充拍數，不詢問
 				if (pasteEndStep >= this.totalBeats * this.stepsPerBeat) {
 					const stepsNeeded = pasteEndStep - (this.totalBeats * this.stepsPerBeat) + 1;
 					const beatsNeeded = Math.ceil(stepsNeeded / this.stepsPerBeat);
@@ -2850,7 +2819,6 @@
 					this.expandBeats(beatsToAdd);
 				}
 
-				// 執行貼上
 				for (let t = 0; t < patternHeight; t++) {
 					const targetTrackIndex = pasteStartTrack + t;
 					if (this.tracks[targetTrackIndex]) {
@@ -2866,7 +2834,6 @@
 
 				this.renderTracks();
 				this.saveState();
-				// alert('貼上成功！'); // 移除提示，加速流程
 
 				this.clearSelection();
 			}
@@ -2974,12 +2941,12 @@
             }
 
             resetSounds() {
-                if (!window.confirm('確定要重置所有音色為預設值嗎？這將會移除所有您匯入的聲音取樣，並將音源模式與參數重設。')) return;
+                if (!window.confirm('確定要重設所有音色為預設值嗎？這將會移除所有您匯入的聲音取樣，並將音源模式與參數重設。')) return;
 
                 this.initDrumSounds();
                 this.loadDefaultSamples();
 
-                alert('音色已重置。');
+                alert('音色已重設。');
             }
 
 
@@ -2998,7 +2965,7 @@
 			}
 
 			resetAll() {
-				if (!window.confirm('您確定要重置所有節拍點與 R/L 標記嗎？\n此操作將保留您的總拍數、音量與音色設定。')) {
+				if (!window.confirm('您確定要重設所有節拍點與 R/L 標記嗎？\n此操作將保留您的總拍數、音量與音色設定。')) {
 					return;
 				}
 
@@ -3016,6 +2983,7 @@
 
 				this.renderTracks();
 				this.initScrollPosition();
+				this.updateColorHints();
 
 				this.saveState(true);
 			}
@@ -3027,8 +2995,8 @@
                     totalBeats: this.totalBeats,
                     bpm: this.bpm,
 					globalVolume: this.globalVolume,
-					accentVolumeMultiplier: this.accentVolumeMultiplier, // <-- 新增
-					ghostVolumeMultiplier: this.ghostVolumeMultiplier,   // <-- 新增
+					accentVolumeMultiplier: this.accentVolumeMultiplier,
+					ghostVolumeMultiplier: this.ghostVolumeMultiplier,
                     mode: this.mode,
                     showNumbers: this.showNumbers,
 					showMarkers: this.showMarkers,
@@ -3080,11 +3048,8 @@
 					this.showMarkers = pattern.showMarkers || false;
 					this.stepsPerBeat = pattern.stepsPerBeat || 4;
 					
-					// ======[ 新增：讀取強弱音參數 ]======
-					// 使用 ?? 運算子，如果檔案中沒有這些值，就使用預設值
 					this.accentVolumeMultiplier = pattern.accentVolumeMultiplier ?? 5.0;
 					this.ghostVolumeMultiplier = pattern.ghostVolumeMultiplier ?? 0.3;
-					// ===================================
 
 					this.tracks = [];
 					this.tracks = pattern.tracks.map((trackData, index) => {
@@ -3135,7 +3100,7 @@
 					document.querySelectorAll('.mode-btn').forEach(btn => {
 						btn.classList.toggle('active', btn.dataset.mode === this.mode);
 					});
-					document.querySelectorAll('.beat-setting-btn').forEach(btn => {
+					document.querySelectorAll('.beat-setting-btn[data-beat-setting]').forEach(btn => {
 						btn.classList.toggle('active', parseInt(btn.dataset.beatSetting) === this.stepsPerBeat);
 					});
 
@@ -3439,7 +3404,6 @@
                                 case 'x':
                                     buttonSelector = '.marker-btn[data-marker="eraser"]';
                                     break;
-                                // ======[ 新增的快捷鍵 ]======
                                 case '.':
                                     buttonSelector = '.marker-btn[data-marker="accent"][data-value=">"]';
                                     break;
@@ -3448,23 +3412,23 @@
                                     break;
 							}
                             if (buttonSelector) {
-                                e.preventDefault(); // 阻止按鍵的預設行為 (例如在輸入框中打字)
+                                e.preventDefault();
                                 const targetButton = document.querySelector(buttonSelector);
                                 if (targetButton) {
-                                    // 直接觸發按鈕的點擊事件，這樣可以重用所有點擊邏輯
                                     targetButton.click();
                                 }
-                                return; // 處理完畢，結束函式
+                                return;
                             }
 						}
 
 						switch(e.key) {
 							case ' ': e.preventDefault(); this.togglePlay(); break;
-							case 's': // 新增: 停止並回到開頭
+							case 'p': e.preventDefault(); this.togglePlay(); break;
+							case 's':
 								e.preventDefault();
 								this.stop();
 								break;
-							case 'b': // 新增的從頭播放快捷鍵
+							case 'b':
 								e.preventDefault();
 								if (this.isPlaying) {
 									this.stop();
