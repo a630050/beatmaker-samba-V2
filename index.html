@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-tw">
 <head>
@@ -7,8 +6,11 @@
     <title>SambaBeatmaker - 森巴鼓團練習程式(Pro)</title>
 
 	<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <!-- 【需求】引入 VexFlow 樂譜渲染引擎 -->
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.0/build/cjs/vexflow.js"></script>
 
     <style>
+	
         :root {
             --step-size: 30px;
             --selection-bg-color: rgba(50, 150, 255, 0.3);
@@ -228,10 +230,20 @@
             border-color: #ff4444;
             color: #ff4444;
         }
+        
+        .expand-btn.reduce-start {
+            border-color: #ff8c00;
+            color: #ff8c00;
+        }
 
         .expand-btn.reduce:hover {
             background: rgba(255, 68, 68, 0.2);
         }
+        
+        .expand-btn.reduce-start:hover {
+            background: rgba(255, 140, 0, 0.2);
+        }
+
 
         .beats-info {
             color: #00ff88;
@@ -249,7 +261,7 @@
         }
 
 		.tracks-controls {
-			width: 320px;
+			width: 350px;
 			flex-shrink: 0;
 			background: rgba(0, 0, 0, 0.5);
 			border-radius: 10px;
@@ -373,7 +385,7 @@
 		}
 
 		.track-steps.disabled .step.beat-marker {
-			border-color: rgba(255, 170, 0, 0.3) !important;
+			border-color: rgba(255, 68, 68, 0.3) !important;
 		}
 
         .track-number {
@@ -745,7 +757,7 @@
 
         @media (max-width: 992px) {
             .tracks-controls {
-                width: 260px;
+                width: 290px;
             }
             .sound-controls-grid {
                 grid-template-columns: 1fr;
@@ -823,6 +835,42 @@
 			overflow: hidden;
 			color: #e0e0e0;
 		}
+        
+        #notationModal .modal-content {
+            max-width: 95vw;
+            width: 1200px;
+            --vf-font-size: 38;
+        }
+        #notationModal .modal-body {
+            padding: 20px 30px;
+            overflow-y: auto;
+            background: #fff;
+            color: #000;
+        }
+        .notation-track-title {
+            font-size: 20px;
+            color: #000;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .notation-debug-text {
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            color: #333;
+            border-radius: 5px;
+        }
+        .notation-debug-text h3 {
+            margin-top: 0;
+            color: #000;
+        }
+        .vexflow-container {
+            margin-bottom: 20px;
+        }
+
 
 		.modal-header {
 			display: flex;
@@ -1029,6 +1077,18 @@
             pointer-events: none;
             text-shadow: 0 0 5px black;
         }
+        
+        .step .rest-marker {
+            font-size: 24px;
+            font-weight: bold;
+            color: black;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            text-shadow: 0 0 3px white, 0 0 5px white;
+        }
 
         .step.active .marker-text {
             opacity: 0.85;
@@ -1039,6 +1099,10 @@
         }
 
         .container.markers-visible .step .marker-text {
+            display: block;
+        }
+		
+		.step .rest-marker {
             display: block;
         }
 
@@ -1085,21 +1149,21 @@
             transition: all 0.2s ease;
         }
 
-        .selection-btn:hover {
+        .selection-btn:hover:not(:disabled) {
             background: rgba(255, 153, 0, 0.2);
             color: #ff9900;
             border-color: #ff9900;
         }
 
 		.step .accent-marker {
-			font-size: 12px;
+			font-size: 14px;
 			font-weight: bold;
 			color: black;
 			position: absolute;
 			bottom: 2px;
 			left: 4px;
 			pointer-events: none;
-			text-shadow: 0 0 2px white, 0 0 2px white;
+			text-shadow: 0 0 2px white, 0 0 4px white;
 		}
 
 		.step .accent-marker {
@@ -1177,50 +1241,42 @@
 			<div class="logo">🎵 Samba Beatmaker</div>
 			<div class="controls">
 
-				<!-- Group: 使用說明 -->
 				<div class="control-group">
 					<button class="btn btn-help" id="helpBtn">? 指引</button>
 				</div>
 
-				<!-- Group: 調音  -->
 				<div class="control-group">
 					<button class="btn btn-special" id="soundAdjustBtn">🎵 調音</button>
 				</div>
 
-				<!-- Group: 播放 -->
 				<div class="control-group">
 					<button class="btn" id="playBtn" title="播放/暫停 (Space 或 P)">▶ 播放</button>
 				</div>
 
-				<!-- Group: 危險操作 -->
 				<div class="control-group">
-
-					<button class="btn btn-danger" id="resetBtn">重設</button>
+					<button class="btn btn-danger" id="resetBtn" title="重置鼓譜 (R)">重設</button>
 				</div>
 
-				<!-- Group: 歷史紀錄 -->
 				<div class="control-group">
 					<button class="btn btn-secondary" id="undoBtn" disabled title="上一步 (Ctrl + Z)">上一步</button>
 					<button class="btn btn-secondary" id="redoBtn" disabled title="下一步 (Ctrl + Y 或 Ctrl + Shift + Z)">下一步</button>
 				</div>
 
-				<!-- Group: 選取/編輯 -->
 				<div class="control-group">
 					 <button class="btn action-btn" id="selectBtn" title="切換選取模式 (E)">編輯</button>
 				</div>
 
-				<!-- 這就是新的工具列，它預設是隱藏的 -->
 				<div id="selectionControls" class="selection-controls" style="display: none;">
 					<button class="selection-btn" id="copySelectionBtn" title="複製選取範圍 (Ctrl + C)">複製</button>
 					<button class="selection-btn" id="pasteSelectionBtn" title="貼上樣式 (Ctrl + V)">貼上</button>
 					<button class="selection-btn" id="savePatternBtn">儲存樣式</button>
 					<button class="selection-btn" id="loadPatternBtn">載入樣式</button>
+                    <button class="selection-btn" id="convertNotationBtn">轉簡譜</button>
 					<input type="file" class="file-input" id="patternFileInput" accept=".pa">
 				</div>
 
                 <div class="control-group">
                     <button class="btn btn-marking" id="markBtn" title="切換標記模式 (M)">標記</button>
-
                 </div>
 
 				<div id="markerControls" class="marker-controls" style="display: none;">
@@ -1229,12 +1285,11 @@
 					<button class="marker-btn" data-marker="L">L</button>
 					<button class="marker-btn" data-marker="accent" data-value=">">&gt;</button>
 					<button class="marker-btn" data-marker="accent" data-value="()">( )</button>
-					<button class="marker-btn active" data-marker="eraser">
+                    <button class="marker-btn active" data-marker="eraser">
 						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
 					</button>
 				</div>
 
-				<!-- Group: 檔案操作 (紫色) -->
 				<div class="control-group">
 					<button class="btn btn-info" id="exportBtn" title="儲存鼓譜 (Ctrl + S)">存檔</button>
 					<button class="btn btn-info" id="importBtn">載入</button>
@@ -1242,9 +1297,6 @@
 					<input type="file" class="file-input" id="fileInput" accept=".json">
 				</div>
 
-
-
-				<!-- Group: 循環次數 -->
 				<div class="control-group">
 					<label for="loopCountSelect" style="color: white;">循環次數:</label>
 					<select id="loopCountSelect" style="background: rgba(0,0,0,0.7); color: #00ff88; border: 1px solid #00ff88; border-radius: 5px; padding: 4px;">
@@ -1260,7 +1312,7 @@
 				</div>
 
 			</div>
-		</div> <!-- .header 結束 -->
+		</div>
 
         <div class="control-row">
             <div class="mode-controls">
@@ -1274,8 +1326,9 @@
                 <button class="beat-setting-btn" data-beat-setting="8">8格</button>
             </div>
 			<div class="expand-controls">
-				<button class="expand-btn reduce" id="reduceBtn">-</button>
-				<button class="expand-btn" id="expandBtn">+</button>
+                <button class="expand-btn reduce-start" id="reduceStartBtn" title="從開頭減少4拍">-</button>
+				<button class="expand-btn" id="expandBtn" title="增加4拍">+</button>
+				<button class="expand-btn reduce" id="reduceEndBtn" title="從結尾減少4拍">-</button>
 				<div class="beats-info-container">
 					<span class="beat-setting-label">節拍長度：</span>
 					<span class="beats-info" id="beatsInfo">8拍</span>
@@ -1311,22 +1364,18 @@
         </div>
 
 		<div class="sequencer">
-			<!-- (左側) 音軌控製麵板 -->
 			<div class="tracks-controls" id="tracksControls">
 				<div id="trackControls"></div>
-
 				<div class="tracks-footer-controls">
 					<button class="collapse-btn" id="addTrackBtn" title="新增軌道">➕</button>
 					<button class="collapse-btn" id="collapseBtn" title="摺疊/展開控製麵板">◀</button>
 				</div>
 			</div>
 
-			<!-- (右側) 音序器網格 -->
 			<div class="tracks-sequencer">
 				<div class="position-indicator" id="positionIndicator">
 					<div class="position-line" id="positionLine"></div>
 				</div>
-
 				<div id="trackSteps"></div>
 			</div>
 		</div>
@@ -1335,7 +1384,7 @@
         程式作者：徐承佑 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  森巴鼓指導老師：陳仰真
 		</div>
     </div>
-	<!--  Sound Panel Overlay 背景 -->
+
 	<div class="sound-panel-overlay" id="soundPanelOverlay">
 		<div class="sound-panel" id="soundAdjustPanel">
 			<h3 style="margin-bottom: 20px; color: #00ff88; text-align: center;">🎵 樂器音色調整</h3>
@@ -1362,25 +1411,46 @@
 			</div>
 		</div>
 	</div>
+
+    <div id="helpModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1>Samba Beatmaker - 使用說明</h1>
+                <button id="closeHelpModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <iframe id="helpFrame" src="readme-dark.html" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div id="notationModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>簡譜轉換結果</h3>
+                <button id="closeNotationModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="notationContent">
+                <!-- JS will populate this -->
+            </div>
+        </div>
+    </div>
+
     <script>
+        const NOTE_NAMES = {
+			12: "附點4分", 8: "4分", 6: "附點8分", 4: "8分",
+			3: "附點16分", 2: "16分", 1: "32分"
+		};
 
         class AudioCache {
-            constructor() {
-                this.cache = new Map();
-            }
-
+            constructor() { this.cache = new Map(); }
             async getSample(url, audioContext) {
-                if (this.cache.has(url)) {
-                    return this.cache.get(url);
-                }
-
+                if (this.cache.has(url)) { return this.cache.get(url); }
                 try {
                     const response = await fetch(url);
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
                     const arrayBuffer = await response.arrayBuffer();
                     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
                     this.cache.set(url, audioBuffer);
                     return audioBuffer;
                 } catch (error) {
@@ -1389,8 +1459,6 @@
                 }
             }
         }
-
-
 
         class Beatmaker {
             constructor() {
@@ -1414,124 +1482,49 @@
                 this.totalBeats = 8;
                 this.minBeats = 4;
                 this.stepsPerBeat = 4;
-
                 this.selectionMode = false;
-				this.selection = {
-					startTrack: null,
-					startStep: null,
-					endTrack: null,
-					endStep: null
-				};
-                this.clipboard = {
-                    pattern: null
-                };
-
+				this.selection = { startTrack: null, startStep: null, endTrack: null, endStep: null };
+                this.clipboard = { pattern: null };
 				this.markingMode = false;
 				this.currentMarker = 'eraser';
 				this.currentAccent = null;
-
                 this.history = [];
                 this.historyIndex = -1;
                 this.maxHistory = 50;
-
                 this.defaultTrackLabels  = ['S1', 'S2', 'S3', 'C', 'C', 'R', 'R', 'A'];
                 this.defaultDrums = ['surdo1', 'surdo2', 'surdo3', 'caixa', 'caixa', 'repinique', 'repinique', 'agogo'];
-
-                this.defaultSampleUrls = {
-                    'repinique': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3',
-                    'surdo1': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3',
-                    'surdo2': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3',
-                    'surdo3': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3',
-                    'caixa': 'https://a630050.github.io/beatmaker-samba-V2/sounds/Caixa.mp3',
-                    'tamborim': '',
-                    'cuica': '',
-                    'agogo': '',
-                    'pandeiro': ''
-                }
-
                 this.initDrumSounds();
-
                 this.audioContext = null;
-                this.initAudio().then(() => {
-                    this.loadDefaultSamples();
-                });
+                this.initAudio().then(() => { this.loadDefaultSamples(); });
                 this.initTracks();
                 this.initUI();
 				document.querySelector('.container').classList.toggle('accents-visible', this.showAccents);
-
 				document.addEventListener('visibilitychange', () => {
-					if (document.visibilityState === 'visible' && this.audioContext) {
-						if (this.audioContext.state === 'suspended') {
-							this.audioContext.resume().catch(e => {
-								console.warn('Failed to resume audio on visibility change:', e);
-							});
-						}
+					if (document.visibilityState === 'visible' && this.audioContext && this.audioContext.state === 'suspended') {
+						this.audioContext.resume().catch(e => console.warn('Failed to resume audio on visibility change:', e));
 					}
 				});
             }
 
             getDefaultSoundParams() {
-                 return {
-                    // Unified Params
-                    gain: 0.8,
-                    pan: 0, // -1 to 1
-                    detune: 0, // In cents
-                    attack: 0.01,
-                    release: 0.4,
-                    filterFreq: 12000,
-                    filterQ: 1,
-                    // Synth Specific
-                    synthType: 'triangle',
-                    synthBaseFreq: 100,
-                    // Sample Specific (Internal)
-                    mode: 'synth', // 'system', 'user', 'synth'
-                    defaultSampleUrl: '',
-                    defaultSampleBuffer: null,
-                    isLoadingDefault: false,
-                    userSampleBuffer: null,
-                    userSampleFileName: '',
-                };
+                 return { gain: 0.8, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: 'triangle', synthBaseFreq: 100, mode: 'synth', defaultSampleUrl: '', defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: '' };
             }
 
 			initDrumSounds() {
-						this.drumSounds = {
-							'surdo1': {
-								name: 'Surdo 1', gain: 1, pan: 0, detune: 0, attack: 0.01, release: 0.8, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 55, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-							},
-							'surdo2': {
-								name: 'Surdo 2', gain: 0.9, pan: 0, detune: 100, attack: 0.01, release: 0.7, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 65, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-							},
-							'surdo3': {
-								name: 'Surdo 3', gain: 0.8, pan: 0, detune: 300, attack: 0.01, release: 0.6, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 75, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-							},
-							'caixa': {
-								name: 'Caixa', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.2, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Caixa.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-							},
-							'caixa-drag': {
-								name: 'Caixa (拖拍)', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "",
-								dragBounces: 5, dragDuration: 0.15, dragGainDecay: 0.5, dragTimeStretch: 1.4
-							},
-							'repinique': {
-								name: 'Repinique', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 220, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-							},
-							'repinique-drag': {
-								name: 'Repinique (拖拍)', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 11000, filterQ: 1.2, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "",
-								dragBounces: 6, dragDuration: 0.12, dragGainDecay: 0.6, dragTimeStretch: 1.3
-							},
-							'tamborim': {
-								name: 'Tamborim', gain: 0.4, pan: 0, detune: 0, attack: 0.01, release: 0.15, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 400, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-							},
-							'agogo': {
-								name: 'Agogô', gain: 1, pan: 0, detune: 0, attack: 0.001, release: 0.34, filterFreq: 1470, filterQ: 0.1, synthType: "sine", synthBaseFreq: 800, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-							},
-							'pandeiro': {
-								name: 'Pandeiro', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-							},
-							'cuica': {
-								name: 'Cuíca', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "sawtooth", synthBaseFreq: 180, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: ""
-							}
-						};
-					}
+                this.drumSounds = {
+                    'surdo1': { name: 'Surdo 1', gain: 1, pan: 0, detune: 0, attack: 0.01, release: 0.8, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 55, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'surdo2': { name: 'Surdo 2', gain: 0.9, pan: 0, detune: 100, attack: 0.01, release: 0.7, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 65, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'surdo3': { name: 'Surdo 3', gain: 0.8, pan: 0, detune: 300, attack: 0.01, release: 0.6, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 75, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'caixa': { name: 'Caixa', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.2, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Caixa.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'caixa-drag': { name: 'Caixa (拖拍)', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "", dragBounces: 5, dragDuration: 0.15, dragGainDecay: 0.5, dragTimeStretch: 1.4 },
+                    'repinique': { name: 'Repinique', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 220, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'repinique-drag': { name: 'Repinique (拖拍)', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 11000, filterQ: 1.2, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "", dragBounces: 6, dragDuration: 0.12, dragGainDecay: 0.6, dragTimeStretch: 1.3 },
+                    'tamborim': { name: 'Tamborim', gain: 0.4, pan: 0, detune: 0, attack: 0.01, release: 0.15, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 400, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'agogo': { name: 'Agogô', gain: 1, pan: 0, detune: 0, attack: 0.001, release: 0.34, filterFreq: 1470, filterQ: 0.1, synthType: "sine", synthBaseFreq: 800, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'pandeiro': { name: 'Pandeiro', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'cuica': { name: 'Cuíca', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "sawtooth", synthBaseFreq: 180, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" }
+                };
+            }
 
 
             saveState(force = false) {
@@ -1884,6 +1877,7 @@
 						<div class="track-number" data-track-index="${trackIndex}">${track.label}</div>
 						<select class="drum-select" data-track="${trackIndex}">${drumOptions}</select>
 						<div class="track-controls">
+							<div class="track-control-btn notation-btn" data-track="${trackIndex}" title="將此軌道轉為樂譜">♫</div>
 							<div class="track-control-btn enable-btn ${track.enabled ? 'active' : ''}" data-track="${trackIndex}" data-type="enable">●</div>
 							<div class="track-control-btn sound-btn ${track.soundEnabled ? 'active' : ''}" data-track="${trackIndex}" data-type="sound">🔊</div>
 							${this.tracks.length > this.minTracks ? `<div class="track-control-btn remove-btn" data-track="${trackIndex}" data-type="remove" title="刪除軌道" style="color:#e74c3c;">✖</div>` : ''}
@@ -1903,6 +1897,7 @@
 						
 						const handMarkerHTML = marker.hand ? `<span class="marker-text">${marker.hand}</span>` : '';
 						const accentMarkerHTML = marker.accent ? `<span class="accent-marker">${marker.accent}</span>` : '';
+                        const restMarkerHTML = marker.rest ? `<span class="rest-marker">${marker.rest}</span>` : '';
 
 						let numberHTML = '';
 						if (this.showNumbers && active) {
@@ -1910,7 +1905,7 @@
 							numberHTML = beatNumber;
 						}
 
-						return `<div class="step ${active ? 'active' : ''} ${stepIndex % this.stepsPerBeat === 0 ? 'beat-marker' : ''}" data-track="${trackIndex}" data-step="${stepIndex}">${numberHTML}${handMarkerHTML}${accentMarkerHTML}</div>`;
+						return `<div class="step ${active ? 'active' : ''} ${stepIndex % this.stepsPerBeat === 0 ? 'beat-marker' : ''}" data-track="${trackIndex}" data-step="${stepIndex}">${numberHTML}${handMarkerHTML}${accentMarkerHTML}${restMarkerHTML}</div>`;
 					}).join('');
 
 					stepsElement.innerHTML = `<div class="steps">${steps}</div>`;
@@ -1920,7 +1915,8 @@
 			}
 
             updateExpandButton() {
-                document.getElementById('reduceBtn').disabled = this.totalBeats <= this.minBeats;
+                document.getElementById('reduceStartBtn').disabled = this.totalBeats <= this.minBeats;
+                document.getElementById('reduceEndBtn').disabled = this.totalBeats <= this.minBeats;
                 document.getElementById('beatsInfo').textContent = `${this.totalBeats}拍`;
             }
 
@@ -1990,7 +1986,8 @@
 				}));
 
 				document.getElementById('expandBtn').addEventListener('click', () => this.expandBeats());
-				document.getElementById('reduceBtn').addEventListener('click', () => this.reduceBeats());
+                document.getElementById('reduceStartBtn').addEventListener('click', () => this.reduceBeatsFromStart());
+				document.getElementById('reduceEndBtn').addEventListener('click', () => this.reduceBeatsFromEnd());
 
 				document.getElementById('positionIndicator').addEventListener('click', (e) => this.handleSeek(e));
 
@@ -2005,11 +2002,12 @@
 					this.loadPatternToClipboard(e.target.files[0]);
 					e.target.value = '';
 				});
+                document.getElementById('convertNotationBtn').addEventListener('click', () => this.convertSelectionToNotation());
 
 				document.getElementById('markerControls').addEventListener('click', (e) => {
 					const btn = e.target.closest('.marker-btn');
 					if (btn) {
-						document.getElementById('markerControls').querySelector('.marker-btn.active').classList.remove('active');
+						document.querySelectorAll('#markerControls .marker-btn.active').forEach(b => b.classList.remove('active'));
 						btn.classList.add('active');
 
 						if (btn.dataset.marker === 'eraser') {
@@ -2018,7 +2016,10 @@
 						} else if (btn.dataset.marker === 'accent') {
 							this.currentMarker = 'accent';
 							this.currentAccent = btn.dataset.value;
-						} else {
+						} else if (btn.dataset.marker === 'rest') {
+                            this.currentMarker = 'rest';
+                            this.currentAccent = null;
+                        } else {
 							this.currentMarker = btn.dataset.marker;
 							this.currentAccent = null;
 						}
@@ -2027,6 +2028,11 @@
 
 				const sequencer = document.querySelector('.sequencer');
 				sequencer.addEventListener('click', (e) => {
+					if (e.target.classList.contains('notation-btn')) {
+						const trackIndex = parseInt(e.target.dataset.track);
+						this.convertSingleTrackToNotation(trackIndex);
+						return; // 處理完畢，提前返回
+					}
 					if (e.target.classList.contains('step')) {
 						this.handleStepClick(e.target);
 					}
@@ -2040,6 +2046,15 @@
 						}
 					}
 				});
+                
+                sequencer.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    if (e.target.classList.contains('step')) {
+                        const trackIndex = parseInt(e.target.dataset.track);
+                        const stepIndex = parseInt(e.target.dataset.step);
+                        this.applyRestMarker(trackIndex, stepIndex, e.target);
+                    }
+                });
 
 				sequencer.addEventListener('change', (e) => {
 					let stateChanged = false;
@@ -2062,15 +2077,16 @@
 
 				this.setupModalEvents('helpModal', 'helpBtn', 'closeHelpModal');
 				this.setupModalEvents('soundPanelOverlay', 'soundAdjustBtn', 'closeSoundPanel');
+                this.setupModalEvents('notationModal', null, 'closeNotationModal');
 				document.getElementById('resetSounds').addEventListener('click', () => this.resetSounds());
 				this.bindSoundPanelEvents();
 
 				window.addEventListener('resize', () => {
 					this.updateStepSize();
-					setTimeout(() => this.updateBeatNumbers(), 0);
+					setTimeout(() => this.updateBeatNumbers(), 50);
 				});
 				
-                document.querySelectorAll('.beat-setting-btn[data-hint-mode]').forEach(btn => {
+                document.querySelectorAll('.color-hint-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const clickedBtn = e.currentTarget;
                         const hintMode = clickedBtn.dataset.hintMode;
@@ -2079,7 +2095,7 @@
                             clickedBtn.classList.remove('active');
                             this.colorHintMode = null;
                         } else {
-                            document.querySelectorAll('.beat-setting-btn[data-hint-mode]').forEach(b => b.classList.remove('active'));
+                            document.querySelectorAll('.color-hint-btn').forEach(b => b.classList.remove('active'));
                             clickedBtn.classList.add('active');
                             this.colorHintMode = hintMode;
                         }
@@ -2168,7 +2184,7 @@
 			}
 
             handleMarkerToolChange(btn) {
-                document.getElementById('markerControls').querySelector('.marker-btn.active').classList.remove('active');
+                document.querySelectorAll('#markerControls .marker-btn.active').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.currentMarker = btn.dataset.marker;
             }
@@ -2213,22 +2229,26 @@
 
             setupModalEvents(modalId, openBtnId, closeBtnId) {
                 const modal = document.getElementById(modalId);
-                const openBtn = document.getElementById(openBtnId);
-                const closeBtn = document.getElementById(closeBtnId);
+                if (!modal) return;
+                
+                const openBtn = openBtnId ? document.getElementById(openBtnId) : null;
+                const closeBtn = closeBtnId ? document.getElementById(closeBtnId) : null;
 
-                if (modal && openBtn && closeBtn) {
+                if (openBtn) {
                     openBtn.addEventListener('click', () => {
                         modal.style.display = 'flex';
                     });
+                }
+                if (closeBtn) {
                     closeBtn.addEventListener('click', () => {
                         modal.style.display = 'none';
                     });
-                    modal.addEventListener('click', (e) => {
-                        if (e.target === modal) {
-                            modal.style.display = 'none';
-                        }
-                    });
                 }
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
             }
 
 
@@ -2341,18 +2361,19 @@
                 this.saveState();
             }
 
-            toggleStep(trackIndex, stepIndex) {
-                this.tracks[trackIndex].steps[stepIndex] = !this.tracks[trackIndex].steps[stepIndex];
-                const stepElement = document.querySelector(`.step[data-track="${trackIndex}"][data-step="${stepIndex}"]`);
-                if (stepElement) {
-                    stepElement.classList.toggle('active', this.tracks[trackIndex].steps[stepIndex]);
-                    if (this.showNumbers) {
-                        const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
-                        const markerHTML = stepElement.innerHTML.replace(/\d+/g, '');
-                        stepElement.innerHTML = this.tracks[trackIndex].steps[stepIndex] ? `${beatNumber}${markerHTML}` : markerHTML;
+			toggleStep(trackIndex, stepIndex) {
+                const track = this.tracks[trackIndex];
+                const isBecomingActive = !track.steps[stepIndex];
+
+                if (isBecomingActive) {
+                    if (track.markers[stepIndex] && track.markers[stepIndex].rest) {
+                        delete track.markers[stepIndex].rest;
                     }
                 }
-				this.updateColorHints();
+
+                track.steps[stepIndex] = isBecomingActive;
+                
+                this.renderTracks(); 
                 this.saveState();
             }
 
@@ -2450,7 +2471,7 @@
                 this.autoScroll();
                 if (this.mode === 'ensemble') {
                     this.tracks.forEach((track) => {
-                        if (track.enabled && track.steps[this.currentStep]) {
+                        if (track.enabled && track.steps[this.currentStep] && !(track.markers[this.currentStep] && track.markers[this.currentStep].rest)) {
                             const marker = track.markers[this.currentStep] || {};
                             let volumeMultiplier = 1.0;
                             if (marker.accent === '>') {
@@ -2463,7 +2484,7 @@
                     });
                 } else if (this.mode === 'sequential') {
                     const track = this.tracks[this.currentTrack];
-                    if (track && track.enabled && track.steps[this.currentStep]) {
+                    if (track && track.enabled && track.steps[this.currentStep] && !(track.markers[this.currentStep] && track.markers[this.currentStep].rest)) {
 						const marker = track.markers[this.currentStep] || {};
 						let volumeMultiplier = 1.0;
 						if (marker.accent === '>') {
@@ -2557,7 +2578,6 @@
                 const fullStepWidth = stepWidth + gap;
 
                 const scrollTarget = this.currentStep * fullStepWidth;
-
                 const scrollOffset = sequencer.clientWidth / 4;
                 
                 sequencer.scrollTo({ 
@@ -2616,11 +2636,13 @@
 				this.saveState();
 			}
 
-			reduceBeats() {
+			reduceBeatsFromEnd() {
 				if (this.totalBeats <= this.minBeats) return;
 				if (this.isPlaying) this.stop();
 				this.clearSelection();
-				this.totalBeats -= 4;
+
+				const beatsToRemove = 4;
+				this.totalBeats -= beatsToRemove;
 				this.tracks.forEach(track => {
 					track.steps.length = this.totalBeats * this.stepsPerBeat;
 					track.markers.length = this.totalBeats * this.stepsPerBeat;
@@ -2642,6 +2664,27 @@
 				}, 100);
 				this.saveState();
 			}
+            
+            reduceBeatsFromStart() {
+                if (this.totalBeats <= this.minBeats) return;
+                if (this.isPlaying) this.stop();
+                this.clearSelection();
+
+                const beatsToRemove = 4;
+                const stepsToRemove = beatsToRemove * this.stepsPerBeat;
+                this.totalBeats -= beatsToRemove;
+
+                this.tracks.forEach(track => {
+                    track.steps.splice(0, stepsToRemove);
+                    track.markers.splice(0, stepsToRemove);
+                });
+                
+                this.currentStep = 0;
+                this.updateBeatNumbers();
+                this.renderTracks();
+                this.updateExpandButton();
+                this.saveState();
+            }
 
             testSound(drumType) {
                 this.playSound(drumType, true, 0.8);
@@ -2658,33 +2701,68 @@
                 const now = this.audioContext.currentTime;
                 this.scheduleSound(this.audioContext, now, drumType, soundEnabled, volume);
             }
+            
+            applyRestMarker(trackIndex, stepIndex, stepElement) {
+                const track = this.tracks[trackIndex];
+                if (!track) return;
+                
+                const currentMarker = track.markers[stepIndex] || {};
+
+                // Toggle rest marker
+                if (currentMarker.rest) {
+                    delete currentMarker.rest;
+                } else {
+                    currentMarker.rest = '-';
+                    // If the step is active, deactivate it
+                    if (track.steps[stepIndex]) {
+                        track.steps[stepIndex] = false;
+                    }
+                }
+
+                track.markers[stepIndex] = currentMarker;
+                
+                this.renderTracks();
+                this.saveState();
+            }
 
 			handleStepClick(stepElement) {
 				const trackIndex = parseInt(stepElement.dataset.track);
 				const stepIndex = parseInt(stepElement.dataset.step);
 
                 if (this.markingMode) {
-                    if (!this.tracks[trackIndex].markers[stepIndex]) {
-                        this.tracks[trackIndex].markers[stepIndex] = {};
-                    }
-                    let markerObj = this.tracks[trackIndex].markers[stepIndex];
+                    let markerObj = this.tracks[trackIndex].markers[stepIndex] || {};
 
-                    if (this.currentMarker === 'eraser') {
-                        this.tracks[trackIndex].markers[stepIndex] = {};
+                    // Clear all other markers if placing a new one
+                    const isErasing = this.currentMarker === 'eraser';
+                    
+                    if (this.currentMarker === 'rest') {
+                        if (markerObj.rest) {
+                            delete markerObj.rest;
+                        } else {
+                            markerObj = { rest: '-' }; // Reset object to only have rest
+                            if (this.tracks[trackIndex].steps[stepIndex]) {
+                                this.tracks[trackIndex].steps[stepIndex] = false;
+                            }
+                        }
                     } else if (this.currentMarker === 'accent') {
                         if (markerObj.accent === this.currentAccent) {
-                            delete markerObj.accent;
+                             delete markerObj.accent;
                         } else {
+                            delete markerObj.rest;
                             markerObj.accent = this.currentAccent;
                         }
-                    } else {
-                        if (markerObj.hand === this.currentMarker) {
-                            delete markerObj.hand;
+                    } else if (this.currentMarker === 'R' || this.currentMarker === 'L') {
+                         if (markerObj.hand === this.currentMarker) {
+                             delete markerObj.hand;
                         } else {
+                            delete markerObj.rest;
                             markerObj.hand = this.currentMarker;
                         }
+                    } else if (isErasing) {
+                        markerObj = {};
                     }
 
+                    this.tracks[trackIndex].markers[stepIndex] = markerObj;
                     this.renderTracks();
                     this.saveState();
                     return;
@@ -3169,9 +3247,9 @@
 						for (let loop = 0; loop < loopCount; loop++) {
 							const loopStartTime = loop * durationOfOneLoop;
 							for (let step = 0; step < stepsInOneLoop; step++) {
-								const time = loopStartTime + step * stepDurationInSeconds;
 								this.tracks.forEach(track => {
-									if (track.enabled && track.steps[step]) {
+                                    if (track.enabled && track.steps[step] && !(track.markers[step] && track.markers[step].rest)) {
+										const time = loopStartTime + step * stepDurationInSeconds;
 										const marker = track.markers[step] || {};
 										let volumeMultiplier = 1.0;
 										if (marker.accent === '>') {
@@ -3189,7 +3267,7 @@
 						for (let loop = 0; loop < loopCount; loop++) {
 							for (const track of enabledTracks) {
 								for (let step = 0; step < stepsInOneLoop; step++) {
-									if (track.steps[step]) {
+                                    if (track.steps[step] && !(track.markers[step] && track.markers[step].rest)) {
 										const time = timeOffset + step * stepDurationInSeconds;
                                         const marker = track.markers[step] || {};
                                         let volumeMultiplier = 1.0;
@@ -3428,6 +3506,10 @@
 								e.preventDefault();
 								this.stop();
 								break;
+							case 'r': 
+								e.preventDefault();
+								this.resetAll();
+								break;
 							case 'b':
 								e.preventDefault();
 								if (this.isPlaying) {
@@ -3450,10 +3532,10 @@
 									this.updateSeekHighlight(null);
 								}
 								break;
-							case 'ArrowRight': e.preventDefault(); this.adjustBPM(1); break;
-							case 'ArrowLeft': e.preventDefault(); this.adjustBPM(-1); break;
-							case 'ArrowUp': e.preventDefault(); this.adjustGlobalVolume(1); break;
-							case 'ArrowDown': e.preventDefault(); this.adjustGlobalVolume(-1); break;
+							case 'ArrowUp': e.preventDefault(); this.adjustBPM(1); break;
+							case 'ArrowDown': e.preventDefault(); this.adjustBPM(-1); break;
+							case 'ArrowRight': e.preventDefault(); this.adjustGlobalVolume(1); break;
+							case 'ArrowLeft': e.preventDefault(); this.adjustGlobalVolume(-1); break;
 						}
 					}
 				});
@@ -3480,6 +3562,242 @@
 
 				this.globalVolume = newVolume / 100;
 				volumeInput.value = newVolume;
+			}
+			
+			
+			
+			isSelectionValidForNotation() {
+				if (this.selection.startTrack === null || this.selection.endTrack === null) {
+					return { valid: false, message: '請先框選一個區域。' };
+				}
+				
+				const startStep = Math.min(this.selection.startStep, this.selection.endStep);
+				const endStep = Math.max(this.selection.startStep, this.selection.endStep);
+				const totalSelectedSteps = endStep - startStep + 1;
+				const stepsPerMeasure = 4 * this.stepsPerBeat;
+
+				if (startStep % this.stepsPerBeat !== 0) {
+					return { valid: false, message: '框選範圍必須從某一拍的第一格開始。' };
+				}
+
+				if (totalSelectedSteps % stepsPerMeasure !== 0) {
+					return { valid: false, message: '框選範圍的長度必須是4拍 (一小節) 的倍數。' };
+				}
+
+				return { valid: true };
+			}	
+
+
+			convertRangeToNotation(startTrack, endTrack, startStep, endStep) {
+				try {
+                    const notationContent = document.getElementById('notationContent');
+                    notationContent.innerHTML = '';
+
+                    for (let t = startTrack; t <= endTrack; t++) {
+                        const track = this.tracks[t];
+                        const trackContainer = document.createElement('div');
+                        
+                        const title = document.createElement('div');
+                        title.className = 'notation-track-title';
+                        title.textContent = `${track.label} (${this.drumSounds[track.drumType].name})`;
+                        trackContainer.appendChild(title);
+                        
+                        const vexflowContainer = document.createElement('div');
+                        vexflowContainer.className = 'vexflow-container';
+                        trackContainer.appendChild(vexflowContainer);
+
+                        notationContent.appendChild(trackContainer);
+                        
+                        const trackSteps = track.steps.slice(startStep, endStep + 1);
+                        const trackMarkers = track.markers.slice(startStep, endStep + 1);
+                        const measures = this.parseTrackToMeasures(trackSteps, trackMarkers);
+                        
+                        this.renderMeasuresWithVexFlow(vexflowContainer, measures);
+                    }
+                    
+                    document.getElementById('notationModal').style.display = 'flex';
+                } catch (error) {
+                    console.error('轉譜錯誤:', error);
+                    alert('轉譜過程發生錯誤：' + error.message);
+                }
+			}
+
+			// 修改後的函數：處理「選取模式」下的轉譜按鈕
+			convertSelectionToNotation() {
+				const validation = this.isSelectionValidForNotation();
+				if (!validation.valid) {
+					alert(validation.message);
+					return;
+				}
+
+				const startTrack = Math.min(this.selection.startTrack, this.selection.endTrack);
+				const endTrack = Math.max(this.selection.startTrack, this.selection.endTrack);
+				const startStep = Math.min(this.selection.startStep, this.selection.endStep);
+				const endStep = Math.max(this.selection.startStep, this.selection.endStep);
+
+				this.convertRangeToNotation(startTrack, endTrack, startStep, endStep);
+			}
+
+			// 新增的函數：處理「單一音軌」的轉譜按鈕
+			convertSingleTrackToNotation(trackIndex) {
+				const startTrack = trackIndex;
+				const endTrack = trackIndex;
+				const startStep = 0;
+				const endStep = (this.totalBeats * this.stepsPerBeat) - 1;
+
+				if (endStep < 0) {
+					alert("音軌為空，無法轉譜。");
+					return;
+				}
+
+				this.convertRangeToNotation(startTrack, endTrack, startStep, endStep);
+			}
+
+			parseTrackToMeasures(steps, markers) {
+				const measures = [];
+				const stepsPerMeasure = 4 * this.stepsPerBeat; // 一個小節固定為4拍
+
+				for (let i = 0; i < steps.length; i += stepsPerMeasure) {
+					const measureSteps = steps.slice(i, i + stepsPerMeasure);
+					const measureMarkers = markers.slice(i, i + stepsPerMeasure);
+					measures.push(this.parseMeasure(measureSteps, measureMarkers));
+				}
+				return measures;
+			}
+
+			parseMeasure(measureSteps, measureMarkers) {
+				const symbols = [];
+				let i = 0;
+				
+				while (i < measureSteps.length) {
+					if (measureSteps[i] && !measureMarkers[i]?.rest) {
+						// 處理音符
+						let duration = 1;
+						while (i + duration < measureSteps.length && 
+							   !measureSteps[i + duration] && 
+							   !measureMarkers[i + duration]?.rest) {
+							duration++;
+						}
+						symbols.push({ type: 'note', duration });
+						i += duration;
+					} else {
+						// 處理休止符
+						let duration = 1;
+						while (i + duration < measureSteps.length && 
+							   (!measureSteps[i + duration] || measureMarkers[i + duration]?.rest)) {
+							duration++;
+						}
+						symbols.push({ type: 'rest', duration });
+						i += duration;
+					}
+				}
+				
+				return symbols;
+			}
+
+			getVexFlowDuration(duration) {
+				// 核心修正：音符的理論值 = (音符佔用的格數 / 每拍的格數)
+				// 例如：佔用1格 -> 1/4 = 0.25 -> 16分音符
+				//       佔用2格 -> 2/4 = 0.5  -> 8分音符
+				//       佔用4格 -> 4/4 = 1.0  -> 4分音符
+				const totalValue = duration / this.stepsPerBeat;
+
+				// 處理附點音符
+				if (totalValue === 1.5) return { duration: "8", dot: true };   // 附點8分 (3格)
+				if (totalValue === 0.75) return { duration: "16", dot: true }; // 附點16分 (1.5格，較少見)
+				if (totalValue === 0.375) return { duration: "32", dot: true };// 附點32分 (0.75格)
+
+				// 處理一般音符
+				const durationMap = {
+					4: "w",     // 全音符 (16格)
+					2: "h",     // 2分音符 (8格)
+					1: "q",     // 4分音符 (4格)
+					0.5: "8",   // 8分音符 (2格)
+					0.25: "16", // 16分音符 (1格)
+					0.125: "32" // 32分音符 (0.5格)
+				};
+
+				return { duration: durationMap[totalValue] || "q", dot: false };
+			}
+
+			renderMeasuresWithVexFlow(container, measures) {
+				const VF = Vex.Flow;
+				container.innerHTML = '';
+
+				const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
+				const context = renderer.getContext();
+				
+				let currentX = 10;
+				let currentY = 20;
+				const canvasWidth = Math.max(container.clientWidth, 950); // 確保基礎畫布寬度足夠
+				// 強制每個小節的寬度，確保能容納16個音符，每行固定4個小節
+				const staveWidth = (canvasWidth - 40) / 4; 
+
+				measures.forEach((measure, index) => {
+					// 處理換行
+					if (index > 0 && index % 4 === 0) {
+						currentX = 10;
+						currentY += 120; // 行高
+					}
+
+					// 創建固定寬度的小節
+					const stave = new VF.Stave(currentX, currentY, staveWidth);
+
+					// 為第一個小節添加譜號和拍號
+					if (index === 0) {
+						stave.addClef('percussion').addTimeSignature("4/4");
+					}
+
+					// 關鍵：為最後一個小節設置結束線
+					if (index === measures.length - 1) {
+						stave.setEndBarType(VF.Barline.type.END);
+					}
+
+					stave.setContext(context).draw();
+
+					// --- 音符與符槓的數據處理 (這部分邏輯不變) ---
+					const notes = [];
+					const allBeams = [];
+					let notesInCurrentBeat = [];
+					let stepsInCurrentBeat = 0;
+
+					measure.forEach(symbol => {
+						const vexData = this.getVexFlowDuration(symbol.duration);
+						if (!vexData || !vexData.duration) return;
+						const note = new VF.StaveNote({
+							keys: ["b/4"],
+							duration: vexData.duration + (symbol.type === 'rest' ? 'r' : ''),
+							clef: "percussion"
+						});
+						if (vexData.dot) note.addDotToAll();
+						notes.push(note);
+						if (symbol.type !== 'rest') notesInCurrentBeat.push(note);
+						stepsInCurrentBeat += symbol.duration;
+						if (stepsInCurrentBeat >= this.stepsPerBeat) {
+							if (notesInCurrentBeat.length > 1) allBeams.push(new VF.Beam(notesInCurrentBeat));
+							notesInCurrentBeat = [];
+							stepsInCurrentBeat = 0;
+						}
+					});
+					// --- 數據處理結束 ---
+
+					// 如果小節內有音符，則進行格式化與繪製
+					if (notes.length > 0) {
+						const voice = new VF.Voice({ num_beats: 4, beat_value: 4 }).setMode(VF.Voice.Mode.SOFT);
+						voice.addTickables(notes);
+
+						const formatter = new VF.Formatter();
+						formatter.joinVoices([voice]).formatToStave([voice], stave, { align_rests: false });
+
+						voice.draw(context, stave);
+						allBeams.forEach(beam => beam.setContext(context).draw());
+					}
+
+					currentX += stave.getWidth();
+				});
+
+				// 根據最終內容調整畫布總高度
+				renderer.resize(canvasWidth, currentY + 150);
 			}
 
         }
