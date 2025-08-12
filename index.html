@@ -3527,6 +3527,14 @@
 								document.getElementById('markBtn').click();
 								break;
 							case 'Escape':
+								// 新增：檢查是否有任何彈出視窗是開啟的，若有則關閉
+								const openModal = document.querySelector('.modal-overlay[style*="display: flex"]');
+								if (openModal) {
+									openModal.style.display = 'none';
+									break; // 優先處理關閉視窗，然後結束
+								}
+								// --- 新增結束 ---
+
 								if (this.selectionMode) this.toggleSelectionMode();
 								if (this.markingMode) document.getElementById('markBtn').click();
 								if (document.querySelectorAll('.step.step-highlighted').length > 0) {
@@ -3697,25 +3705,23 @@
 			}
 
 			getVexFlowDuration(duration) {
-				// 核心修正：音符的理論值 = (音符佔用的格數 / 每拍的格數)
-				// 例如：佔用1格 -> 1/4 = 0.25 -> 16分音符
-				//       佔用2格 -> 2/4 = 0.5  -> 8分音符
-				//       佔用4格 -> 4/4 = 1.0  -> 4分音符
 				const totalValue = duration / this.stepsPerBeat;
 
-				// 處理附點音符
-				if (totalValue === 1.5) return { duration: "8", dot: true };   // 附點8分 (3格)
-				if (totalValue === 0.75) return { duration: "16", dot: true }; // 附點16分 (1.5格，較少見)
-				if (totalValue === 0.375) return { duration: "32", dot: true };// 附點32分 (0.75格)
+				// 處理附點音符 (已修正邏輯)
+				if (totalValue === 1.5) return { duration: "q", dot: true };    // 附點4分
+				if (totalValue === 0.75) return { duration: "8", dot: true };   // 附點8分
+				if (totalValue === 0.375) return { duration: "16", dot: true }; // 附點16分
+				if (totalValue === 0.1875) return { duration: "32", dot: true };// 附點32分
 
 				// 處理一般音符
 				const durationMap = {
-					4: "w",     // 全音符 (16格)
-					2: "h",     // 2分音符 (8格)
-					1: "q",     // 4分音符 (4格)
-					0.5: "8",   // 8分音符 (2格)
-					0.25: "16", // 16分音符 (1格)
-					0.125: "32" // 32分音符 (0.5格)
+					4: "w",     // 全音符
+					2: "h",     // 2分音符
+					1: "q",     // 4分音符
+					0.5: "8",   // 8分音符
+					0.25: "16", // 16分音符
+					0.125: "32", // 32分音符
+					0.0625: "64" // 64分音符 (為8格/拍模式準備)
 				};
 
 				return { duration: durationMap[totalValue] || "q", dot: false };
@@ -3728,35 +3734,33 @@
 				const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
 				const context = renderer.getContext();
 				
+				// --- 核心修改：根據密度決定每行小節數 ---
+				const measuresPerLine = this.stepsPerBeat === 8 ? 3 : 4;
+				// --- 修改結束 ---
+
 				let currentX = 10;
 				let currentY = 20;
-				const canvasWidth = Math.max(container.clientWidth, 950); // 確保基礎畫布寬度足夠
-				// 強制每個小節的寬度，確保能容納16個音符，每行固定4個小節
-				const staveWidth = (canvasWidth - 40) / 4; 
+				const canvasWidth = Math.max(container.clientWidth, 950);
+				const staveWidth = (canvasWidth - 40) / measuresPerLine; 
 
 				measures.forEach((measure, index) => {
-					// 處理換行
-					if (index > 0 && index % 4 === 0) {
+					if (index > 0 && index % measuresPerLine === 0) { // 使用 measuresPerLine 判斷換行
 						currentX = 10;
-						currentY += 120; // 行高
+						currentY += 120;
 					}
 
-					// 創建固定寬度的小節
 					const stave = new VF.Stave(currentX, currentY, staveWidth);
 
-					// 為第一個小節添加譜號和拍號
 					if (index === 0) {
 						stave.addClef('percussion').addTimeSignature("4/4");
 					}
 
-					// 關鍵：為最後一個小節設置結束線
 					if (index === measures.length - 1) {
 						stave.setEndBarType(VF.Barline.type.END);
 					}
 
 					stave.setContext(context).draw();
 
-					// --- 音符與符槓的數據處理 (這部分邏輯不變) ---
 					const notes = [];
 					const allBeams = [];
 					let notesInCurrentBeat = [];
@@ -3780,9 +3784,7 @@
 							stepsInCurrentBeat = 0;
 						}
 					});
-					// --- 數據處理結束 ---
 
-					// 如果小節內有音符，則進行格式化與繪製
 					if (notes.length > 0) {
 						const voice = new VF.Voice({ num_beats: 4, beat_value: 4 }).setMode(VF.Voice.Mode.SOFT);
 						voice.addTickables(notes);
@@ -3797,7 +3799,6 @@
 					currentX += stave.getWidth();
 				});
 
-				// 根據最終內容調整畫布總高度
 				renderer.resize(canvasWidth, currentY + 150);
 			}
 
