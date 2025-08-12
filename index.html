@@ -1285,6 +1285,7 @@
 					<button class="marker-btn" data-marker="L">L</button>
 					<button class="marker-btn" data-marker="accent" data-value=">">&gt;</button>
 					<button class="marker-btn" data-marker="accent" data-value="()">( )</button>
+					<button class="marker-btn" data-marker="rest" data-value="-">-</button>
                     <button class="marker-btn active" data-marker="eraser">
 						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
 					</button>
@@ -3532,10 +3533,10 @@
 									this.updateSeekHighlight(null);
 								}
 								break;
-							case 'ArrowUp': e.preventDefault(); this.adjustBPM(1); break;
-							case 'ArrowDown': e.preventDefault(); this.adjustBPM(-1); break;
-							case 'ArrowRight': e.preventDefault(); this.adjustGlobalVolume(1); break;
-							case 'ArrowLeft': e.preventDefault(); this.adjustGlobalVolume(-1); break;
+							case 'ArrowUp': e.preventDefault(); this.adjustGlobalVolume(1); break;
+							case 'ArrowDown': e.preventDefault(); this.adjustGlobalVolume(-1); break;
+							case 'ArrowRight': e.preventDefault(); this.adjustBPM(1); break;
+							case 'ArrowLeft': e.preventDefault(); this.adjustBPM(-1); break;
 						}
 					}
 				});
