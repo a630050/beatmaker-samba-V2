@@ -1,452 +1,374 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samba Beatmaker - 森巴鼓團練習程式使用說明</title>
-    
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: #e6e6e6;
-            background-color: #1a1a1a;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        .markdown-body {
-            font-size: 16px;
-            line-height: 1.6;
-            color: #e6e6e6;
-        }
-        
-        .markdown-body h1,
-        .markdown-body h2,
-        .markdown-body h3,
-        .markdown-body h4,
-        .markdown-body h5,
-        .markdown-body h6 {
-            margin-top: 24px;
-            margin-bottom: 16px;
-            font-weight: 600;
-            line-height: 1.25;
-            color: #ffffff;
-        }
-        
-        .markdown-body h1 {
-            font-size: 2em;
-            border-bottom: 1px solid #444;
-            padding-bottom: 0.3em;
-        }
-        
-        .markdown-body h2 {
-            font-size: 1.5em;
-            border-bottom: 1px solid #444;
-            padding-bottom: 0.3em;
-        }
-        
-        .markdown-body h3 {
-            font-size: 1.25em;
-        }
-        
-        .markdown-body p,
-        .markdown-body blockquote,
-        .markdown-body ul,
-        .markdown-body ol,
-        .markdown-body dl,
-        .markdown-body table,
-        .markdown-body pre {
-            margin-top: 0;
-            margin-bottom: 16px;
-        }
-        
-        .markdown-body ul,
-        .markdown-body ol {
-            padding-left: 2em;
-        }
-        
-        .markdown-body li {
-            margin-bottom: 0.25em;
-        }
-        
-        .markdown-body blockquote {
-            padding: 0 1em;
-            color: #999;
-            border-left: 0.25em solid #555;
-            background-color: #2a2a2a;
-        }
-        
-        .markdown-body code {
-            padding: 0.2em 0.4em;
-            margin: 0;
-            font-size: 85%;
-            background-color: #333;
-            color: #f8f8f2;
-            border-radius: 3px;
-        }
-        
-        .markdown-body pre {
-            padding: 16px;
-            overflow: auto;
-            font-size: 85%;
-            line-height: 1.45;
-            background-color: #2a2a2a;
-            border-radius: 3px;
-            border: 1px solid #444;
-        }
-        
-        .markdown-body pre code {
-            background-color: transparent;
-            border: 0;
-            display: inline;
-            line-height: inherit;
-            margin: 0;
-            overflow: visible;
-            padding: 0;
-            word-wrap: normal;
-        }
-        
-        .markdown-body table {
-            border-collapse: collapse;
-            border-spacing: 0;
-            width: 100%;
-            background-color: #2a2a2a;
-            border: 1px solid #444;
-        }
-        
-        .markdown-body table th,
-        .markdown-body table td {
-            padding: 6px 13px;
-            border: 1px solid #444;
-        }
-        
-        .markdown-body table th {
-            font-weight: 600;
-            background-color: #333;
-            color: #fff;
-        }
-        
-        .markdown-body table tr:nth-child(2n) {
-            background-color: #333;
-        }
-        
-        .markdown-body strong {
-            font-weight: 600;
-            color: #fff;
-        }
-        
-        .markdown-body em {
-            font-style: italic;
-        }
-        
-        .markdown-body a {
-            color: #58a6ff;
-            text-decoration: none;
-        }
-        
-        .markdown-body a:hover {
-            text-decoration: underline;
-            color: #79c0ff;
-        }
-        
-        .markdown-body hr {
-            height: 0.25em;
-            padding: 0;
-            margin: 24px 0;
-            background-color: #444;
-            border: 0;
-        }
-        
-        @media (max-width: 767px) {
-            body {
-                padding: 10px;
-            }
-            .markdown-body h1 { font-size: 1.6em; }
-            .markdown-body h2 { font-size: 1.4em; }
-            .markdown-body h3 { font-size: 1.125em; }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Samba Beatmaker - 森巴鼓團練習程式使用說明</title>
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    color: #e6e6e6;
+    background-color: #1a1a1a;
+    margin: 0;
+    padding: 20px;
+}
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+.markdown-body {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #e6e6e6;
+}
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #ffffff;
+}
+.markdown-body h1 {
+    font-size: 2em;
+    border-bottom: 1px solid #444;
+    padding-bottom: 0.3em;
+}
+.markdown-body h2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #444;
+    padding-bottom: 0.3em;
+}
+.markdown-body h3 { font-size: 1.25em; }
+.markdown-body p,
+.markdown-body blockquote,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body dl,
+.markdown-body table,
+.markdown-body pre {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+.markdown-body ul,
+.markdown-body ol { padding-left: 2em; }
+.markdown-body li { margin-bottom: 0.25em; }
+.markdown-body blockquote {
+    padding: 0 1em;
+    color: #999;
+    border-left: 0.25em solid #555;
+    background-color: #2a2a2a;
+}
+.markdown-body code {
+    padding: 0.2em 0.4em;
+    font-size: 85%;
+    background-color: #333;
+    color: #f8f8f2;
+    border-radius: 3px;
+}
+.markdown-body pre {
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #2a2a2a;
+    border-radius: 3px;
+    border: 1px solid #444;
+}
+.markdown-body table {
+    border-collapse: collapse;
+    width: 100%;
+    background-color: #2a2a2a;
+    border: 1px solid #444;
+}
+.markdown-body table th,
+.markdown-body table td {
+    padding: 6px 13px;
+    border: 1px solid #444;
+}
+.markdown-body table th {
+    background-color: #333;
+    color: #fff;
+}
+.markdown-body table tr:nth-child(2n) { background-color: #333; }
+.markdown-body strong { font-weight: 600; color: #fff; }
+.markdown-body a { color: #58a6ff; text-decoration: none; }
+.markdown-body a:hover { text-decoration: underline; color: #79c0ff; }
+.markdown-body hr {
+    height: 0.25em;
+    margin: 24px 0;
+    background-color: #444;
+    border: 0;
+}
+@media (max-width: 767px) {
+    body { padding: 10px; }
+    .markdown-body h1 { font-size: 1.6em; }
+    .markdown-body h2 { font-size: 1.4em; }
+    .markdown-body h3 { font-size: 1.125em; }
+}
+</style>
 </head>
-
 <body>
-    <div class="container">
-        <div class="markdown-body">
-            
+<div class="container">
+<div class="markdown-body">
 
-            <p>這是一個專為森巴鼓團設計的線上編曲與練習工具。無論您是指導老師、學生或對森巴打擊樂充滿熱情的玩家，這個工具都能幫助您輕鬆創建、視覺化、分享和練習森巴鼓的節奏。</p>
-            <p>透過直覺的圖形化介面，您可以編排多達16個聲部的鼓譜，調整各種樂器的音色，並以不同的模式進行播放練習。此外，程式還支援完整的儲存、讀取、匯出MP3以及快捷鍵操作，旨在成為您森巴鼓學習與創作上的最佳夥伴。</p>
-            
-            <hr>
+<h2>🎥 初學者操作說明影片</h2>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/SbixwdYW0jw?si=3egUnIuagEBTbFnm" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-            <h2>✨ 主要功能</h2>
-            <ul>
-                <li><strong>多軌音序器</strong>：支援最多16個獨立音軌，可自由新增、刪除及命名。</li>
-                <li><strong>專業音色調校</strong>：內建「調音」面板，可針對每種樂器調整音高、聲像、起音、釋放、濾波等參數，並支援系統預設、使用者自行匯入音檔、合成音效三種模式。</li>
-                <li><strong>進階播放模式</strong>：
-                    <ul>
-                        <li><strong>合奏模式</strong>：所有啟用的聲部同時播放。</li>
-                        <li><strong>輪奏模式</strong>：一次一個聲部，依序循環播放。</li>
-                    </ul>
-                </li>
-                <li><strong>視覺化標記系統</strong>：獨特的「標記」模式，可直接在節拍格上標記左右手(R/L)及強弱重音(&gt; / () )，對練習手法至關重要。</li>
-                <li><strong>靈活的節奏設定</strong>：可自由設定BPM、總拍數、以及每一拍由幾格組成(2/4/8)，適應不同曲風與練習需求。</li>
-                <li><strong>完整的專案管理</strong>：
-                    <ul>
-                        <li><strong>存檔/載入</strong>：可將整個鼓譜(<code>.json</code>)儲存下來，隨時讀取。</li>
-                        <li><strong>樣式庫</strong>：可將選取的節奏片段(<code>.pa</code>)存成樣式，方便在不同專案中重複使用。</li>
-                    </ul>
-                </li>
-                <li><strong>MP3匯出</strong>：可將您的創作匯出為 MP3 音檔，方便分享或離線聆聽。</li>
-                <li><strong>高效編輯工具</strong>：提供「編輯」模式，可框選、複製、貼上節奏片段，大幅提升編曲效率。</li>
-                <li><strong>操作歷史紀錄</strong>：完整的上一步(Undo)/下一步(Redo)功能，讓您安心嘗試各種修改。</li>
-                <li><strong>豐富的快捷鍵</strong>：支援大量快捷鍵，讓您幾乎可以脫離滑鼠進行所有操作。</li>
-            </ul>
+<p>https://a630050.github.io/beatmaker-samba-V2/</p>
+<p>這是一個專為森巴鼓團設計的線上編曲與練習工具。無論您是指導老師、學生或對森巴打擊樂充滿熱情的玩家，這個工具都能幫助您輕鬆創建、視覺化、分享和練習森巴鼓的節奏。</p>
+<p>透過直覺的圖形化介面，您可以編排多達16個聲部的鼓譜，調整各種樂器的音色，並以不同的模式進行播放練習。此外，程式還支援完整的儲存、讀取、匯出MP3以及快捷鍵操作，旨在成為您森巴鼓學習與創作上的最佳夥伴。</p>
+<hr />
+<h2>✨ 主要功能</h2>
+<ul>
+<li><strong>多軌音序器</strong>：支援最多16個獨立音軌，可自由新增、刪除及命名。</li>
+<li><strong>專業音色調校</strong>：內建「調音」面板，可針對每種樂器調整音高、聲像、起音、釋放、濾波等參數，並支援系統預設、使用者自行匯入音檔、合成音效三種模式。</li>
+<li><strong>樂譜轉換功能</strong>：可將選取的節奏片段 (需為4拍的倍數) 或<strong>整個音軌一鍵轉換</strong>為標準五線譜，方便打印或與他人交流。</li>
+<li><strong>進階播放模式</strong>：<ul>
+<li><strong>合奏模式</strong>：所有啟用的聲部同時播放。</li>
+<li><strong>輪奏模式</strong>：一次一個聲部，依序循環播放。</li>
+</ul>
+</li>
+<li><strong>視覺化標記系統</strong>：獨特的「標記」模式，可直接在節拍格上標記左右手(R/L)及強弱重音(&gt; / () )，並支援<strong>滑鼠右鍵</strong>快速標記休止符。</li>
+<li><strong>靈活的節奏設定</strong>：可自由設定BPM、總拍數 (可從頭或尾刪減)、以及每一拍由幾格組成(2/4/8)，適應不同曲風與練習需求。</li>
+<li><strong>完整的專案管理</strong>：<ul>
+<li><strong>存檔/載入</strong>：可將整個鼓譜(.json)儲存下來，隨時讀取。</li>
+<li><strong>樣式庫</strong>：可將選取的節奏片段(.pa)存成樣式，方便在不同專案中重複使用。</li>
+</ul>
+</li>
+<li><strong>MP3匯出</strong>：可將您的創作匯出為 MP3 音檔，方便分享或離線聆聽。</li>
+<li><strong>高效編輯工具</strong>：提供「編輯」模式，可框選、複製、貼上節奏片段，大幅提升編曲效率。</li>
+<li><strong>操作歷史紀錄</strong>：完整的上一步(Undo)/下一步(Redo)功能，讓您安心嘗試各種修改。</li>
+<li><strong>豐富的快捷鍵</strong>：支援大量快捷鍵，讓您幾乎可以脫離滑鼠進行所有操作。</li>
+</ul>
+<hr />
+<h2>🚀 如何開始</h2>
+<ol>
+<li><strong>添加音符</strong>：在右側的節拍網格中，直接用滑鼠點擊格子即可添加或移除音符。</li>
+<li><strong>標記休止符</strong>：在任意格子上點擊<strong>滑鼠右鍵</strong>，可將該格標記為休止符。再次右鍵點擊可取消。</li>
+<li><strong>播放/暫停</strong>：點擊上方的 <strong>▶ 播放</strong> 按鈕或按下 <code>空白鍵</code> / <code>P</code> 鍵來播放音樂。再次點擊或按鍵則會暫停。</li>
+<li><strong>停止播放</strong>：按下 <code>S</code> 鍵可隨時停止播放並將播放軸歸零。</li>
+<li><strong>選擇樂器</strong>：在左側的音軌控制面板中，使用下拉選單為每個音軌選擇不同的森巴鼓樂器。</li>
+<li><strong>調整BPM</strong>：在中間的控制列中找到 <code>BPM</code> 輸入框，直接修改數字或使用鍵盤 <code>→</code> / <code>←</code> 鍵微調速度。</li>
+<li><strong>標記手法</strong>：點擊 <strong>標記</strong> 按鈕 (或按 <code>M</code> 鍵) 進入標記模式，選擇 <code>R</code>、<code>L</code> 或其他記號，然後點擊格子即可標上。</li>
+<li><strong>儲存你的創作</strong>：點擊 <strong>存檔</strong> 按鈕 (或按 <code>Ctrl + S</code>) 將您的心血結晶完整保存下來！</li>
+</ol>
+<hr />
+<h2>⚙️ 功能詳解</h2>
+<h3>主控制列 (上方)</h3>
+<ul>
+<li><strong>? 指引</strong>：打開使用說明文件。</li>
+<li><strong>🎵 調音</strong>：打開專業音色調整面板，可對所有樂器進行細膩的聲音設計。</li>
+<li><strong>▶ 播放</strong>：播放或暫停音樂。</li>
+<li><strong>重置</strong>：清除所有音符與標記，但保留音軌設定。</li>
+<li><strong>上一步/下一步</strong>：復原或重做您的操作。</li>
+<li><strong>編輯</strong> (<code>E</code> 鍵)：進入/退出選取模式。啟用後會出現工具列：<ul>
+<li><strong>複製 (<code>Ctrl+C</code>)</strong>：複製框選的節奏。</li>
+<li><strong>貼上 (<code>Ctrl+V</code>)</strong>：貼上已複製的節奏。</li>
+<li><strong>儲存/載入樣式</strong>：將選取範圍存成 <code>.pa</code> 檔案，或讀取已存的樣式檔。</li>
+<li><strong>轉樂譜</strong>：將框選的有效範圍 (需為4拍的倍數) 轉換為樂譜。</li>
+</ul>
+</li>
+<li><strong>標記</strong> (<code>M</code> 鍵)：進入/退出標記模式。啟用後會出現標記工具列，可選擇左右手、強弱音或橡皮擦。</li>
+<li><strong>檔案操作</strong>：<ul>
+<li><strong>存檔 (<code>Ctrl+S</code>)</strong>：將整個專案存為 <code>.json</code> 檔。</li>
+<li><strong>載入</strong>：讀取 <code>.json</code> 專案檔。</li>
+<li><strong>匯出MP3</strong>：將當前編曲匯出為 MP3。</li>
+</ul>
+</li>
+<li><strong>循環次數</strong>：設定匯出MP3時，樂句要重複的次數。</li>
+</ul>
+<h3>節奏設定列 (中間)</h3>
+<ul>
+<li><strong>合奏/輪奏</strong>：切換播放模式。</li>
+<li><strong>一拍長度</strong>：設定每一拍由多少個格子組成，數字越大，代表解析度越高。</li>
+<li><strong>節拍長度</strong>：使用 <code>+</code> (從結尾增加)、最右側 <code>-</code> (從結尾減少)、最左側 <code>-</code> (從開頭減少) 來調整總拍數，皆以4拍為單位。</li>
+<li><strong>BPM / 音量</strong>：設定全域的曲速與音量。</li>
+<li><strong>顯示選項</strong>：<ul>
+<li><strong>拍數顯示</strong>：在有音符的格子上顯示其屬於第幾拍。</li>
+<li><strong>LR顯示</strong>：顯示/隱藏左右手標記。</li>
+<li><strong>記號顯示</strong>：顯示/隱藏強弱音記號。</li>
+</ul>
+</li>
+</ul>
+<h3>音序器面板 (下方)</h3>
+<h4>左側音軌控制</h4>
+<ul>
+<li><strong>軌道標籤</strong>：雙擊標籤 (如 <code>S1</code>) 可自訂名稱 (最多2個字元)。</li>
+<li><strong>樂器選擇</strong>：下拉選單選擇該軌道的樂器。</li>
+<li><strong>一鍵轉譜 (♫)</strong>：點擊音符按鈕，可立即將該軌道的完整節奏轉換為樂譜。</li>
+<li><strong>啟用軌道 (●)</strong>：點擊可讓此軌道靜音(Mute)。</li>
+<li><strong>啟用聲音 (🔊)</strong>：點擊可讓此軌道在播放時不出聲，但保留視覺效果。</li>
+<li><strong>刪除軌道 (✖)</strong>：當軌道數大於4時，可刪除軌道。</li>
+<li><strong>音量條</strong>：獨立調整該軌道的音量。</li>
+<li><strong>新增/摺疊按鈕</strong>：<code>➕</code> 可新增軌道，<code>◀</code> / <code>▶</code> 可收合/展開左側面板。</li>
+</ul>
+<h4>右側節拍網格</h4>
+<ul>
+<li><strong>格子(Step)</strong>：編曲的核心區域。左鍵點擊放置音符，右鍵點擊標記為休止符。</li>
+<li><strong>播放軸 (Seek Bar)</strong>：頂部的灰色長條。在非播放狀態下，點擊任意位置可將紅色播放軸移動到該處，並高亮對應的欄位。按下 <code>播放</code> 將從該位置開始。</li>
+</ul>
+<hr />
+<h2>⌨️ 快速鍵清單</h2>
+<h4>一、 播放控制</h4>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">功能</th>
+  <th style="text-align:left">按鍵</th>
+  <th style="text-align:left">說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>播放 / 暫停</strong></td>
+  <td style="text-align:left"><code>Space</code> 或 <code>P</code></td>
+  <td style="text-align:left">開始播放或在目前位置暫停。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>停止並回到開頭</strong></td>
+  <td style="text-align:left"><code>S</code></td>
+  <td style="text-align:left">無論在哪個位置，立即停止播放並將播放軸歸零。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>從頭播放</strong></td>
+  <td style="text-align:left"><code>B</code></td>
+  <td style="text-align:left">立即從第一拍開始播放。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>增加 / 減少 BPM</strong></td>
+  <td style="text-align:left"><code>→</code> / <code>←</code></td>
+  <td style="text-align:left">微調曲速。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>增加 / 減少 總音量</strong></td>
+  <td style="text-align:left"><code>↑</code> / <code>↓</code></td>
+  <td style="text-align:left">微調主音量。</td>
+</tr>
+</tbody>
+</table>
+<h4>二、 模式與編輯</h4>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">功能</th>
+  <th style="text-align:left">按鍵</th>
+  <th style="text-align:left">說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>切換 [編輯] 模式</strong></td>
+  <td style="text-align:left"><code>E</code></td>
+  <td style="text-align:left">進入或退出用於複製/貼上的「編輯」模式。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>切換 [標記] 模式</strong></td>
+  <td style="text-align:left"><code>M</code></td>
+  <td style="text-align:left">進入或退出用於標記手法的「標記」模式。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>複製選取範圍</strong></td>
+  <td style="text-align:left"><code>Ctrl</code> + <code>C</code></td>
+  <td style="text-align:left">在 [編輯] 模式下，複製已選取的格子。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>貼上樣式</strong></td>
+  <td style="text-align:left"><code>Ctrl</code> + <code>V</code></td>
+  <td style="text-align:left">在 [編輯] 模式下，貼上已複製的樣式。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>上一步</strong></td>
+  <td style="text-align:left"><code>Ctrl</code> + <code>Z</code></td>
+  <td style="text-align:left">復原上一個操作。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>下一步</strong></td>
+  <td style="text-align:left"><code>Ctrl</code> + <code>Y</code></td>
+  <td style="text-align:left">重做上一個復原的操作。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>退出模式 / 取消</strong></td>
+  <td style="text-align:left"><code>Esc</code></td>
+  <td style="text-align:left">關閉 [編輯] 或 [標記] 模式，或取消播放軸高亮。</td>
+</tr>
+</tbody>
+</table>
+<h4>三、 標記工具快捷鍵 (需先按 <code>M</code> 進入標記模式)</h4>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">功能</th>
+  <th style="text-align:left">按鍵</th>
+  <th style="text-align:left">說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>選擇 'R' 標記</strong></td>
+  <td style="text-align:left"><code>R</code></td>
+  <td style="text-align:left">切換到右手 (R) 標記工具。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>選擇 'L' 標記</strong></td>
+  <td style="text-align:left"><code>L</code></td>
+  <td style="text-align:left">切換到左手 (L) 標記工具。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>選擇 '&gt;' 強音記號</strong></td>
+  <td style="text-align:left"><code>.</code> (句點)</td>
+  <td style="text-align:left">切換到強音 (&gt;) 記號工具。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>選擇 '()' 弱音記號</strong></td>
+  <td style="text-align:left"><code>O</code></td>
+  <td style="text-align:left">切換到弱音 (ghost note) 記號工具。</td>
+</tr>
+<tr>
+  <td style="text-align:left"><strong>選擇橡皮擦</strong></td>
+  <td style="text-align:left"><code>X</code></td>
+  <td style="text-align:left">切換到橡皮擦工具。</td>
+</tr>
+</tbody>
+</table>
+<h4>四、 檔案操作</h4>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">功能</th>
+  <th style="text-align:left">按鍵</th>
+  <th style="text-align:left">說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><strong>儲存鼓譜</strong></td>
+  <td style="text-align:left"><code>Ctrl</code> + <code>S</code></td>
+  <td style="text-align:left">將目前的鼓譜匯出為 <code>.json</code> 檔案。</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>📂 檔案格式說明</h2>
+<ul>
+<li><code>.json</code>：完整的專案檔。包含所有音軌、音符、標記、BPM、音色設定等所有資訊。用於儲存和分享整個編曲。</li>
+<li><code>.pa</code> (Pattern)：樣式檔。只包含選取範圍內的音符與標記資訊。用於儲存常用的節奏片段，方便在不同專案中快速呼叫使用。</li>
+</ul>
+<hr />
+<h2>👨‍💻 作者</h2>
+<ul>
+<li><strong>程式作者</strong>：徐承佑</li>
+<li><strong>森巴鼓指導老師</strong>：陳仰真</li>
+</ul>
 
-            <hr>
 
-            <h2>🚀 如何開始</h2>
-            <ol>
-                <li><strong>添加音符</strong>：在右側的節拍網格中，直接用滑鼠點擊格子即可添加或移除音符。</li>
-                <li><strong>播放/暫停</strong>：點擊上方的 <strong>▶ 播放</strong> 按鈕或按下 <code>空白鍵</code> / <code>P</code> 鍵來播放音樂。再次點擊或按鍵則會暫停。</li>
-                <li><strong>停止播放</strong>：按下 <code>S</code> 鍵可隨時停止播放並將播放軸歸零。</li>
-                <li><strong>選擇樂器</strong>：在左側的音軌控制面板中，使用下拉選單為每個音軌選擇不同的森巴鼓樂器。</li>
-                <li><strong>調整BPM</strong>：在中間的控制列中找到 <code>BPM</code> 輸入框，直接修改數字或使用鍵盤 <code>↑</code> / <code>↓</code> 鍵微調速度。</li>
-                <li><strong>標記手法</strong>：點擊 <strong>標記</strong> 按鈕 (或按 <code>M</code> 鍵) 進入標記模式，選擇 <code>R</code>、<code>L</code> 或其他記號，然後點擊格子即可標上。</li>
-                <li><strong>儲存你的創作</strong>：點擊 <strong>存檔</strong> 按鈕 (或按 <code>Ctrl + S</code>) 將您的心血結晶完整保存下來！</li>
-            </ol>
-            
-            <hr>
-
-            <h2>⚙️ 功能詳解</h2>
-
-            <h3>主控制列 (上方)</h3>
-            <ul>
-                <li><strong>? 指引</strong>：打開使用說明文件。</li>
-                <li><strong>🎵 調音</strong>：打開專業音色調整面板，可對所有樂器進行細膩的聲音設計。</li>
-                <li><strong>▶ 播放</strong>：播放或暫停音樂。</li>
-                <li><strong>重置</strong>：清除所有音符與標記，但保留音軌設定。</li>
-                <li><strong>上一步/下一步</strong>：復原或重做您的操作。</li>
-                <li><strong>編輯</strong> (<code>E</code> 鍵)：進入/退出選取模式。啟用後會出現工具列：
-                    <ul>
-                        <li><strong>複製 (<code>Ctrl+C</code>)</strong>：複製框選的節奏。</li>
-                        <li><strong>貼上 (<code>Ctrl+V</code>)</strong>：貼上已複製的節奏。</li>
-                        <li><strong>儲存/載入樣式</strong>：將選取範圍存成 <code>.pa</code> 檔案，或讀取已存的樣式檔。</li>
-                    </ul>
-                </li>
-                <li><strong>標記</strong> (<code>M</code> 鍵)：進入/退出標記模式。啟用後會出現標記工具列，可選擇左右手、強弱音或橡皮擦。</li>
-                <li><strong>檔案操作</strong>：
-                    <ul>
-                        <li><strong>存檔 (<code>Ctrl+S</code>)</strong>：將整個專案存為 <code>.json</code> 檔。</li>
-                        <li><strong>載入</strong>：讀取 <code>.json</code> 專案檔。</li>
-                        <li><strong>匯出MP3</strong>：將當前編曲匯出為 MP3。</li>
-                    </ul>
-                </li>
-                <li><strong>循環次數</strong>：設定匯出MP3時，樂句要重複的次數。</li>
-            </ul>
-
-            <h3>節奏設定列 (中間)</h3>
-            <ul>
-                <li><strong>合奏/輪奏</strong>：切換播放模式。</li>
-                <li><strong>一拍長度</strong>：設定每一拍由多少個格子組成，數字越大，代表解析度越高。</li>
-                <li><strong>節拍長度</strong>：使用 <code>+</code> / <code>-</code> 增加或減少總拍數。</li>
-                <li><strong>BPM / 音量</strong>：設定全域的曲速與音量。</li>
-                <li><strong>顯示選項</strong>：
-                    <ul>
-                        <li><strong>拍數顯示</strong>：在有音符的格子上顯示其屬於第幾拍。</li>
-                        <li><strong>LR顯示</strong>：顯示/隱藏左右手標記。</li>
-                        <li><strong>記號顯示</strong>：顯示/隱藏強弱音記號。</li>
-                    </ul>
-                </li>
-            </ul>
-            
-            <h3>音序器面板 (下方)</h3>
-            <h4>左側音軌控制</h4>
-            <ul>
-                <li><strong>軌道標籤</strong>：雙擊標籤 (如 <code>S1</code>) 可自訂名稱 (最多2個字元)。</li>
-                <li><strong>樂器選擇</strong>：下拉選單選擇該軌道的樂器。</li>
-                <li><strong>啟用軌道 (●)</strong>：點擊可讓此軌道靜音(Mute)。</li>
-                <li><strong>啟用聲音 (🔊)</strong>：點擊可讓此軌道在播放時不出聲，但保留視覺效果。</li>
-                <li><strong>刪除軌道 (✖)</strong>：當軌道數大於4時，可刪除軌道。</li>
-                <li><strong>音量條</strong>：獨立調整該軌道的音量。</li>
-                <li><strong>新增/摺疊按鈕</strong>：<code>➕</code> 可新增軌道，<code>◀</code> / <code>▶</code> 可收合/展開左側面板。</li>
-            </ul>
-
-            <h4>右側節拍網格</h4>
-            <ul>
-                <li><strong>格子(Step)</strong>：編曲的核心區域，點擊以放置音符。</li>
-                <li><strong>播放軸 (Seek Bar)</strong>：頂部的灰色長條。在非播放狀態下，點擊任意位置可將紅色播放軸移動到該處，並高亮對應的欄位。按下 <code>播放</code> 將從該位置開始。</li>
-            </ul>
-
-            <hr>
-
-            <h2>⌨️ 快速鍵清單</h2>
-
-            <h3>一、 播放控制</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>功能</th>
-                        <th>按鍵</th>
-                        <th>說明</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>播放 / 暫停</strong></td>
-                        <td><code>Space</code></td>
-                        <td>開始播放或在目前位置暫停。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>停止並回到開頭</strong></td>
-                        <td><code>S</code></td>
-                        <td>無論在哪個位置，立即停止播放並將播放軸歸零。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>從頭播放</strong></td>
-                        <td><code>B</code></td>
-                        <td>立即從第一拍開始播放。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>增加 / 減少 BPM</strong></td>
-                        <td><code>↑</code> / <code>↓</code></td>
-                        <td>微調曲速。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>增加 / 減少 總音量</strong></td>
-                        <td><code>→</code> / <code>←</code></td>
-                        <td>微調主音量。</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3>二、 模式與編輯</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>功能</th>
-                        <th>按鍵</th>
-                        <th>說明</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>切換 [編輯] 模式</strong></td>
-                        <td><code>E</code></td>
-                        <td>進入或退出用於複製/貼上的「編輯」模式。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>切換 [標記] 模式</strong></td>
-                        <td><code>M</code></td>
-                        <td>進入或退出用於標記手法的「標記」模式。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>複製選取範圍</strong></td>
-                        <td><code>Ctrl</code> + <code>C</code></td>
-                        <td>在 [編輯] 模式下，複製已選取的格子。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>貼上樣式</strong></td>
-                        <td><code>Ctrl</code> + <code>V</code></td>
-                        <td>在 [編輯] 模式下，貼上已複製的樣式。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>上一步</strong></td>
-                        <td><code>Ctrl</code> + <code>Z</code></td>
-                        <td>復原上一個操作。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>下一步</strong></td>
-                        <td><code>Ctrl</code> + <code>Y</code></td>
-                        <td>重做上一個復原的操作。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>退出模式 / 取消</strong></td>
-                        <td><code>Esc</code></td>
-                        <td>關閉 [編輯] 或 [標記] 模式，或取消播放軸高亮。</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h3>三、 標記工具快捷鍵 (需先按 <code>M</code> 進入標記模式)</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>功能</th>
-                        <th>按鍵</th>
-                        <th>說明</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>選擇 'R' 標記</strong></td>
-                        <td><code>R</code></td>
-                        <td>切換到右手 (R) 標記工具。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>選擇 'L' 標記</strong></td>
-                        <td><code>L</code></td>
-                        <td>切換到左手 (L) 標記工具。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>選擇 '&gt;' 強音記號</strong></td>
-                        <td><code>.</code> (句點)</td>
-                        <td>切換到強音 (&gt;) 記號工具。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>選擇 '()' 弱音記號</strong></td>
-                        <td><code>O</code></td>
-                        <td>切換到弱音 (ghost note) 記號工具。</td>
-                    </tr>
-                    <tr>
-                        <td><strong>選擇橡皮擦</strong></td>
-                        <td><code>X</code></td>
-                        <td>切換到橡皮擦工具。</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <h3>四、 檔案操作</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>功能</th>
-                        <th>按鍵</th>
-                        <th>說明</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>儲存鼓譜</strong></td>
-                        <td><code>Ctrl</code> + <code>S</code></td>
-                        <td>將目前的鼓譜匯出為 <code>.json</code> 檔案。</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <hr>
-
-            <h2>📂 檔案格式說明</h2>
-            <ul>
-                <li><code>.json</code>：完整的專案檔。包含所有音軌、音符、標記、BPM、音色設定等所有資訊。用於儲存和分享整個編曲。</li>
-                <li><code>.pa</code> (Pattern)：樣式檔。只包含選取範圍內的音符與標記資訊。用於儲存常用的節奏片段，方便在不同專案中快速呼叫使用。</li>
-            </ul>
-
-            <hr>
-
-            <h2>👨‍💻 作者</h2>
-            <p>
-                <strong>程式作者</strong>：徐承佑<br>
-                <strong>森巴鼓指導老師</strong>：陳仰真
-            </p>
-
-        </div>
-    </div>
+</div>
+</div>
 </body>
 </html>
