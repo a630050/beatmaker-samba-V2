@@ -53,7 +53,7 @@
                 this.historyIndex = -1;
                 this.maxHistory = 50;
 				this.metronome = {
-                    enabled: false,
+                    enabled: true,
                     mode: 'sequential', // 'sequential' 或 'single'
                     color: '#00ff88',
                     sound: 'click1', // 'click1', 'click2', 'beep', 'none'
