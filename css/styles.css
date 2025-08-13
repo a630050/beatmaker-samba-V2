@@ -874,7 +874,17 @@
 		.modal-header h3 {
 			margin: 0;
 			font-size: 20px;
+			margin-right: auto; /* 將標題推到最左側，讓其他元素靠右 */
 		}
+		
+		.notation-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            margin: 0 20px; /* 與標題和關閉按鈕保持間距 */
+        }
 
 		.close-btn {
 			background: none;
@@ -1307,3 +1317,8 @@
 			border-radius: 50%;
 			border: 2px solid rgba(255,255,255,0.5);
 		}
+
+/* === Notation modal: vertical scroll only, no horizontal overflow === */
+#notationModal .modal-content { width: min(96vw, 1280px); }
+#notationModal .modal-body { overflow-x: hidden !important; overflow-y: auto !important; }
+#notationModal .vexflow-container svg { max-width: 100%; height: auto; display: block; }
