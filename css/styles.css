@@ -1300,8 +1300,22 @@
 		}
 		
 		.vf-note-playing * {
-			fill: #00ff88 !important;
-			stroke: #00ff88 !important;
+			fill: #00cc66 !important;
+			stroke: #00cc66 !important;
+		}
+		
+		.vf-note-playing {
+			filter: drop-shadow(0 0 3px #00cc66) !important;
+			animation: note-pulse 0.8s ease-in-out infinite alternate !important;
+		}
+		
+		@keyframes note-pulse {
+			0% { 
+				filter: drop-shadow(0 0 3px #00cc66); 
+			}
+			100% { 
+				filter: drop-shadow(0 0 6px #00cc66) drop-shadow(0 0 10px rgba(0, 204, 102, 0.3)); 
+			}
 		}
 
 		#metronomeColorPicker {
