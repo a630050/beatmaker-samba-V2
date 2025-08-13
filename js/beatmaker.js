@@ -56,7 +56,7 @@
                     enabled: true,
                     mode: 'sequential', // 'sequential' 或 'single'
                     color: '#00ff88',
-                    sound: 'click1', // 'click1', 'click2', 'beep', 'none'
+                    sound: 'tick', // 'click1', 'click2', 'beep', 'none'
                     volume: 0.7
                 };
                 this.metronomeSounds = {};
@@ -96,13 +96,53 @@
                 };
             }
 			
-            initMetronomeSounds() {
+			initMetronomeSounds() {
                 this.metronomeSounds = {
-                    'click1': { url: 'https://a630050.github.io/beatmaker-samba-V2/sounds/metronome-click.mp3', buffer: null },
-                    'click2': { url: 'https://a630050.github.io/beatmaker-samba-V2/sounds/metronome-clave.mp3', buffer: null },
-                    'beep': { type: 'synth', freq: 1000, wave: 'sine', release: 0.1 }
+                    // 1. 電子滴答聲 (高)
+                    'tick': {
+                        type: 'synth',
+                        wave: 'sine',
+                        freq: 4000,
+                        release: 0.05,
+                        pitchBend: 0.1 // 頻率快速劇烈下降，產生"滴"的感覺
+                    },
+                    // 2. 電子滴答聲 (低)
+                    'tock': {
+                        type: 'synth',
+                        wave: 'square',
+                        freq: 1200,
+                        release: 0.08,
+                        pitchBend: 0.2
+                    },
+                    // 3. 合成木魚
+                    'woodblock': {
+                        type: 'synth',
+                        wave: 'triangle',
+                        freq: 2000,
+                        release: 0.1,
+                        pitchBend: 0.8
+                    },
+                    // 4. 合成牛鈴
+                    'cowbell': {
+                        type: 'synth-multi',
+                        oscillators: [
+                            [380, 'square'],
+                            [570, 'square']
+                        ],
+                        release: 0.15
+                    },
+                    // 5. 沙鈴/擊掌聲 (白噪音)
+                    'shaker': {
+                        type: 'noise',
+                        filterType: 'bandpass', // 只允許特定頻帶的噪音通過
+                        filterFreq: 3000,      // 濾波器中心頻率
+                        filterQ: 2,            // 濾波器Q值，越高越尖銳
+                        release: 0.07
+                    },
+                    // 6. 無聲選項
+                    'none': { /* 無聲，保持為空物件 */ }
                 };
-            }			
+            }		
 
 
             saveState(force = false) {
@@ -1200,35 +1240,67 @@
             // END: 新增 triggerMetronome 方法
 
             // START: 新增 playMetronomeSound 方法
-            playMetronomeSound() {
+			playMetronomeSound() {
                 if (!this.audioContext || this.metronome.sound === 'none') return;
-                
+
                 const soundInfo = this.metronomeSounds[this.metronome.sound];
-                if (!soundInfo) return;
+                if (!soundInfo || (soundInfo.sound !== 'none' && !soundInfo.type)) return;
+                
+                if (soundInfo.sound === 'none') return;
 
                 const time = this.audioContext.currentTime;
-                
-                if (soundInfo.buffer) { // 播放音檔
-                    const source = this.audioContext.createBufferSource();
-                    source.buffer = soundInfo.buffer;
-                    const gainNode = this.audioContext.createGain();
-                    gainNode.gain.value = this.metronome.volume;
-                    source.connect(gainNode).connect(this.audioContext.destination);
-                    source.start(time);
-                } else if (soundInfo.type === 'synth') { // 播放合成音
-                    const osc = this.audioContext.createOscillator();
-                    const gainNode = this.audioContext.createGain();
+                const finalVolume = this.metronome.volume;
 
+                const gainNode = this.audioContext.createGain();
+                gainNode.gain.setValueAtTime(0, time);
+                gainNode.gain.linearRampToValueAtTime(finalVolume, time + 0.005);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, time + soundInfo.release);
+                
+                let lastNode = gainNode;
+
+                // 如果是噪音，先經過濾波器
+                if (soundInfo.type === 'noise') {
+                    const filter = this.audioContext.createBiquadFilter();
+                    filter.type = soundInfo.filterType;
+                    filter.frequency.value = soundInfo.filterFreq;
+                    filter.Q.value = soundInfo.filterQ;
+                    gainNode.connect(filter);
+                    lastNode = filter;
+                }
+                
+                lastNode.connect(this.audioContext.destination);
+                
+                if (soundInfo.type === 'synth') {
+                    const osc = this.audioContext.createOscillator();
                     osc.type = soundInfo.wave;
                     osc.frequency.setValueAtTime(soundInfo.freq, time);
-                    
-                    gainNode.gain.setValueAtTime(0, time);
-                    gainNode.gain.linearRampToValueAtTime(this.metronome.volume, time + 0.01);
-                    gainNode.gain.exponentialRampToValueAtTime(0.0001, time + soundInfo.release);
-
-                    osc.connect(gainNode).connect(this.audioContext.destination);
+                    if (soundInfo.pitchBend) {
+                        osc.frequency.exponentialRampToValueAtTime(soundInfo.freq * soundInfo.pitchBend, time + soundInfo.release);
+                    }
+                    osc.connect(gainNode);
                     osc.start(time);
-                    osc.stop(time + soundInfo.release);
+                    osc.stop(time + soundInfo.release + 0.05);
+                } else if (soundInfo.type === 'synth-multi') {
+                    soundInfo.oscillators.forEach(oscData => {
+                        const osc = this.audioContext.createOscillator();
+                        osc.frequency.setValueAtTime(oscData[0], time);
+                        osc.type = oscData[1];
+                        osc.connect(gainNode);
+                        osc.start(time);
+                        osc.stop(time + soundInfo.release + 0.05);
+                    });
+                } else if (soundInfo.type === 'noise') {
+                    // 創建白噪音源
+                    const bufferSize = this.audioContext.sampleRate * soundInfo.release;
+                    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+                    const output = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+                    const noiseSource = this.audioContext.createBufferSource();
+                    noiseSource.buffer = buffer;
+                    noiseSource.connect(gainNode);
+                    noiseSource.start(time);
                 }
             }
             // END: 新增 playMetronomeSound 方法
