@@ -177,7 +177,7 @@
 		</div>
     </div>
 
-	<div class="sound-panel-overlay" id="soundPanelOverlay">
+	<div class="modal-overlay" id="soundPanelOverlay">
 		<div class="sound-panel" id="soundAdjustPanel">
 			<h3 style="margin-bottom: 20px; color: #00ff88; text-align: center;">🎵 樂器音色調整</h3>
 			<div class="global-accent-controls">
@@ -258,15 +258,17 @@
                 <div class="metronome-settings-container">
                     
                     <!-- 啟用/停用 -->
-                    <div class="metronome-setting-group">
+					<div class="metronome-setting-group">
                         <h4 class="setting-title">節拍器</h4>
                         <div class="sound-mode-selector" style="border: none; padding: 0; margin-bottom: 0;">
                             <label>
-                                <input type="radio" name="metronome-enabled" value="true">
+                                <!-- 將 checked 移到這裡 -->
+                                <input type="radio" name="metronome-enabled" value="true" checked>
                                 <span>啟用</span>
                             </label>
                             <label>
-                                <input type="radio" name="metronome-enabled" value="false" checked>
+                                <!-- 移除這裡的 checked -->
+                                <input type="radio" name="metronome-enabled" value="false">
                                 <span>不啟用</span>
                             </label>
                         </div>
