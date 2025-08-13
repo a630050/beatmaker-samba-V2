@@ -2268,10 +2268,11 @@
 				const totalValue = duration / this.stepsPerBeat;
 
 				// 處理附點音符 (已修正邏輯)
-				if (totalValue === 1.5) return { duration: "q", dot: true };    // 附點4分
-				if (totalValue === 0.75) return { duration: "8", dot: true };   // 附點8分
-				if (totalValue === 0.375) return { duration: "16", dot: true }; // 附點16分
-				if (totalValue === 0.1875) return { duration: "32", dot: true };// 附點32分
+				if (totalValue === 3)    return { duration: "h",  dot: true };  // 附點2分（=3拍）
+				if (totalValue === 1.5)  return { duration: "q",  dot: true };  // 附點4分（=1.5拍）
+				if (totalValue === 0.75) return { duration: "8",  dot: true };  // 附點8分（=0.75拍）
+				if (totalValue === 0.375)return { duration: "16", dot: true };  // 附點16分
+				if (totalValue === 0.1875)return { duration: "32", dot: true }; // 附點32分
 
 				// 處理一般音符
 				const durationMap = {
@@ -2353,7 +2354,17 @@
 							duration: vexData.duration + (symbol.type === 'rest' ? 'r' : ''),
 							clef: "percussion"
 						});
-						if (vexData.dot) note.addDotToAll();
+						if (vexData.dot) {
+						  // 依版本可用性，優先使用現有 API
+						  if (typeof note.addDotToAll === 'function') {
+							note.addDotToAll();               // 舊版鏈式 API
+						  } else if (typeof note.addDot === 'function') {
+							// 你的打擊聲部是單鍵 "b/4"，因此加在 index 0 即可
+							note.addDot(0);
+						  } else if (VF.Dot && typeof VF.Dot.buildAndAttach === 'function') {
+							VF.Dot.buildAndAttach([note], { index: 0 }); // VexFlow v4 的寫法
+						  }
+						}
 						notes.push(note);
 						if (symbol.type !== 'rest') notesInCurrentBeat.push(note);
 						stepsInCurrentBeat += symbol.duration;
@@ -2381,97 +2392,94 @@
 						voice.draw(context, stave);
 						allBeams.forEach(beam => beam.setContext(context).draw());
 						
-						if (beatGroups.length > 0) {
-						  // 你可以選「在譜上方」或「在譜下方」畫框。下面先示範「上方」：
-						  const boxHeight = 14;
-						  const boxPaddingX = 6; // 左右加一點內縮，讓框不要太貼
-						  const boxY = stave.getYForTopText() - boxHeight - 6; // 譜上方
+						// === 用時間軸插值，計出每一拍的 X 邊界 ===
+						const beatsInMeasure = 4;                 // 4/4
+						const boxHeight = 14;
+						const boxY = stave.getYForTopText() - boxHeight - 6; // 畫在譜上方
 
-						  // 如果想畫在譜下方，改成：
-						  // const boxY = stave.getBottomY() + 8;
+						// 1) 蒐集本小節每個符號(含休止)的：時間區間[start, end) 與 畫面左右邊界[left, right]
+						const pieceInfos = [];
+						let accSteps = 0; // 小節內的 step 累積位置
+						for (let i = 0; i < measure.length; i++) {
+						  const sym = measure[i];
+						  const n = notes[i];
+						  if (!n) continue;
 
-						  beatGroups.forEach((g, idx) => {
-							const first = notes[g.start];
-							const last  = notes[g.end];
-							if (!first || !last) return;
+						  const bb = (typeof n.getBoundingBox === 'function') ? n.getBoundingBox() : null;
+						  const cx = n.getAbsoluteX ? n.getAbsoluteX() : 0;
+						  const w  = (typeof n.getWidth === 'function') ? n.getWidth() : 10;
 
-							// 取得最左與最右的 X（做個寬度 fallback，避免不同版本 API 差異）
-							const firstX = first.getAbsoluteX ? first.getAbsoluteX() : stave.getX();
-							const lastX  = last.getAbsoluteX  ? last.getAbsoluteX()  : (stave.getX() + stave.getWidth() - 10);
+						  const left  = (bb && bb.getX) ? bb.getX() : (cx - w / 2);
+						  const right = (bb && bb.getX && bb.getW) ? (bb.getX() + bb.getW()) : (cx + w / 2);
 
-							const firstW = (typeof first.getWidth === 'function') ? first.getWidth() : 10;
-							const lastW  = (typeof last.getWidth  === 'function') ? last.getWidth()  : 10;
-
-							//const x1 = firstX - (firstW / 2) - boxPaddingX;
-							//const x2 = lastX  + (lastW  / 2) + boxPaddingX;
-							// 優先使用 BoundingBox 精準貼齊音符左右緣；沒有就回退舊算法
-							const bb1 = (typeof first.getBoundingBox === 'function') ? first.getBoundingBox() : null;
-							const bb2 = (typeof last.getBoundingBox  === 'function') ? last.getBoundingBox()  : null;
-
-							// 左／右 padding 分開控制：左邊幾乎不留白，右邊保留一點空隙
-							const padLeft  = 1;   // 想完全貼齊可設 0
-							const padRight = 6;
-
-							// 左緣：用第一顆符號的 bbox.x，否則回退到中心-半寬
-							const leftEdge  = (bb1 && bb1.getX) ? bb1.getX() : (firstX - (firstW / 2));
-							// 右緣：用最後一顆符號的 bbox.x + bbox.w，否則回退到中心+半寬
-							const rightEdge = (bb2 && bb2.getX && bb2.getW) ? (bb2.getX() + bb2.getW()) : (lastX  + (lastW  / 2));
-																			
-
-							const x1 = leftEdge  - padLeft;
-							const x2 = rightEdge + padRight;
-							const w  = Math.max(6, x2 - x1);
-
-							// 畫虛線框（若想改成「橫線」，看下方註解）
-							context.save();
-							//if (typeof context.setLineDash === 'function') {
-							//  context.setLineDash([5, 3]);          // 虛線設定
-							//}
-							context.setStrokeStyle && context.setStrokeStyle('#7e7e7e');
-							context.setLineWidth && context.setLineWidth(3);
-							
-							
-							const midY = boxY + boxHeight / 2;
-							context.beginPath();
-							context.moveTo(x1, midY);
-							context.lineTo(x2, midY);
-							context.stroke();
-							//context.beginPath();
-							//context.moveTo(x1, boxY);                  // 左上
-							//context.lineTo(x2, boxY);                  // 右上
-							//context.moveTo(x1, boxY + boxHeight);      // 左下
-							//context.lineTo(x2, boxY + boxHeight);      // 右下
-							//context.stroke();
-
-							// 畫左右小直線（高度可自行調整，例如高度的一半）
-							const verticalHeight = boxHeight * 0.6;
-							const vOffset = (boxHeight - verticalHeight) / 2;
-							context.beginPath();
-							context.moveTo(x1, boxY + vOffset);
-							context.lineTo(x1, boxY + vOffset + verticalHeight);
-							context.moveTo(x2, boxY + vOffset);
-							context.lineTo(x2, boxY + vOffset + verticalHeight);
-							context.stroke();
-
-							context.restore();
-
-							
-							// 「框框」版本
-							//context.beginPath();
-							//context.rect(x1, boxY, w, boxHeight);
-							//context.stroke();
-							//context.restore();
-
-							// 可選：在框上方置中寫上拍號（1/2/3/4）
-							const label = String((idx % 4) + 1);
-							context.save();
-							context.setFont && context.setFont('10px Arial');
-							context.fillText && context.fillText(label, x1 + w / 2 - 3, boxY - 2);
-							context.restore();
-
-
-						  });
+						  pieceInfos.push({ start: accSteps, end: accSteps + sym.duration, left, right });
+						  accSteps += sym.duration;
 						}
+
+						// 2) 計算 0～4 拍的「時間邊界」對應的畫面 X（用線性插值）
+						const boundaryX = [];
+						for (let k = 0; k <= beatsInMeasure; k++) {
+						  const target = k * this.stepsPerBeat;
+
+						  // 找到 target 時間落在哪個符號區間
+						  let r = null;
+						  for (let j = 0; j < pieceInfos.length; j++) {
+							const seg = pieceInfos[j];
+							if (target < seg.end || (k === beatsInMeasure && target === seg.end)) {
+							  r = seg; break;
+							}
+						  }
+						  if (!r) r = pieceInfos[pieceInfos.length - 1];
+
+						  let x;
+						  if (target <= r.start) {
+							x = r.left;
+						  } else if (target >= r.end) {
+							x = r.right;
+						  } else {
+							// 線性插值：在同一顆（可能是長音/休止）內，按時間比例取 X
+							const ratio = (target - r.start) / (r.end - r.start);
+							x = r.left + ratio * (r.right - r.left);
+						  }
+						  boundaryX.push(x);
+						}
+
+						// 3) 依相鄰兩個邊界畫出拍框（橫線＋左右短豎線＋拍號）
+						for (let i = 0; i < beatsInMeasure; i++) {
+						  const x1 = boundaryX[i];
+						  const x2 = boundaryX[i + 1];
+						  const midY = boxY + boxHeight / 2;
+
+						  context.save();
+						  context.setStrokeStyle && context.setStrokeStyle('#7e7e7e');
+						  context.setLineWidth && context.setLineWidth(3);
+
+						  // 中間橫線
+						  context.beginPath();
+						  context.moveTo(x1, midY);
+						  context.lineTo(x2, midY);
+						  context.stroke();
+
+						  // 左右短豎線
+						  const verticalHeight = boxHeight * 0.6;
+						  const vOff = (boxHeight - verticalHeight) / 2;
+						  context.beginPath();
+						  context.moveTo(x1, boxY + vOff);
+						  context.lineTo(x1, boxY + vOff + verticalHeight);
+						  context.moveTo(x2, boxY + vOff);
+						  context.lineTo(x2, boxY + vOff + verticalHeight);
+						  context.stroke();
+
+						  context.restore();
+
+						  // 拍號文字（1~4）
+						  context.save();
+						  context.setFont && context.setFont('10px Arial');
+						  context.fillText && context.fillText(String(i + 1), x1 + (x2 - x1) / 2 - 3, boxY - 2);
+						  context.restore();
+						}
+						
+						
 					}
 
 					currentX += stave.getWidth();
