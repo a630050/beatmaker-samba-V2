@@ -6,11 +6,9 @@
     <title>SambaBeatmaker - 森巴鼓團練習程式(Pro)</title>
 
 	<script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
-    <!-- 【需求】引入 VexFlow 樂譜渲染引擎 -->
-    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.0/build/cjs/vexflow.min.js""></script>
+    <script src="https://cdn.jsdelivr.net/npm/vexflow@4.2.0/build/cjs/vexflow.min.js"></script>
 
     <link rel="stylesheet" href="css/styles.css">
-
 
 </head>
 <body>
@@ -18,7 +16,6 @@
 		<div class="header">
 			<div class="logo">🎵 Samba Beatmaker</div>
 			
-			<!-- START: 新增節拍器燈號 -->
 			<div class="metronome-lights" id="metronomeLightsContainer">
                 <div class="metronome-light"></div>
                 <div class="metronome-light"></div>
@@ -216,38 +213,22 @@
         </div>
     </div>
 
-    <div id="notationModal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>鼓譜轉換結果</h3>
-                <button id="closeNotationModal" class="close-btn">&times;</button>
-            </div>
-            <div class="modal-body" id="notationContent">
-                <!-- JS will populate this -->
-            </div>
+	 <div id="notationModal" class="modal-overlay">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h3>鼓譜轉換結果</h3>
+					<div class="notation-controls">
+						<input type="checkbox" id="showBeatHintCheckbox" class="checkbox" checked>
+						<label for="showBeatHintCheckbox">拍號提示</label>
+					</div>
+					<button id="closeNotationModal" class="close-btn">&times;</button>
+				</div>
+				<div class="modal-body" id="notationContent">
+					<!-- JS will populate this -->
+				</div>
         </div>
     </div>
 
-
-	<!-- 使用說明 Modal -->
-<div id="helpModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h1>Samba Beatmaker - 森巴鼓團練習程式使用說明</h1>
-            <button id="closeHelpModal" class="close-btn">&times;</button>
-        </div>
-        <div class="modal-body">
-            <iframe id="helpFrame" src="readme-dark.html" frameborder="0"></iframe>
-        </div>
-    </div>
-</div>
-
-	<script src="js/beatmaker.js" defer></script>
-
-<!-- ... 定位點：在 </script> 和 </body> 之間 ... -->
-	<script src="js/beatmaker.js" defer></script>
-
-    <!-- START: 新增節拍器設定 Modal -->
     <div id="metronomeModal" class="modal-overlay">
         <div class="modal-content" style="max-width: 600px; height: auto;">
             <div class="modal-header">
@@ -257,24 +238,20 @@
             <div class="modal-body" style="padding: 25px; overflow-y: auto;">
                 <div class="metronome-settings-container">
                     
-                    <!-- 啟用/停用 -->
-					<div class="metronome-setting-group">
+                    <div class="metronome-setting-group">
                         <h4 class="setting-title">節拍器</h4>
                         <div class="sound-mode-selector" style="border: none; padding: 0; margin-bottom: 0;">
                             <label>
-                                <!-- 將 checked 移到這裡 -->
                                 <input type="radio" name="metronome-enabled" value="true" checked>
                                 <span>啟用</span>
                             </label>
                             <label>
-                                <!-- 移除這裡的 checked -->
                                 <input type="radio" name="metronome-enabled" value="false">
                                 <span>不啟用</span>
                             </label>
                         </div>
                     </div>
 
-                    <!-- 模式 -->
                     <div class="metronome-setting-group">
                         <h4 class="setting-title">模式</h4>
                         <div class="sound-mode-selector" style="border: none; padding: 0; margin-bottom: 0;">
@@ -289,7 +266,6 @@
                         </div>
                     </div>
 
-                    <!-- 燈色 -->
                     <div class="metronome-setting-group">
                         <h4 class="setting-title">燈色</h4>
                         <div class="color-options">
@@ -301,7 +277,6 @@
                         </div>
                     </div>
 
-                    <!-- 聲音 -->
                     <div class="metronome-setting-group">
                         <h4 class="setting-title">聲音</h4>
                         <select id="metronomeSoundSelect" class="drum-select" style="flex: initial; width: 150px;">
@@ -314,7 +289,6 @@
                         </select>
                     </div>
 
-                    <!-- 音量 -->
                     <div class="metronome-setting-group">
                         <h4 class="setting-title">音量</h4>
                         <div class="volume-control" style="flex: 1;">
@@ -327,6 +301,7 @@
         </div>
     </div>
 
+	<script src="js/beatmaker.js" defer></script>
 
 </body>
 </html>
