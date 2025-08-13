@@ -17,11 +17,24 @@
     <div class="container">
 		<div class="header">
 			<div class="logo">🎵 Samba Beatmaker</div>
+			
+			<!-- START: 新增節拍器燈號 -->
+			<div class="metronome-lights" id="metronomeLightsContainer">
+                <div class="metronome-light"></div>
+                <div class="metronome-light"></div>
+                <div class="metronome-light"></div>
+                <div class="metronome-light"></div>
+            </div>
+			
 			<div class="controls">
 
 				<div class="control-group">
 					<button class="btn btn-help" id="helpBtn">? 指引</button>
 				</div>
+				
+				<div class="control-group">
+                    <button class="btn btn-special" id="metronomeBtn" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">⏱️ 節拍器</button>
+                </div>
 
 				<div class="control-group">
 					<button class="btn btn-special" id="soundAdjustBtn">🎵 調音</button>
@@ -230,6 +243,86 @@
 </div>
 
 	<script src="js/beatmaker.js" defer></script>
+
+<!-- ... 定位點：在 </script> 和 </body> 之間 ... -->
+	<script src="js/beatmaker.js" defer></script>
+
+    <!-- START: 新增節拍器設定 Modal -->
+    <div id="metronomeModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px; height: auto;">
+            <div class="modal-header">
+                <h3>⏱️ 節拍器設定</h3>
+                <button id="closeMetronomeModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 25px; overflow-y: auto;">
+                <div class="metronome-settings-container">
+                    
+                    <!-- 啟用/停用 -->
+                    <div class="metronome-setting-group">
+                        <h4 class="setting-title">節拍器</h4>
+                        <div class="sound-mode-selector" style="border: none; padding: 0; margin-bottom: 0;">
+                            <label>
+                                <input type="radio" name="metronome-enabled" value="true">
+                                <span>啟用</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="metronome-enabled" value="false" checked>
+                                <span>不啟用</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 模式 -->
+                    <div class="metronome-setting-group">
+                        <h4 class="setting-title">模式</h4>
+                        <div class="sound-mode-selector" style="border: none; padding: 0; margin-bottom: 0;">
+                            <label>
+                                <input type="radio" name="metronome-mode" value="sequential" checked>
+                                <span>輪播</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="metronome-mode" value="single">
+                                <span>單一</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 燈色 -->
+                    <div class="metronome-setting-group">
+                        <h4 class="setting-title">燈色</h4>
+                        <div class="color-options">
+                            <button class="color-preset-btn" data-color="#00ff88" style="background-color: #00ff88;"></button>
+                            <button class="color-preset-btn" data-color="#3498db" style="background-color: #3498db;"></button>
+                            <button class="color-preset-btn" data-color="#e74c3c" style="background-color: #e74c3c;"></button>
+                            <button class="color-preset-btn" data-color="#f1c40f" style="background-color: #f1c40f;"></button>
+                            <input type="color" id="metronomeColorPicker" value="#00ff88">
+                        </div>
+                    </div>
+
+                    <!-- 聲音 -->
+                    <div class="metronome-setting-group">
+                        <h4 class="setting-title">聲音</h4>
+                        <select id="metronomeSoundSelect" class="drum-select" style="flex: initial; width: 150px;">
+                            <option value="click1">滴 (高)</option>
+                            <option value="click2">答 (低)</option>
+                            <option value="beep">嗶聲</option>
+                            <option value="none">無聲</option>
+                        </select>
+                    </div>
+
+                    <!-- 音量 -->
+                    <div class="metronome-setting-group">
+                        <h4 class="setting-title">音量</h4>
+                        <div class="volume-control" style="flex: 1;">
+                            <input type="range" class="volume-slider" id="metronomeVolumeSlider" min="0" max="1" step="0.05" value="0.7">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 </body>
 </html>
