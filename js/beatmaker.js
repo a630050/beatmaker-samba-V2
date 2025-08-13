@@ -52,9 +52,18 @@
                 this.history = [];
                 this.historyIndex = -1;
                 this.maxHistory = 50;
+				this.metronome = {
+                    enabled: false,
+                    mode: 'sequential', // 'sequential' 或 'single'
+                    color: '#00ff88',
+                    sound: 'click1', // 'click1', 'click2', 'beep', 'none'
+                    volume: 0.7
+                };
+                this.metronomeSounds = {};
                 this.defaultTrackLabels  = ['S1', 'S2', 'S3', 'C', 'C', 'R', 'R', 'A'];
                 this.defaultDrums = ['surdo1', 'surdo2', 'surdo3', 'caixa', 'caixa', 'repinique', 'repinique', 'agogo'];
                 this.initDrumSounds();
+				this.initMetronomeSounds();
                 this.audioContext = null;
                 this.initAudio().then(() => { this.loadDefaultSamples(); });
                 this.initTracks();
@@ -86,6 +95,14 @@
                     'cuica': { name: 'Cuíca', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "sawtooth", synthBaseFreq: 180, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" }
                 };
             }
+			
+            initMetronomeSounds() {
+                this.metronomeSounds = {
+                    'click1': { url: 'https://a630050.github.io/beatmaker-samba-V2/sounds/metronome-click.mp3', buffer: null },
+                    'click2': { url: 'https://a630050.github.io/beatmaker-samba-V2/sounds/metronome-clave.mp3', buffer: null },
+                    'beep': { type: 'synth', freq: 1000, wave: 'sine', release: 0.1 }
+                };
+            }			
 
 
             saveState(force = false) {
@@ -197,6 +214,17 @@
 							sound.mode = 'synth';
 						}
 					}
+					
+					if (this.audioContext) {
+                        for (const key in this.metronomeSounds) {
+                            const sound = this.metronomeSounds[key];
+                            if (sound.url) {
+                                sound.buffer = await this.audioCache.getSample(sound.url, this.audioContext);
+                            }
+                        }
+                    }
+					
+					
 					this.initSoundAdjustPanel();
 				}
 
@@ -639,6 +667,12 @@
 				this.setupModalEvents('helpModal', 'helpBtn', 'closeHelpModal');
 				this.setupModalEvents('soundPanelOverlay', 'soundAdjustBtn', 'closeSoundPanel');
                 this.setupModalEvents('notationModal', null, 'closeNotationModal');
+				
+				// START: 新增節拍器 Modal 事件綁定
+				this.setupModalEvents('metronomeModal', 'metronomeBtn', 'closeMetronomeModal');
+                this.bindMetronomePanelEvents();
+				
+				
 				document.getElementById('resetSounds').addEventListener('click', () => this.resetSounds());
 				this.bindSoundPanelEvents();
 
@@ -786,6 +820,68 @@
 
                 input.addEventListener('blur', saveLabel);
                 input.addEventListener('keydown', handleKeydown);
+            }
+			
+			// START: 新增 bindMetronomePanelEvents 方法
+            bindMetronomePanelEvents() {
+                const modal = document.getElementById('metronomeModal');
+                
+                // 啟用/停用
+                modal.querySelectorAll('input[name="metronome-enabled"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        this.metronome.enabled = e.target.value === 'true';
+                    });
+                });
+
+                // 模式
+                modal.querySelectorAll('input[name="metronome-mode"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        this.metronome.mode = e.target.value;
+                    });
+                });
+
+                // 顏色
+                const colorPicker = document.getElementById('metronomeColorPicker');
+                const presetBtns = modal.querySelectorAll('.color-preset-btn');
+                
+                const updateColor = (color) => {
+                    this.metronome.color = color;
+                    colorPicker.value = color;
+                    document.documentElement.style.setProperty('--metronome-light-color', color);
+                    presetBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.color === color));
+                };
+
+                presetBtns.forEach(btn => {
+                    btn.addEventListener('click', () => updateColor(btn.dataset.color));
+                });
+                colorPicker.addEventListener('input', (e) => updateColor(e.target.value));
+
+                // 聲音
+                document.getElementById('metronomeSoundSelect').addEventListener('change', (e) => {
+                    this.metronome.sound = e.target.value;
+                });
+
+                // 音量
+                document.getElementById('metronomeVolumeSlider').addEventListener('input', (e) => {
+                    this.metronome.volume = parseFloat(e.target.value);
+                });
+            }
+            // END: 新增 bindMetronomePanelEvents 方法
+
+            // START: 新增 updateMetronomeUI 方法
+            updateMetronomeUI() {
+                document.querySelector(`input[name="metronome-enabled"][value="${this.metronome.enabled}"]`).checked = true;
+                document.querySelector(`input[name="metronome-mode"][value="${this.metronome.mode}"]`).checked = true;
+                
+                const color = this.metronome.color;
+                document.getElementById('metronomeColorPicker').value = color;
+                document.documentElement.style.setProperty('--metronome-light-color', color);
+                document.querySelectorAll('.color-preset-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.color === color);
+                });
+
+                document.getElementById('metronomeSoundSelect').value = this.metronome.sound;
+                document.getElementById('metronomeVolumeSlider').value = this.metronome.volume;
             }
 
             setupModalEvents(modalId, openBtnId, closeBtnId) {
@@ -1030,6 +1126,13 @@
             updateStep() {
                 this.updateBeatNumbers();
                 this.autoScroll();
+				
+				if (this.currentStep % this.stepsPerBeat === 0) {
+                    if (this.metronome.enabled) {
+                        this.triggerMetronome();
+                    }
+                }
+				
                 if (this.mode === 'ensemble') {
                     this.tracks.forEach((track) => {
                         if (track.enabled && track.steps[this.currentStep] && !(track.markers[this.currentStep] && track.markers[this.currentStep].rest)) {
@@ -1071,6 +1174,65 @@
                 }
                 return this.getFirstEnabledTrack();
             }
+			
+			triggerMetronome() {
+                const lights = document.querySelectorAll('.metronome-light');
+                if (!lights.length) return;
+                
+                this.playMetronomeSound();
+
+                const beatInMeasure = Math.floor(this.currentStep / this.stepsPerBeat) % 4;
+
+                lights.forEach(light => light.classList.remove('active'));
+
+                if (this.metronome.mode === 'sequential') {
+                    if (lights[beatInMeasure]) {
+                        lights[beatInMeasure].classList.add('active');
+                    }
+                } else { // 'single' mode
+                    lights.forEach(light => light.classList.add('active'));
+                }
+
+                setTimeout(() => {
+                    lights.forEach(light => light.classList.remove('active'));
+                }, 100);
+            }
+            // END: 新增 triggerMetronome 方法
+
+            // START: 新增 playMetronomeSound 方法
+            playMetronomeSound() {
+                if (!this.audioContext || this.metronome.sound === 'none') return;
+                
+                const soundInfo = this.metronomeSounds[this.metronome.sound];
+                if (!soundInfo) return;
+
+                const time = this.audioContext.currentTime;
+                
+                if (soundInfo.buffer) { // 播放音檔
+                    const source = this.audioContext.createBufferSource();
+                    source.buffer = soundInfo.buffer;
+                    const gainNode = this.audioContext.createGain();
+                    gainNode.gain.value = this.metronome.volume;
+                    source.connect(gainNode).connect(this.audioContext.destination);
+                    source.start(time);
+                } else if (soundInfo.type === 'synth') { // 播放合成音
+                    const osc = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+
+                    osc.type = soundInfo.wave;
+                    osc.frequency.setValueAtTime(soundInfo.freq, time);
+                    
+                    gainNode.gain.setValueAtTime(0, time);
+                    gainNode.gain.linearRampToValueAtTime(this.metronome.volume, time + 0.01);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, time + soundInfo.release);
+
+                    osc.connect(gainNode).connect(this.audioContext.destination);
+                    osc.start(time);
+                    osc.stop(time + soundInfo.release);
+                }
+            }
+            // END: 新增 playMetronomeSound 方法
+
 
 			updateBeatNumbers() {
 				const positionLine = document.getElementById('positionLine');
@@ -1640,6 +1802,7 @@
                     showNumbers: this.showNumbers,
 					showMarkers: this.showMarkers,
                     stepsPerBeat: this.stepsPerBeat,
+					metronome: this.metronome,
                     tracks: this.tracks.map(track => ({
 						label: track.label,
                         drumType: track.drumType,
@@ -1686,7 +1849,9 @@
 					this.showNumbers = pattern.showNumbers || false;
 					this.showMarkers = pattern.showMarkers || false;
 					this.stepsPerBeat = pattern.stepsPerBeat || 4;
-					
+						if (pattern.metronome) {
+							this.metronome = { ...this.metronome, ...pattern.metronome };
+						}
 					this.accentVolumeMultiplier = pattern.accentVolumeMultiplier ?? 5.0;
 					this.ghostVolumeMultiplier = pattern.ghostVolumeMultiplier ?? 0.3;
 
@@ -1749,6 +1914,7 @@
 					this.updateStepSize();
 					this.updateBeatNumbers();
 					this.clearSelection();
+					this.updateMetronomeUI(); 
 					this.saveState(true);
 					document.getElementById('accentVolumeSlider').value = this.accentVolumeMultiplier * 100;
 					document.getElementById('accentVolumeDisplay').textContent = this.accentVolumeMultiplier * 100;
