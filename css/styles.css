@@ -4,6 +4,7 @@
             --selection-bg-color: rgba(50, 150, 255, 0.3);
             --selection-border-color: #3296ff;
             --selection-glow-color: rgba(50, 150, 255, 0.7);
+			--metronome-light-color: #00ff88; 
         }
 
         * {
@@ -1218,4 +1219,91 @@
 		.step.active.step-dimmed {
 				opacity: 0.65;
 		}
-	
+		.metronome-lights {
+			display: flex;
+			gap: 12px;
+			position: absolute;
+			top: 30px;
+			right: 30px;
+		}
+
+		.metronome-light {
+			width: 30px;
+			height: 30px;
+			background-color: #333;
+			border-radius: 50%;
+			border: 2px solid #555;
+			transition: all 0.1s ease-in-out;
+			box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+		}
+
+		.metronome-light.active {
+			background-color: var(--metronome-light-color);
+			border-color: var(--metronome-light-color);
+			box-shadow: 0 0 15px var(--metronome-light-color), 0 0 25px var(--metronome-light-color);
+			transform: scale(1.1);
+		}
+		
+		/* START: 節拍器設定 Modal 內部樣式 */
+		.metronome-settings-container {
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+		}
+
+		.metronome-setting-group {
+			display: flex;
+			align-items: center;
+			gap: 20px;
+			padding: 15px;
+			background: rgba(255, 255, 255, 0.05);
+			border-radius: 8px;
+			border-left: 3px solid #00ff88;
+		}
+
+		.metronome-setting-group .setting-title {
+			font-size: 16px;
+			color: #e0e0e0;
+			flex-basis: 80px;
+			flex-shrink: 0;
+			margin: 0;
+		}
+
+		.color-options {
+			display: flex;
+			align-items: center;
+			gap: 15px;
+		}
+
+		.color-preset-btn {
+			width: 28px;
+			height: 28px;
+			border-radius: 50%;
+			border: 2px solid rgba(255,255,255,0.5);
+			cursor: pointer;
+			transition: transform 0.2s, border-color 0.2s;
+		}
+
+		.color-preset-btn:hover, .color-preset-btn.active {
+			transform: scale(1.2);
+			border-color: #fff;
+		}
+
+		#metronomeColorPicker {
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			appearance: none;
+			width: 32px;
+			height: 32px;
+			background-color: transparent;
+			border: none;
+			cursor: pointer;
+		}
+		#metronomeColorPicker::-webkit-color-swatch {
+			border-radius: 50%;
+			border: 2px solid rgba(255,255,255,0.5);
+		}
+		#metronomeColorPicker::-moz-color-swatch {
+			border-radius: 50%;
+			border: 2px solid rgba(255,255,255,0.5);
+		}
