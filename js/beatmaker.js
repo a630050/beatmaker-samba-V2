@@ -144,7 +144,6 @@
                 };
             }		
 
-
             saveState(force = false) {
                 const currentState = JSON.stringify({
                     tracks: this.tracks.map(track => ({
@@ -232,41 +231,30 @@
 				}
 			}
 
-				async loadDefaultSamples() {
-					for (const key in this.drumSounds) {
-						const sound = this.drumSounds[key];
-						if (sound.defaultSampleUrl && this.audioContext) {
-							sound.isLoadingDefault = true;
-							this.updateSoundControlUI(key);
+			async loadDefaultSamples() {
+				for (const key in this.drumSounds) {
+					const sound = this.drumSounds[key];
+					if (sound.defaultSampleUrl && this.audioContext) {
+						sound.isLoadingDefault = true;
+						this.updateSoundControlUI(key);
 
-							const buffer = await this.audioCache.getSample(sound.defaultSampleUrl, this.audioContext);
+						const buffer = await this.audioCache.getSample(sound.defaultSampleUrl, this.audioContext);
 
-							if (buffer) {
-								sound.defaultSampleBuffer = buffer;
-								sound.mode = 'system';
-							} else {
-								sound.defaultSampleBuffer = null;
-								sound.mode = 'synth';
-							}
-							sound.isLoadingDefault = false;
-							this.updateSoundControlUI(key);
+						if (buffer) {
+							sound.defaultSampleBuffer = buffer;
+							sound.mode = 'system';
 						} else {
+							sound.defaultSampleBuffer = null;
 							sound.mode = 'synth';
 						}
+						sound.isLoadingDefault = false;
+						this.updateSoundControlUI(key);
+					} else {
+						sound.mode = 'synth';
 					}
-					
-					if (this.audioContext) {
-                        for (const key in this.metronomeSounds) {
-                            const sound = this.metronomeSounds[key];
-                            if (sound.url) {
-                                sound.buffer = await this.audioCache.getSample(sound.url, this.audioContext);
-                            }
-                        }
-                    }
-					
-					
-					this.initSoundAdjustPanel();
 				}
+				this.initSoundAdjustPanel();
+			}
 
             setupAudioContextResume() {
                 const resumeAudio = async () => {
@@ -480,7 +468,6 @@
                     </div>
                 `;
             }
-
 
 			renderTracks() {
 				const trackControlsContainer = document.getElementById('trackControls');
@@ -708,10 +695,8 @@
 				this.setupModalEvents('soundPanelOverlay', 'soundAdjustBtn', 'closeSoundPanel');
                 this.setupModalEvents('notationModal', null, 'closeNotationModal');
 				
-				// START: 新增節拍器 Modal 事件綁定
 				this.setupModalEvents('metronomeModal', 'metronomeBtn', 'closeMetronomeModal');
                 this.bindMetronomePanelEvents();
-				
 				
 				document.getElementById('resetSounds').addEventListener('click', () => this.resetSounds());
 				this.bindSoundPanelEvents();
@@ -862,7 +847,6 @@
                 input.addEventListener('keydown', handleKeydown);
             }
 			
-			// START: 新增 bindMetronomePanelEvents 方法
             bindMetronomePanelEvents() {
                 const modal = document.getElementById('metronomeModal');
                 
@@ -906,9 +890,7 @@
                     this.metronome.volume = parseFloat(e.target.value);
                 });
             }
-            // END: 新增 bindMetronomePanelEvents 方法
 
-            // START: 新增 updateMetronomeUI 方法
             updateMetronomeUI() {
                 document.querySelector(`input[name="metronome-enabled"][value="${this.metronome.enabled}"]`).checked = true;
                 document.querySelector(`input[name="metronome-mode"][value="${this.metronome.mode}"]`).checked = true;
@@ -947,7 +929,6 @@
                     }
                 });
             }
-
 
             bindSoundPanelEvents() {
                  const soundPanel = document.getElementById('soundAdjustPanel');
@@ -1139,7 +1120,6 @@
                 }, stepDuration);
             }
 			
-			
 			pause() {
                 this.isPlaying = false;
                 document.getElementById('playBtn').classList.remove('active');
@@ -1237,16 +1217,12 @@
                     lights.forEach(light => light.classList.remove('active'));
                 }, 100);
             }
-            // END: 新增 triggerMetronome 方法
 
-            // START: 新增 playMetronomeSound 方法
 			playMetronomeSound() {
                 if (!this.audioContext || this.metronome.sound === 'none') return;
 
                 const soundInfo = this.metronomeSounds[this.metronome.sound];
-                if (!soundInfo || (soundInfo.sound !== 'none' && !soundInfo.type)) return;
-                
-                if (soundInfo.sound === 'none') return;
+                if (!soundInfo || !soundInfo.type) return;
 
                 const time = this.audioContext.currentTime;
                 const finalVolume = this.metronome.volume;
@@ -1258,7 +1234,6 @@
                 
                 let lastNode = gainNode;
 
-                // 如果是噪音，先經過濾波器
                 if (soundInfo.type === 'noise') {
                     const filter = this.audioContext.createBiquadFilter();
                     filter.type = soundInfo.filterType;
@@ -1290,7 +1265,6 @@
                         osc.stop(time + soundInfo.release + 0.05);
                     });
                 } else if (soundInfo.type === 'noise') {
-                    // 創建白噪音源
                     const bufferSize = this.audioContext.sampleRate * soundInfo.release;
                     const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
                     const output = buffer.getChannelData(0);
@@ -1303,8 +1277,6 @@
                     noiseSource.start(time);
                 }
             }
-            // END: 新增 playMetronomeSound 方法
-
 
 			updateBeatNumbers() {
 				const positionLine = document.getElementById('positionLine');
@@ -1331,7 +1303,6 @@
 					}
 				}
 			}
-			
 			
 			updateColorHints() {
                 document.querySelectorAll('.step.active.step-dimmed').forEach(el => el.classList.remove('step-dimmed'));
@@ -1503,12 +1474,10 @@
                 
                 const currentMarker = track.markers[stepIndex] || {};
 
-                // Toggle rest marker
                 if (currentMarker.rest) {
                     delete currentMarker.rest;
                 } else {
                     currentMarker.rest = '-';
-                    // If the step is active, deactivate it
                     if (track.steps[stepIndex]) {
                         track.steps[stepIndex] = false;
                     }
@@ -1527,14 +1496,13 @@
                 if (this.markingMode) {
                     let markerObj = this.tracks[trackIndex].markers[stepIndex] || {};
 
-                    // Clear all other markers if placing a new one
                     const isErasing = this.currentMarker === 'eraser';
                     
                     if (this.currentMarker === 'rest') {
                         if (markerObj.rest) {
                             delete markerObj.rest;
                         } else {
-                            markerObj = { rest: '-' }; // Reset object to only have rest
+                            markerObj = { rest: '-' };
                             if (this.tracks[trackIndex].steps[stepIndex]) {
                                 this.tracks[trackIndex].steps[stepIndex] = false;
                             }
@@ -1586,8 +1554,6 @@
 					this.toggleStep(trackIndex, stepIndex);
 				}
 			}
-
-
 
             toggleSelectionMode() {
                 this.selectionMode = !this.selectionMode;
@@ -1744,7 +1710,6 @@
                 }
             }
 
-
             handleSoundModeChange(drumKey, newMode) {
                 if (drumKey && newMode) {
                     this.drumSounds[drumKey].mode = newMode;
@@ -1821,7 +1786,6 @@
 
                 alert('音色已重設。');
             }
-
 
 			clearAll() {
 				if (!window.confirm('您確定要清除所有 R/L 標記嗎？此操作將被記錄，可以復原。')) {
@@ -2184,7 +2148,6 @@
 				}
 			}
 
-
 			scheduleDrumRoll(context, time, drumType, soundEnabled = true, trackVolume = 1.0) {
 				if (!soundEnabled) return;
 				const sound = this.drumSounds[drumType];
@@ -2251,7 +2214,6 @@
 					currentInterval *= timeStretch;
 				}
 			}
-
 
 			setupKeyboardShortcuts() {
 				document.addEventListener('keydown', (e) => {
@@ -2325,13 +2287,11 @@
 								document.getElementById('markBtn').click();
 								break;
 							case 'Escape':
-								// 新增：檢查是否有任何彈出視窗是開啟的，若有則關閉
 								const openModal = document.querySelector('.modal-overlay[style*="display: flex"]');
 								if (openModal) {
 									openModal.style.display = 'none';
-									break; // 優先處理關閉視窗，然後結束
+									break;
 								}
-								// --- 新增結束 ---
 
 								if (this.selectionMode) this.toggleSelectionMode();
 								if (this.markingMode) document.getElementById('markBtn').click();
@@ -2371,8 +2331,6 @@
 				volumeInput.value = newVolume;
 			}
 			
-			
-			
 			isSelectionValidForNotation() {
 				if (this.selection.startTrack === null || this.selection.endTrack === null) {
 					return { valid: false, message: '請先框選一個區域。' };
@@ -2393,7 +2351,6 @@
 
 				return { valid: true };
 			}	
-
 
 			convertRangeToNotation(startTrack, endTrack, startStep, endStep) {
 				try {
@@ -2429,23 +2386,55 @@
                 }
 			}
 
-			// 修改後的函數：處理「選取模式」下的轉譜按鈕
 			convertSelectionToNotation() {
-				const validation = this.isSelectionValidForNotation();
-				if (!validation.valid) {
-					alert(validation.message);
-					return;
+			  const validation = this.isSelectionValidForNotation();
+			  if (!validation.valid) { alert(validation.message); return; }
+
+			  const startTrack = Math.min(this.selection.startTrack, this.selection.endTrack);
+			  const endTrack   = Math.max(this.selection.startTrack, this.selection.endTrack);
+			  const startStep  = Math.min(this.selection.startStep,  this.selection.endStep);
+			  const endStep    = Math.max(this.selection.startStep,  this.selection.endStep);
+
+			  if (endTrack > startTrack) {
+				this.convertRangeToNotationStacked(startTrack, endTrack, startStep, endStep);
+			  } else {
+				this.convertRangeToNotation(startTrack, endTrack, startStep, endStep);
+			  }
+			}
+			
+			convertRangeToNotationStacked(startTrack, endTrack, startStep, endStep) {
+			  try {
+				const notationContent = document.getElementById('notationContent');
+				notationContent.innerHTML = '';
+
+				const systemContainer = document.createElement('div');
+				systemContainer.className = 'vexflow-container system';
+				notationContent.appendChild(systemContainer);
+
+				const measuresByTrack = [];
+				const trackInfos = [];
+
+				for (let t = startTrack; t <= endTrack; t++) {
+				  const track = this.tracks[t];
+				  const steps   = track.steps.slice(startStep, endStep + 1);
+				  const markers = track.markers.slice(startStep, endStep + 1);
+				  measuresByTrack.push(this.parseTrackToMeasures(steps, markers));
+				  trackInfos.push({ label: track.label, drumName: this.drumSounds[track.drumType].name });
 				}
 
-				const startTrack = Math.min(this.selection.startTrack, this.selection.endTrack);
-				const endTrack = Math.max(this.selection.startTrack, this.selection.endTrack);
-				const startStep = Math.min(this.selection.startStep, this.selection.endStep);
-				const endStep = Math.max(this.selection.startStep, this.selection.endStep);
+				const mCount = measuresByTrack[0].length;
+				if (!measuresByTrack.every(m => m.length === mCount)) {
+				  console.warn('選取範圍各軌小節數不一致；將以第一軌為準。');
+				}
 
-				this.convertRangeToNotation(startTrack, endTrack, startStep, endStep);
+				this.renderAlignedMeasuresWithVexFlow(systemContainer, measuresByTrack, trackInfos);
+				document.getElementById('notationModal').style.display = 'flex';
+			  } catch (error) {
+				console.error('轉譜錯誤:', error);
+				alert('轉譜過程發生錯誤：' + error.message);
+			  }
 			}
 
-			// 新增的函數：處理「單一音軌」的轉譜按鈕
 			convertSingleTrackToNotation(trackIndex) {
 				const startTrack = trackIndex;
 				const endTrack = trackIndex;
@@ -2459,10 +2448,211 @@
 
 				this.convertRangeToNotation(startTrack, endTrack, startStep, endStep);
 			}
+			
+			renderAlignedMeasuresWithVexFlow(container, measuresByTrack, trackInfos) {
+			  const VF = Vex.Flow;
+			  container.innerHTML = '';
+
+			  const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
+			  const context  = renderer.getContext();
+
+			  const tracksCount  = measuresByTrack.length;
+			  const measureCount = measuresByTrack[0].length;
+
+			  const LEFT_MARGIN  = 10;
+			  const RIGHT_MARGIN = 10;
+			  const LEFT_LABEL_W = 100;
+			  const NUM_STAVE_LINES = 1;
+			  const STAVE_H   = 50;
+			  const STAVE_GAP = 30;
+			  const LINE_GAP  = 45;
+			  const FIXED_MEASURE_W = (this.stepsPerBeat === 8) ? 440 : 380;
+			  const RULER_MODE = 'maxAcrossTracks';
+			  
+			  const root = container.parentElement || container;
+			  const visibleWidth = root.clientWidth || (root.getBoundingClientRect && root.getBoundingClientRect().width) || window.innerWidth || 960;
+			  const measuresPerLine = Math.max(1, Math.floor((visibleWidth - LEFT_MARGIN - RIGHT_MARGIN - LEFT_LABEL_W) / FIXED_MEASURE_W));
+              const canvasWidth = LEFT_MARGIN + LEFT_LABEL_W + (measuresPerLine * FIXED_MEASURE_W) + RIGHT_MARGIN;
+
+			  let x = LEFT_MARGIN + LEFT_LABEL_W;   
+			  let yTop = 24;
+			  let col = 0;
+
+			  const drawBeatRuler = (ctx, stave, boundaryX) => {
+				const beatsInMeasure = 4;
+				const RULER_BOX_H   = 12;
+				const RULER_LINE_W  = 1.5;
+				const RULER_TICK_W  = 1.5;
+				const boxH = RULER_BOX_H;
+				const boxY = stave.getYForTopText() - boxH - 6;
+				
+				for (let i = 0; i < beatsInMeasure; i++) {
+				  const x1 = boundaryX[i], x2 = boundaryX[i + 1];
+				  const midY = boxY + boxH / 2;
+					ctx.save();
+					ctx.setLineWidth && ctx.setLineWidth(RULER_LINE_W);
+					ctx.beginPath(); ctx.moveTo(x1, midY); ctx.lineTo(x2, midY); ctx.stroke();
+					ctx.restore();
+				    const vH = boxH * 0.6, vOff = (boxH - vH) / 2;
+					ctx.save();
+					ctx.setLineWidth && ctx.setLineWidth(RULER_TICK_W);
+					ctx.beginPath();
+					ctx.moveTo(x1, boxY + vOff); ctx.lineTo(x1, boxY + vOff + vH);
+					ctx.moveTo(x2, boxY + vOff); ctx.lineTo(x2, boxY + vOff + vH);
+					ctx.stroke();
+					ctx.restore();
+					ctx.save();
+					ctx.setFont && ctx.setFont('10px Arial');
+					ctx.fillText && ctx.fillText(String(i + 1), x1 + (x2 - x1) / 2 - 3, boxY - 2);
+					ctx.restore();
+				}
+			  };
+
+			  for (let m = 0; m < measureCount; m++) {
+				if (col >= measuresPerLine) {
+				  col = 0;
+				  x = LEFT_MARGIN + LEFT_LABEL_W;
+				  yTop += tracksCount * (STAVE_H + STAVE_GAP) + LINE_GAP;
+				}
+
+				const staves = [];
+				for (let t = 0; t < tracksCount; t++) {
+				  const y = yTop + t * (STAVE_H + STAVE_GAP);
+				  const stave = new VF.Stave(x, y, FIXED_MEASURE_W);
+				  if (typeof stave.setNumLines === 'function') stave.setNumLines(NUM_STAVE_LINES);
+				  else stave.options.num_lines = NUM_STAVE_LINES;
+				  if (m === measureCount - 1) stave.setEndBarType(VF.Barline.type.END);
+				  stave.setContext(context).draw();
+				  if (col === 0 && trackInfos && trackInfos[t]) {
+					  const label = `${trackInfos[t].label} (${trackInfos[t].drumName})`;
+					  const labelX = LEFT_MARGIN;
+					  const labelY = y + STAVE_H / 2;
+					  context.save();
+					  context.textBaseline = 'middle';
+					  context.setFont('12px Arial');
+					  context.fillText(label, labelX, labelY);
+					  context.restore();
+				  }
+				  staves.push(stave);
+				}
+
+				const tracksNotes = [];
+				const tracksBeams = [];
+				for (let t = 0; t < tracksCount; t++) {
+				  const symbols = measuresByTrack[t][m];
+				  const notes = [];
+				  const beams = [];
+				  let notesInBeat = [];
+				  let stepsInBeat = 0;
+				  for (const sym of symbols) {
+					const vex = this.getVexFlowDuration(sym.duration);
+					if (!vex || !vex.duration) continue;
+					const note = new VF.StaveNote({ keys: ['b/4'], duration: vex.duration + (sym.type === 'rest' ? 'r' : ''), clef: 'percussion' });
+					if (vex.dot) {
+					  if (typeof note.addDotToAll === 'function') note.addDotToAll();
+					  else if (typeof note.addDot === 'function') note.addDot(0);
+					  else if (VF.Dot && VF.Dot.buildAndAttach) VF.Dot.buildAndAttach([note], { index: 0 });
+					}
+					notes.push(note);
+					if (sym.type !== 'rest') notesInBeat.push(note);
+					stepsInBeat += sym.duration;
+					if (stepsInBeat >= this.stepsPerBeat) {
+					  if (notesInBeat.length > 1) beams.push(new VF.Beam(notesInBeat));
+					  notesInBeat = [];
+					  stepsInBeat = 0;
+					}
+				  }
+				  tracksNotes.push(notes);
+				  tracksBeams.push(beams);
+				}
+
+				const voices = tracksNotes.map(ns => new VF.Voice({ num_beats: 4, beat_value: 4 }).setMode(VF.Voice.Mode.SOFT).addTickables(ns));
+				const formatter = new VF.Formatter();
+				formatter.format(voices, FIXED_MEASURE_W - 30);
+
+				for (let t = 0; t < tracksCount; t++) {
+				  voices[t].draw(context, staves[t]);
+				  tracksBeams[t].forEach(b => b.setContext(context).draw());
+				}
+
+				const startX = staves[0].getNoteStartX ? staves[0].getNoteStartX() : (staves[0].getX() + 10);
+				const endX   = staves[0].getNoteEndX   ? staves[0].getNoteEndX()   : (staves[0].getX() + FIXED_MEASURE_W - 10);
+
+				const boundaryFromTrack = (notes, symbols, stepsPerBeat, startX, endX) => {
+					const pieceInfos = [];
+					let acc = 0;
+					for (let i = 0; i < symbols.length; i++) {
+						const sym = symbols[i];
+						const n = notes[i];
+						if (!n) {
+							pieceInfos.push({
+								start: acc, end: acc + sym.duration,
+								left:  startX + (acc / (4 * stepsPerBeat)) * (endX - startX),
+								right: startX + ((acc + sym.duration) / (4 * stepsPerBeat)) * (endX - startX),
+							});
+							acc += sym.duration;
+							continue;
+						}
+						const bb = (typeof n.getBoundingBox === 'function') ? n.getBoundingBox() : null;
+						const cx = n.getAbsoluteX ? n.getAbsoluteX() : 0;
+						const w  = (typeof n.getWidth === 'function') ? n.getWidth() : 10;
+						const left  = (bb && bb.getX) ? bb.getX() : (cx - w / 2);
+						const right = (bb && bb.getX && bb.getW) ? (bb.getX() + bb.getW()) : (cx + w / 2);
+						pieceInfos.push({ start: acc, end: acc + sym.duration, left, right });
+						acc += sym.duration;
+					}
+					const res = [startX];
+					for (let k = 1; k < 4; k++) {
+						const target = k * stepsPerBeat;
+						let seg = pieceInfos.find(p => target <= p.end) || pieceInfos[pieceInfos.length - 1];
+						let xk;
+						if (!seg) {
+							xk = startX + (endX - startX) * (k / 4);
+						} else if (target <= seg.start) {
+							xk = seg.left;
+						} else if (target >= seg.end) {
+							xk = seg.right;
+						} else {
+							const r = (target - seg.start) / (seg.end - seg.start);
+							xk = seg.left + r * (seg.right - seg.left);
+						}
+						res.push(xk);
+					}
+					res.push(endX);
+					return res;
+				};
+
+				let boundaryX;
+				if (RULER_MODE === 'uniform') {
+					boundaryX = [];
+					for (let k = 0; k <= 4; k++) boundaryX.push(startX + (endX - startX) * (k / 4));
+				} else {
+					const perTrack = [];
+					for (let t = 0; t < tracksCount; t++) {
+						perTrack.push(boundaryFromTrack(tracksNotes[t], measuresByTrack[t][m] || [], this.stepsPerBeat, startX, endX));
+					}
+					boundaryX = [];
+					for (let k = 0; k <= 4; k++) {
+						boundaryX[k] = Math.max(...perTrack.map(b => b[k]));
+						if (k > 0 && boundaryX[k] < boundaryX[k - 1] + 1) boundaryX[k] = boundaryX[k - 1] + 1;
+						if (boundaryX[k] > endX) boundaryX[k] = endX;
+						if (boundaryX[k] < startX) boundaryX[k] = startX;
+					}
+				}
+
+				for (let t = 0; t < tracksCount; t++) drawBeatRuler(context, staves[t], boundaryX);
+
+				x += FIXED_MEASURE_W;
+				col++;
+			  }
+
+			  const totalHeight = yTop + tracksCount * (STAVE_H + STAVE_GAP) + 120;
+			  renderer.resize(canvasWidth, totalHeight);
+			}
 
 			parseTrackToMeasures(steps, markers) {
 				const measures = [];
-				const stepsPerMeasure = 4 * this.stepsPerBeat; // 一個小節固定為4拍
+				const stepsPerMeasure = 4 * this.stepsPerBeat;
 
 				for (let i = 0; i < steps.length; i += stepsPerMeasure) {
 					const measureSteps = steps.slice(i, i + stepsPerMeasure);
@@ -2478,20 +2668,15 @@
 				
 				while (i < measureSteps.length) {
 					if (measureSteps[i] && !measureMarkers[i]?.rest) {
-						// 處理音符
 						let duration = 1;
-						while (i + duration < measureSteps.length && 
-							   !measureSteps[i + duration] && 
-							   !measureMarkers[i + duration]?.rest) {
+						while (i + duration < measureSteps.length && !measureSteps[i + duration] && !measureMarkers[i + duration]?.rest) {
 							duration++;
 						}
 						symbols.push({ type: 'note', duration });
 						i += duration;
 					} else {
-						// 處理休止符
 						let duration = 1;
-						while (i + duration < measureSteps.length && 
-							   (!measureSteps[i + duration] || measureMarkers[i + duration]?.rest)) {
+						while (i + duration < measureSteps.length && (!measureSteps[i + duration] || measureMarkers[i + duration]?.rest)) {
 							duration++;
 						}
 						symbols.push({ type: 'rest', duration });
@@ -2505,22 +2690,14 @@
 			getVexFlowDuration(duration) {
 				const totalValue = duration / this.stepsPerBeat;
 
-				// 處理附點音符 (已修正邏輯)
-				if (totalValue === 3)    return { duration: "h",  dot: true };  // 附點2分（=3拍）
-				if (totalValue === 1.5)  return { duration: "q",  dot: true };  // 附點4分（=1.5拍）
-				if (totalValue === 0.75) return { duration: "8",  dot: true };  // 附點8分（=0.75拍）
-				if (totalValue === 0.375)return { duration: "16", dot: true };  // 附點16分
-				if (totalValue === 0.1875)return { duration: "32", dot: true }; // 附點32分
+				if (totalValue === 3)    return { duration: "h",  dot: true };
+				if (totalValue === 1.5)  return { duration: "q",  dot: true };
+				if (totalValue === 0.75) return { duration: "8",  dot: true };
+				if (totalValue === 0.375)return { duration: "16", dot: true };
+				if (totalValue === 0.1875)return { duration: "32", dot: true };
 
-				// 處理一般音符
 				const durationMap = {
-					4: "w",     // 全音符
-					2: "h",     // 2分音符
-					1: "q",     // 4分音符
-					0.5: "8",   // 8分音符
-					0.25: "16", // 16分音符
-					0.125: "32", // 32分音符
-					0.0625: "64" // 64分音符 (為8格/拍模式準備)
+					4: "w", 2: "h", 1: "q", 0.5: "8", 0.25: "16", 0.125: "32", 0.0625: "64"
 				};
 
 				return { duration: durationMap[totalValue] || "q", dot: false };
@@ -2533,42 +2710,39 @@
 				const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
 				const context = renderer.getContext();
 				
-				const measuresPerLine = this.stepsPerBeat === 8 ? 3 : 4;
-
-				const LEFT_MARGIN = 10;
-				const RIGHT_MARGIN = 20;
-
+                // --- 1. 視覺設定 (與多軌渲染對齊) ---
+				const measuresPerLine = this.stepsPerBeat === 8 ? 2 : 3; // 單行小節數
+				const LEFT_MARGIN = 15;
+				const RIGHT_MARGIN = 15;
 				let currentX = LEFT_MARGIN;
 				let currentY = 20;
+                
+                // 拍框線條粗細 (與多軌渲染對齊)
+                const RULER_LINE_W  = 1.5;
+                const RULER_TICK_W  = 1.5;
 
-				const MIN_MEASURE_WIDTH = (this.stepsPerBeat === 8) ? 360 : 300;
+				const MIN_MEASURE_WIDTH = (this.stepsPerBeat === 8) ? 400 : 350;
 
-				// ▶ 可視寬度（真正眼睛看得到的寬度，拿來做「放不下就換行」的判斷）
-				const visibleWidth =  (container.getBoundingClientRect?.().width) || container.clientWidth || 960; //container.clientWidth || 960;
-
-				// ▶ Renderer 畫布寬度（給 SVG 畫布用，至少要能容納一整行我們預估的小節）
+				const root = container.parentElement || container;
+				const visibleWidth = root.clientWidth || (root.getBoundingClientRect && root.getBoundingClientRect().width) || window.innerWidth || 960;
 				const canvasWidth = Math.max(visibleWidth, MIN_MEASURE_WIDTH * measuresPerLine + LEFT_MARGIN + RIGHT_MARGIN);
-
-				// ▶ 小節實際寬度：至少 MIN_MEASURE_WIDTH；若 visibleWidth 很寬，就平均分
-				const staveWidth = Math.max(
-				  MIN_MEASURE_WIDTH,
-				  (visibleWidth - LEFT_MARGIN - RIGHT_MARGIN) / measuresPerLine
-				);
-				//const canvasWidth = Math.max(container.clientWidth, 950);
-				//const staveWidth = (canvasWidth - 40) / measuresPerLine; 
+				const staveWidth = Math.max(MIN_MEASURE_WIDTH, (visibleWidth - LEFT_MARGIN - RIGHT_MARGIN) / measuresPerLine);
 
 				measures.forEach((measure, index) => {
 					if (index > 0 && (currentX + staveWidth > visibleWidth - RIGHT_MARGIN)) {
 					  currentX = LEFT_MARGIN;
-					  currentY += 120;
+					  currentY += 120; // 換行高度
 					}
 
-				  const stave = new VF.Stave(currentX, currentY, staveWidth);
+				    const stave = new VF.Stave(currentX, currentY, staveWidth);
+
+                    // --- 2. 五線譜改單線譜 ---
+                    if (typeof stave.setNumLines === 'function') stave.setNumLines(1);
+				    else stave.options.num_lines = 1;
 
 					if (index === 0) {
 						stave.addClef('percussion').addTimeSignature("4/4");
 					}
-
 					if (index === measures.length - 1) {
 						stave.setEndBarType(VF.Barline.type.END);
 					}
@@ -2580,40 +2754,23 @@
 					let notesInCurrentBeat = [];
 					let stepsInCurrentBeat = 0;
 					
-					// === 新增：每拍的音符群組（用 notes 的 index 範圍表示） ===
-					const beatGroups = [];      // 例如 [{start: 0, end: 2}, {start: 3, end: 5}, ...]
-					let currentGroupStart = 0;  // 目前這一拍在 notes 陣列的起始 index	
-
 					measure.forEach(symbol => {
 						const vexData = this.getVexFlowDuration(symbol.duration);
 						if (!vexData || !vexData.duration) return;
 						const note = new VF.StaveNote({
-							keys: ["b/4"],
+							keys: ["b/4"], // 在單線譜上，這個 key 通常會畫在線上
 							duration: vexData.duration + (symbol.type === 'rest' ? 'r' : ''),
 							clef: "percussion"
 						});
 						if (vexData.dot) {
-						  // 依版本可用性，優先使用現有 API
-						  if (typeof note.addDotToAll === 'function') {
-							note.addDotToAll();               // 舊版鏈式 API
-						  } else if (typeof note.addDot === 'function') {
-							// 你的打擊聲部是單鍵 "b/4"，因此加在 index 0 即可
-							note.addDot(0);
-						  } else if (VF.Dot && typeof VF.Dot.buildAndAttach === 'function') {
-							VF.Dot.buildAndAttach([note], { index: 0 }); // VexFlow v4 的寫法
-						  }
+						  if (typeof note.addDotToAll === 'function') note.addDotToAll();
+						  else if (typeof note.addDot === 'function') note.addDot(0);
+						  else if (VF.Dot && typeof VF.Dot.buildAndAttach === 'function') VF.Dot.buildAndAttach([note], { index: 0 });
 						}
 						notes.push(note);
 						if (symbol.type !== 'rest') notesInCurrentBeat.push(note);
 						stepsInCurrentBeat += symbol.duration;
 						if (stepsInCurrentBeat >= this.stepsPerBeat) {
-						  // === 新增：記下這一拍在 notes[] 的範圍 ===
-						  const groupEnd = notes.length - 1; // 目前已經 push 的最後一顆音符（含休止）
-						  if (groupEnd >= currentGroupStart) {
-							beatGroups.push({ start: currentGroupStart, end: groupEnd });
-						  }
-						  currentGroupStart = notes.length; // 下一拍從下一個 note 開始
-						  // === 原本就有的連桿處理 ===
 						  if (notesInCurrentBeat.length > 1) allBeams.push(new VF.Beam(notesInCurrentBeat));
 						  notesInCurrentBeat = [];
 						  stepsInCurrentBeat = 0;
@@ -2630,59 +2787,54 @@
 						voice.draw(context, stave);
 						allBeams.forEach(beam => beam.setContext(context).draw());
 						
-						// === 用時間軸插值，計出每一拍的 X 邊界 ===
-						const beatsInMeasure = 4;                 // 4/4
+                        // --- 3. 拍框繪製邏輯 (移植並簡化) ---
+						const beatsInMeasure = 4;
 						const boxHeight = 14;
-						const boxY = stave.getYForTopText() - boxHeight - 6; // 畫在譜上方
+						const boxY = stave.getYForTopText() - boxHeight - 6;
 
-						// 1) 蒐集本小節每個符號(含休止)的：時間區間[start, end) 與 畫面左右邊界[left, right]
 						const pieceInfos = [];
-						let accSteps = 0; // 小節內的 step 累積位置
+						let accSteps = 0;
 						for (let i = 0; i < measure.length; i++) {
 						  const sym = measure[i];
 						  const n = notes[i];
 						  if (!n) continue;
-
-						  const bb = (typeof n.getBoundingBox === 'function') ? n.getBoundingBox() : null;
-						  const cx = n.getAbsoluteX ? n.getAbsoluteX() : 0;
-						  const w  = (typeof n.getWidth === 'function') ? n.getWidth() : 10;
-
-						  const left  = (bb && bb.getX) ? bb.getX() : (cx - w / 2);
-						  const right = (bb && bb.getX && bb.getW) ? (bb.getX() + bb.getW()) : (cx + w / 2);
-
-						  pieceInfos.push({ start: accSteps, end: accSteps + sym.duration, left, right });
+						  const bb = n.getBoundingBox();
+						  pieceInfos.push({ start: accSteps, end: accSteps + sym.duration, left: bb.getX(), right: bb.getX() + bb.getW() });
 						  accSteps += sym.duration;
 						}
 
-						// 2) 計算 0～4 拍的「時間邊界」對應的畫面 X（用線性插值）
 						const boundaryX = [];
+                        const staveStartX = stave.getNoteStartX();
+                        const staveEndX = stave.getNoteEndX();
+						
 						for (let k = 0; k <= beatsInMeasure; k++) {
-						  const target = k * this.stepsPerBeat;
+						    const target = k * this.stepsPerBeat;
+                            
+                            // 強制第0拍和第4拍對齊小節的音符起點和終點
+                            if (k === 0) {
+                                boundaryX.push(staveStartX);
+                                continue;
+                            }
+                            if (k === beatsInMeasure) {
+                                boundaryX.push(staveEndX);
+                                continue;
+                            }
 
-						  // 找到 target 時間落在哪個符號區間
-						  let r = null;
-						  for (let j = 0; j < pieceInfos.length; j++) {
-							const seg = pieceInfos[j];
-							if (target < seg.end || (k === beatsInMeasure && target === seg.end)) {
-							  r = seg; break;
-							}
-						  }
-						  if (!r) r = pieceInfos[pieceInfos.length - 1];
-
-						  let x;
-						  if (target <= r.start) {
-							x = r.left;
-						  } else if (target >= r.end) {
-							x = r.right;
-						  } else {
-							// 線性插值：在同一顆（可能是長音/休止）內，按時間比例取 X
-							const ratio = (target - r.start) / (r.end - r.start);
-							x = r.left + ratio * (r.right - r.left);
-						  }
-						  boundaryX.push(x);
+						    let seg = pieceInfos.find(p => target <= p.end) || pieceInfos[pieceInfos.length - 1];
+						    let x;
+						    if (!seg) {
+                                x = staveStartX + (staveEndX - staveStartX) * (k / beatsInMeasure);
+                            } else if (target <= seg.start) {
+						        x = seg.left;
+						    } else if (target >= seg.end) {
+						        x = seg.right;
+						    } else {
+							    const ratio = (target - seg.start) / (seg.end - seg.start);
+							    x = seg.left + ratio * (seg.right - seg.left);
+						    }
+						    boundaryX.push(x);
 						}
 
-						// 3) 依相鄰兩個邊界畫出拍框（橫線＋左右短豎線＋拍號）
 						for (let i = 0; i < beatsInMeasure; i++) {
 						  const x1 = boundaryX[i];
 						  const x2 = boundaryX[i + 1];
@@ -2690,44 +2842,41 @@
 
 						  context.save();
 						  context.setStrokeStyle && context.setStrokeStyle('#7e7e7e');
-						  context.setLineWidth && context.setLineWidth(3);
-
-						  // 中間橫線
+						  
+                          // 使用與多軌渲染一致的線條粗細
+						  context.setLineWidth && context.setLineWidth(RULER_LINE_W);
 						  context.beginPath();
 						  context.moveTo(x1, midY);
 						  context.lineTo(x2, midY);
 						  context.stroke();
 
-						  // 左右短豎線
 						  const verticalHeight = boxHeight * 0.6;
 						  const vOff = (boxHeight - verticalHeight) / 2;
+                          context.setLineWidth && context.setLineWidth(RULER_TICK_W);
 						  context.beginPath();
 						  context.moveTo(x1, boxY + vOff);
 						  context.lineTo(x1, boxY + vOff + verticalHeight);
 						  context.moveTo(x2, boxY + vOff);
 						  context.lineTo(x2, boxY + vOff + verticalHeight);
 						  context.stroke();
-
 						  context.restore();
 
-						  // 拍號文字（1~4）
 						  context.save();
 						  context.setFont && context.setFont('10px Arial');
 						  context.fillText && context.fillText(String(i + 1), x1 + (x2 - x1) / 2 - 3, boxY - 2);
 						  context.restore();
 						}
-						
-						
 					}
-
 					currentX += stave.getWidth();
 				});
 
 				renderer.resize(canvasWidth, currentY + 150);
 			}
+            // END: 替換整個 renderMeasuresWithVexFlow 函數
 
         }
 
+        
         let beatmaker;
         document.addEventListener('DOMContentLoaded', () => {
             beatmaker = new Beatmaker();
