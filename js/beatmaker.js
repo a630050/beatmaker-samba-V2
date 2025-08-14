@@ -2709,7 +2709,7 @@
 							   !measureMarkers[i + duration]?.rest) {
 							duration++;
 						}
-						symbols.push({ type: 'note', duration, marker: measureMarkers[i] || {} });
+						symbols.push({ type: 'note', duration });
 						i += duration;
 					} else {
 						// 處理休止符 - 拆分成單拍休止符以便閱讀
@@ -2765,41 +2765,6 @@
 				return { duration: durationMap[totalValue] || "q", dot: false };
 			}
 
-			createVexNoteWithOptions(symbol, vexData) {
-                const VF = Vex.Flow;
-                const note = new VF.StaveNote({
-                    keys: ["b/4"],
-                    duration: vexData.duration + (symbol.type === 'rest' ? 'r' : ''),
-                    clef: "percussion"
-                });
-
-                if (vexData.dot) {
-                    if (typeof note.addDotToAll === 'function') { note.addDotToAll(); }
-                    else if (typeof note.addDot === 'function') { note.addDot(0); }
-                }
-
-                if (symbol.type === 'note' && symbol.marker) {
-                    const marker = symbol.marker;
-
-                    if (marker.accent === '()') {
-                        note.setKeyStyle(0, { style: 'parenthesis' });
-                    }
-
-                    if (marker.accent === '>') {
-						const accent = new VF.Articulation("a>").setPosition(VF.Articulation.Position.ABOVE);
-                        note.addArticulation(0, accent);
-                    }
-
-                    if (marker.hand === 'R' || marker.hand === 'L') {
-						const annotation = new VF.Annotation(marker.hand)
-                            .setVerticalJustification(VF.Annotation.VerticalJustify.TOP)
-                            .setFont("Arial", 12, "bold");
-                        note.addAnnotation(0, annotation);
-                    }
-                }
-                return note;
-            }
-
 			renderMeasuresWithVexFlow(container, measures, showHints, selectionStartStep = 0, trackIndex = 0) {
 				const VF = Vex.Flow;
 				container.innerHTML = '';
@@ -2850,7 +2815,11 @@
 						const vexData = this.getVexFlowDuration(symbol.duration);
 						if (!vexData || !vexData.duration) return;
 
-						const note = this.createVexNoteWithOptions(symbol, vexData);
+						const note = new VF.StaveNote({
+							keys: ["b/4"],
+							duration: vexData.duration + (symbol.type === 'rest' ? 'r' : ''),
+							clef: "percussion"
+						});
 
                         // 為音符設定正確的ID
                         if(symbol.type === 'note') {
@@ -2876,6 +2845,12 @@
                             }, 50);
                         }
 						
+						if (vexData.dot) {
+						  if (typeof note.addDotToAll === 'function') { note.addDotToAll(); }
+						  else if (typeof note.addDot === 'function') { note.addDot(0); }
+						  else if (VF.Dot && typeof VF.Dot.buildAndAttach === 'function') { VF.Dot.buildAndAttach([note], { index: 0 }); }
+						}
+
 						notes.push(note);
 						if (symbol.type !== 'rest') notesInCurrentBeat.push(note);
 						
@@ -3176,7 +3151,11 @@
           const vex = this.getVexFlowDuration ? this.getVexFlowDuration(sym.duration) : null;
           if (!vex || !vex.duration) continue;
 
-          const note = this.createVexNoteWithOptions(sym, vex);
+          const note = new VF.StaveNote({
+            keys: ['b/4'],
+            duration: vex.duration + (sym.type === 'rest' ? 'r' : ''),
+            clef: 'percussion'
+          });
 		  
 		  if (sym.type === 'note') {
               const globalStepIndex = selectionStartStep + m * 4 * this.stepsPerBeat + stepCounter;
@@ -3184,6 +3163,12 @@
           }
           
           stepCounter += sym.duration;
+
+          if (vex.dot) {
+            if (typeof note.addDotToAll === 'function') note.addDotToAll();
+            else if (typeof note.addDot === 'function') note.addDot(0);
+            else if (VF.Dot && VF.Dot.buildAndAttach) VF.Dot.buildAndAttach([note], { index: 0 });
+          }
 
           notes.push(note);
           if (sym.type !== 'rest') notesInBeat.push(note);
