@@ -1709,11 +1709,21 @@
                 }
 
                 // 節拍器和樂譜高亮邏輯（對所有模式通用）
-                if (this.currentStep % this.stepsPerBeat === 0) {
-                    if (this.metronome.enabled) {
-                        this.triggerMetronome();
-                    }
-                }
+				if (this.metronome.enabled) {
+					if (this.metronome.mode === 'conductor') {
+						// 在指揮模式下，每一格都要檢查指揮軌
+						const conductorTrack = this.tracks[this.tracks.length - 1];
+						if (conductorTrack && conductorTrack.enabled && conductorTrack.steps[this.currentStep]) {
+							// 只有當指揮軌在當前音格有音符時，才觸發燈號
+							this.triggerMetronome();
+						}
+					} else {
+						// 對於'sequential'和'single'模式，維持原本的邏輯，只在每拍開頭觸發
+						if (this.currentStep % this.stepsPerBeat === 0) {
+							this.triggerMetronome();
+						}
+					}
+				}
                 
                 const notationModal = document.getElementById('notationModal');
                 if (notationModal.style.display === 'flex') {
@@ -1790,27 +1800,32 @@
             }
 			
 			triggerMetronome() {
-                const lights = document.querySelectorAll('.metronome-light');
-                if (!lights.length) return;
-                
-                this.playMetronomeSound();
+				const lights = document.querySelectorAll('.metronome-light');
+				if (!lights.length) return;
+				
+				this.playMetronomeSound();
 
-                const beatInMeasure = Math.floor(this.currentStep / this.stepsPerBeat) % 4;
+				lights.forEach(light => light.classList.remove('active'));
 
-                lights.forEach(light => light.classList.remove('active'));
+				// 根據不同模式決定燈號行為
+				if (this.metronome.mode === 'conductor') {
+					// 指揮模式：所有燈一起亮，代表一個指揮動作
+					lights.forEach(light => light.classList.add('active'));
+				} else if (this.metronome.mode === 'sequential') {
+					// 輪播模式：照順序亮燈
+					const beatInMeasure = Math.floor(this.currentStep / this.stepsPerBeat) % 4;
+					if (lights[beatInMeasure]) {
+						lights[beatInMeasure].classList.add('active');
+					}
+				} else { // 'single' 模式
+					// 單一模式：所有燈一起亮
+					lights.forEach(light => light.classList.add('active'));
+				}
 
-                if (this.metronome.mode === 'sequential') {
-                    if (lights[beatInMeasure]) {
-                        lights[beatInMeasure].classList.add('active');
-                    }
-                } else {
-                    lights.forEach(light => light.classList.add('active'));
-                }
-
-                setTimeout(() => {
-                    lights.forEach(light => light.classList.remove('active'));
-                }, 100);
-            }
+				setTimeout(() => {
+					lights.forEach(light => light.classList.remove('active'));
+				}, 100);
+			}
 
 			playMetronomeSound() {
                 if (!this.audioContext || this.metronome.sound === 'none') return;
