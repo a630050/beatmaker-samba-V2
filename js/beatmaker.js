@@ -1310,6 +1310,11 @@
                         modal.style.display = 'none';
 						
                         if (modalId === 'notationModal') {
+							
+							if (this.isPlaying) {
+								this.stop();
+							}
+							this.clearSelection();
                             document.querySelectorAll('.vf-note-playing').forEach(el => el.classList.remove('vf-note-playing'));
                             this.isSingleTrackNotationMode = false; // 需求1-d
                             this.singleTrackNotationIndex = -1;   // 需求1-d
@@ -1320,6 +1325,10 @@
                     if (e.target === modal) {
                         modal.style.display = 'none';
 						 if (modalId === 'notationModal') {
+							if (this.isPlaying) {
+								this.stop();
+							}
+							this.clearSelection(); 
                             document.querySelectorAll('.vf-note-playing').forEach(el => el.classList.remove('vf-note-playing'));
                             this.isSingleTrackNotationMode = false; // 需求1-d
                             this.singleTrackNotationIndex = -1;   // 需求1-d
