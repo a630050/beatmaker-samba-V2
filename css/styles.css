@@ -491,6 +491,8 @@
             position: relative;
             font-size: 10px;
             flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
         .step.active {
@@ -753,6 +755,22 @@
             }
         }
 
+        @media (max-width: 1200px) {
+            .header {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+            
+            .controls {
+                gap: 10px;
+            }
+            
+            .control-row {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+        }
+
         @media (max-width: 1000px) {
             .sequencer {
                 flex-direction: column;
@@ -771,9 +789,346 @@
             }
         }
 
+        /* iPad 平板優化 (768px - 1024px) */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .header {
+                padding: 15px;
+            }
+            
+            .logo {
+                font-size: 28px;
+            }
+            
+            .controls {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            
+            .control-group {
+                margin: 5px;
+            }
+            
+            .btn {
+                padding: 10px 18px;
+                font-size: 14px;
+                min-width: 80px;
+            }
+            
+            .sequencer {
+                padding: 15px;
+            }
+            
+            .tracks-controls {
+                width: 100%;
+                max-height: 300px;
+                margin-bottom: 20px;
+            }
+            
+            .tracks-sequencer {
+                height: 450px;
+            }
+            
+            .step {
+                font-size: 10px;
+            }
+            
+            .control-row {
+                padding: 8px 20px;
+            }
+            
+            .mode-controls, .beat-setting-controls, .expand-controls {
+                gap: 8px;
+            }
+        }
+
+        /* iPhone 橫式優化 (480px - 768px 橫向) */
+        @media (min-width: 480px) and (max-width: 768px) and (orientation: landscape) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 10px;
+                gap: 10px;
+            }
+            
+            .logo {
+                font-size: 24px;
+            }
+            
+            .controls {
+                gap: 8px;
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+            
+            .control-group {
+                margin: 2px;
+            }
+            
+            .btn {
+                padding: 6px 12px;
+                font-size: 12px;
+                min-width: 60px;
+            }
+            
+            .control-row {
+                padding: 6px 15px;
+                gap: 8px;
+            }
+            
+            .mode-btn, .beat-setting-btn {
+                padding: 4px 10px;
+                font-size: 12px;
+            }
+            
+            .sequencer {
+                flex-direction: column;
+                padding: 8px;
+                height: auto;
+            }
+            
+            .tracks-controls {
+                width: 100%;
+                max-height: 250px;
+                margin-bottom: 15px;
+                padding: 6px;
+            }
+            
+            .tracks-sequencer {
+                height: 350px;
+                overflow-x: auto;
+            }
+            
+            .step {
+                font-size: 8px;
+                min-width: 20px;
+                min-height: 20px;
+            }
+            
+            .track-control-item {
+                min-height: 35px;
+                padding: 3px 6px;
+            }
+            
+            .track-number {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+                line-height: 28px;
+            }
+            
+            .drum-select {
+                font-size: 11px;
+                padding: 2px 6px;
+            }
+            
+            .track-control-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 10px;
+            }
+            
+            .bpm-input {
+                width: 50px;
+                font-size: 14px;
+            }
+            
+            .metronome-lights {
+                top: 15px;
+                right: 15px;
+                gap: 8px;
+            }
+            
+            .metronome-light {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
 		@media (max-width: 800px) {
             .step {
                 font-size: 8px;
+            }
+        }
+
+        /* iPhone 直式和小螢幕優化 */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            
+            .header {
+                padding: 8px;
+                gap: 8px;
+            }
+            
+            .logo {
+                font-size: 20px;
+            }
+            
+            .controls {
+                gap: 6px;
+                justify-content: center;
+            }
+            
+            .control-group {
+                margin: 1px;
+            }
+            
+            .btn {
+                padding: 5px 8px;
+                font-size: 11px;
+                min-width: 50px;
+            }
+            
+            .control-row {
+                padding: 5px 10px;
+                gap: 6px;
+                text-align: center;
+            }
+            
+            .mode-btn, .beat-setting-btn {
+                padding: 3px 8px;
+                font-size: 11px;
+            }
+            
+            .sequencer {
+                flex-direction: column;
+                padding: 5px;
+            }
+            
+            .tracks-controls {
+                width: 100%;
+                max-height: 200px;
+                margin-bottom: 10px;
+                padding: 5px;
+            }
+            
+            .tracks-sequencer {
+                height: 300px;
+            }
+            
+            .step {
+                font-size: 7px;
+                min-width: 18px;
+                min-height: 18px;
+            }
+            
+            .track-control-item {
+                min-height: 32px;
+                padding: 2px 4px;
+            }
+            
+            .track-number {
+                width: 24px;
+                height: 24px;
+                font-size: 10px;
+                line-height: 24px;
+            }
+            
+            .drum-select {
+                font-size: 10px;
+                padding: 2px 4px;
+            }
+            
+            .track-control-btn {
+                width: 20px;
+                height: 20px;
+                font-size: 9px;
+            }
+            
+            .bpm-input {
+                width: 45px;
+                font-size: 12px;
+            }
+            
+            .metronome-lights {
+                top: 10px;
+                right: 10px;
+                gap: 6px;
+            }
+            
+            .metronome-light {
+                width: 16px;
+                height: 16px;
+            }
+            
+            .author-credit {
+                font-size: 12px;
+                text-align: center;
+                margin-top: 15px;
+            }
+        }
+
+        /* Modal 在行動裝置上的優化 */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95vw;
+                height: 90vh;
+                margin: 5vh auto;
+            }
+            
+            .modal-header {
+                padding: 10px 15px;
+                flex-wrap: wrap;
+            }
+            
+            .modal-header h3 {
+                font-size: 16px;
+                margin-bottom: 5px;
+            }
+            
+            .notation-controls {
+                margin: 0 10px;
+                font-size: 12px;
+            }
+            
+            .close-btn {
+                font-size: 24px;
+            }
+            
+            #notationModal .modal-content {
+                max-width: 95vw;
+                width: 95vw;
+            }
+            
+            .sound-panel {
+                padding: 15px;
+                height: 90vh;
+            }
+            
+            .sound-controls-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .unified-sound-params {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                gap: 8px;
+            }
+        }
+
+        /* 觸控優化 */
+        @media (hover: none) and (pointer: coarse) {
+            .btn, .mode-btn, .beat-setting-btn, .track-control-btn, .marker-btn, .step {
+                min-height: 44px;
+                touch-action: manipulation;
+            }
+            
+            .step {
+                min-width: 24px;
+                min-height: 24px;
+            }
+            
+            .track-control-btn {
+                min-width: 32px;
+                min-height: 32px;
+            }
+            
+            .btn {
+                min-height: 40px;
+                min-width: 60px;
             }
         }
 
@@ -1300,8 +1655,27 @@
 		}
 		
 		.vf-note-playing * {
-			fill: #00ff88 !important;
-			stroke: #00ff88 !important;
+			fill: #00cc66 !important;
+			stroke: #00cc66 !important;
+		}
+		
+		.vf-note-playing .vf-annotation * {
+			fill: #000 !important;
+			stroke: none !important;
+		}
+		
+		.vf-note-playing {
+			filter: drop-shadow(0 0 3px #00cc66) !important;
+			animation: note-pulse 0.8s ease-in-out infinite alternate !important;
+		}
+		
+		@keyframes note-pulse {
+			0% { 
+				filter: drop-shadow(0 0 3px #00cc66); 
+			}
+			100% { 
+				filter: drop-shadow(0 0 6px #00cc66) drop-shadow(0 0 10px rgba(0, 204, 102, 0.3)); 
+			}
 		}
 
 		#metronomeColorPicker {
