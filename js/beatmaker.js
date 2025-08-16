@@ -74,6 +74,7 @@
                 this.initAudio().then(() => { this.loadDefaultSamples(); });
                 this.initTracks();
                 this.initUI();
+				  this.percussionTest = new PercussionTestModule(this);
 				document.querySelector('.container').classList.toggle('accents-visible', this.showAccents);
 				document.addEventListener('visibilitychange', () => {
 					if (document.visibilityState === 'visible' && this.audioContext && this.audioContext.state === 'suspended') {
@@ -466,6 +467,11 @@
                                 <input type="range" min="1.0" max="2.5" step="0.05" value="${sound.dragTimeStretch}" data-param="dragTimeStretch">
                             </label>
                         </div>
+
+                        <div class="sound-control-buttons" style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+                            <button class="btn btn-small action-btn preview-sound-btn" data-drum="${key}">試聽</button>
+                            <button class="btn btn-small warning reset-sound-btn" data-drum="${key}">重置</button>
+                        </div>
                     </div>
                 `;
             }
@@ -494,14 +500,16 @@
 					).join('');
 
 					controlElement.innerHTML = `
-						<div class="track-number" data-track-index="${trackIndex}">${track.label}</div>
-						<select class="drum-select" data-track="${trackIndex}">${drumOptions}</select>
-						<div class="track-controls">
-							<div class="track-control-btn notation-btn" data-track="${trackIndex}" title="將此軌道轉為樂譜">♫</div>
-							<div class="track-control-btn enable-btn ${track.enabled ? 'active' : ''}" data-track="${trackIndex}" data-type="enable">●</div>
-							<div class="track-control-btn sound-btn ${track.soundEnabled ? 'active' : ''}" data-track="${trackIndex}" data-type="sound">🔊</div>
-							${this.tracks.length > this.minTracks ? `<div class="track-control-btn remove-btn" data-track="${trackIndex}" data-type="remove" title="刪除軌道" style="color:#e74c3c;">✖</div>` : ''}
-						</div>
+					<div class="track-number" data-track-index="${trackIndex}">${track.label}</div>
+					<select class="drum-select" data-track="${trackIndex}">${drumOptions}</select>
+					<div class="track-controls">
+                        <div class="track-control-btn test-btn" data-track="${trackIndex}" title="打擊測試">🥁</div>
+						<div class="track-control-btn notation-btn" data-track="${trackIndex}" title="將此軌道轉為樂譜">♫</div>
+						<div class="track-control-btn enable-btn ${track.enabled ? 'active' : ''}" data-track="${trackIndex}" data-type="enable">●</div>
+						<div class="track-control-btn sound-btn ${track.soundEnabled ? 'active' : ''}" data-track="${trackIndex}" data-type="sound">🔊</div>
+						${this.tracks.length > this.minTracks ? `<div class="track-control-btn remove-btn" data-track="${trackIndex}" data-type="remove" title="刪除軌道" style="color:#e74c3c;">✖</div>` : ''}
+					</div>
+						
 						<div class="volume-control">
 							<input type="range" class="volume-slider" min="0" max="1" step="0.1" value="${track.volume}" data-track="${trackIndex}">
 						</div>
@@ -648,6 +656,12 @@
 
 				const sequencer = document.querySelector('.sequencer');
 				sequencer.addEventListener('click', (e) => {
+					
+					if (e.target.classList.contains('test-btn')) { // <-- START: 新增區塊
+						const trackIndex = parseInt(e.target.dataset.track);
+						this.percussionTest.openTest(trackIndex);
+						return;
+					} 
 					if (e.target.classList.contains('notation-btn')) {
 						const trackIndex = parseInt(e.target.dataset.track);
 						this.convertSingleTrackToNotation(trackIndex);
@@ -744,11 +758,12 @@
 				document.getElementById('notationPlayBtn').addEventListener('click', () => {
 					this.toggleNotationPlayback();
 				});
-
+				
 				document.getElementById('notationPrintBtn').addEventListener('click', () => {
 					this.printNotation();
 				});
-				
+
+
                 this.bindDragAndDropEvents();
 			}
 
@@ -1392,6 +1407,12 @@
                     }
                     if (e.target.classList.contains('remove-sample-btn')) {
                         this.removeSample(drumKey);
+                    }
+                    if (e.target.classList.contains('preview-sound-btn')) {
+                        this.testSound(drumKey);
+                    }
+                    if (e.target.classList.contains('reset-sound-btn')) {
+                        this.resetSingleSound(drumKey);
                     }
                 });
             }
@@ -2400,6 +2421,23 @@
                 const waveformSelect = waveformLabel.querySelector('select');
                 waveformLabel.classList.toggle('disabled', sound.mode !== 'synth');
                 waveformSelect.disabled = sound.mode !== 'synth';
+
+                // 更新所有參數顯示值
+                const paramInputs = itemContainer.querySelectorAll('input[type="range"][data-param]');
+                paramInputs.forEach(input => {
+                    const param = input.dataset.param;
+                    if (sound[param] !== undefined) {
+                        input.value = sound[param];
+                        const display = input.previousElementSibling.querySelector('.param-value-display');
+                        if (display) display.textContent = sound[param];
+                    }
+                });
+
+                // 更新波形選擇器
+                const synthTypeSelect = itemContainer.querySelector('select[data-param="synthType"]');
+                if (synthTypeSelect) {
+                    synthTypeSelect.value = sound.synthType;
+                }
             }
 
             resetSounds() {
@@ -2409,6 +2447,69 @@
                 this.loadDefaultSamples();
 
                 alert('音色已重設。');
+            }
+
+            resetSingleSound(drumKey) {
+                if (!drumKey || !this.drumSounds[drumKey]) return;
+
+                const soundName = this.drumSounds[drumKey].name;
+                if (!window.confirm(`確定要重設 "${soundName}" 音色為預設值嗎？這將會移除匯入的聲音取樣，並將音源模式與參數重設。`)) return;
+
+                // 保存原始的預設值
+                const originalDefaults = this.getOriginalSoundDefaults(drumKey);
+                
+                // 重設音色參數
+                Object.assign(this.drumSounds[drumKey], originalDefaults);
+
+                // 重新載入預設取樣（如果有的話）
+                if (originalDefaults.defaultSampleUrl && this.audioContext) {
+                    this.loadSingleDefaultSample(drumKey);
+                }
+
+                // 更新UI
+                this.updateSoundControlUI(drumKey);
+                
+                alert(`音色 "${soundName}" 已重設為預設值。`);
+            }
+
+            getOriginalSoundDefaults(drumKey) {
+                // 返回每個音色的原始預設值
+                const originalDefaults = {
+                    'surdo1': { name: 'Surdo 1', gain: 1, pan: 0, detune: 0, attack: 0.01, release: 0.8, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 55, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'surdo2': { name: 'Surdo 2', gain: 0.9, pan: 0, detune: 100, attack: 0.01, release: 0.7, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 65, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'surdo3': { name: 'Surdo 3', gain: 0.8, pan: 0, detune: 300, attack: 0.01, release: 0.6, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 75, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Surdo.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'caixa': { name: 'Caixa', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.2, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Caixa.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'caixa-drag': { name: 'Caixa (拖拍)', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 250, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "", dragBounces: 5, dragDuration: 0.15, dragGainDecay: 0.5, dragTimeStretch: 1.4 },
+                    'repinique': { name: 'Repinique', gain: 0.7, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 220, mode: "system", defaultSampleUrl: "https://a630050.github.io/beatmaker-samba-V2/sounds/Repinique.mp3", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'repinique-drag': { name: 'Repinique (拖拍)', gain: 0.6, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 11000, filterQ: 1.2, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "", dragBounces: 6, dragDuration: 0.12, dragGainDecay: 0.6, dragTimeStretch: 1.3 },
+                    'tamborim': { name: 'Tamborim', gain: 0.4, pan: 0, detune: 0, attack: 0.01, release: 0.15, filterFreq: 12000, filterQ: 1, synthType: "square", synthBaseFreq: 400, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'agogo': { name: 'Agogô', gain: 1, pan: 0, detune: 0, attack: 0.001, release: 0.34, filterFreq: 1470, filterQ: 0.1, synthType: "sine", synthBaseFreq: 800, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'pandeiro': { name: 'Pandeiro', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.3, filterFreq: 12000, filterQ: 1, synthType: "triangle", synthBaseFreq: 300, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" },
+                    'cuica': { name: 'Cuíca', gain: 0.5, pan: 0, detune: 0, attack: 0.01, release: 0.4, filterFreq: 12000, filterQ: 1, synthType: "sawtooth", synthBaseFreq: 180, mode: "synth", defaultSampleUrl: "", defaultSampleBuffer: null, isLoadingDefault: false, userSampleBuffer: null, userSampleFileName: "" }
+                };
+
+                return originalDefaults[drumKey] || this.getDefaultSoundParams();
+            }
+
+            async loadSingleDefaultSample(drumKey) {
+                const sound = this.drumSounds[drumKey];
+                if (!sound.defaultSampleUrl || !this.audioContext) return;
+
+                sound.isLoadingDefault = true;
+                this.updateSoundControlUI(drumKey);
+
+                const buffer = await this.audioCache.getSample(sound.defaultSampleUrl, this.audioContext);
+
+                if (buffer) {
+                    sound.defaultSampleBuffer = buffer;
+                    sound.mode = 'system';
+                } else {
+                    sound.defaultSampleBuffer = null;
+                    sound.mode = 'synth';
+                }
+                
+                sound.isLoadingDefault = false;
+                this.updateSoundControlUI(drumKey);
             }
 
 
