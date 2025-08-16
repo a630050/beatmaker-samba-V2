@@ -219,6 +219,7 @@
 					<h3>鼓譜轉換結果</h3>
 					<div class="notation-controls">
 						<button class="btn" id="notationPlayBtn">▶ 播放</button>
+						<button class="btn" id="notationPrintBtn">🖨 列印</button>
 						<input type="checkbox" id="showBeatHintCheckbox" class="checkbox" checked>
 						<label for="showBeatHintCheckbox">拍號提示</label>
 					</div>
@@ -305,8 +306,75 @@
             </div>
         </div>
     </div>
-
+	
+	<script src="js/percussion-test.js" defer></script>
 	<script src="js/beatmaker.js" defer></script>
+	
+	<!-- ====================================================== -->
+	<!-- START: 打擊測試模組 (Percussion Test Module) Modal    -->
+	<!-- ====================================================== -->
+	<div id="testModal" class="modal-overlay">
+		<div class="modal-content test-modal-content">
+			<div class="modal-header">
+				<h3 id="testModalTitle">打擊音軌測試</h3>
+				<div class="test-controls">
+					<input type="checkbox" id="highPrecisionToggle" class="checkbox">
+					<label for="highPrecisionToggle">開啓高精度測試</label>
+				</div>
+				<button id="closeTestModal" class="close-btn">&times;</button>
+			</div>
+			<div class="modal-body test-modal-body">
+				<div class="test-grid-container">
+					<h4>目標音格</h4>
+					<div class="test-grid-wrapper">
+						<div class="prep-grid">
+							<div class="test-cell prep-cell">預</div>
+							<div class="test-cell prep-cell">備</div>
+							<div class="test-cell prep-cell">拍</div>
+							<div class="test-cell prep-cell">點</div>
+						</div>
+						<div id="targetGrid" class="test-grid"></div>
+					</div>
+				</div>
+				<div class="test-grid-container">
+					<h4>記錄音格</h4>
+					<div class="test-grid-wrapper">
+						 <div class="prep-grid">
+							<div class="test-cell"></div>
+							<div class="test-cell"></div>
+							<div class="test-cell"></div>
+							<div class="test-cell"></div>
+						</div>
+						<div id="recordGrid" class="test-grid"></div>
+					</div>
+				</div>
 
+				<div id="testStatus" class="test-status-display">請點擊下方按鈕開始</div>
+
+				<div class="test-results">
+					<div id="scoreDisplay" class="score-display">--</div>
+					<div class="deviation-summary">
+						<p>精準: <span id="perfectCount">0</span></p>
+						<p>過早: <span id="earlyCount">0</span></p>
+						<p>過晚: <span id="lateCount">0</span></p>
+						<p>失誤: <span id="missedCount">0</span></p>
+						<p>左右手: <span id="handAccuracyDisplay">--%</span></p>
+					</div>
+				</div>
+
+			</div>
+			<div class="modal-footer test-modal-footer">
+				<div class="footer-placeholder"></div> <!-- 這個 div 是空的，只用來佔位 -->
+				<div> 
+					<button id="stopTestBtn" class="btn btn-danger" style="display: none;">停止測試</button>
+					<button id="startTestBtn" class="btn btn-special">點擊開始測試</button>
+					<button id="repeatTestBtn" class="btn btn-info" style="display: none;">再次測試</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- ====================================================== -->
+	<!-- END: 打擊測試模組 (Percussion Test Module) Modal      -->
+	<!-- ====================================================== -->
 </body>
 </html>
