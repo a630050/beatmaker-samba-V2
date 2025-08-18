@@ -1970,6 +1970,67 @@
 			color: rgba(0,0,0,0.7);
 			font-size: 14px;
 		}
+		
+		.test-modal-footer {
+			justify-content: space-between; /* 確保 L/R 按鈕在兩端 */
+			align-items: center;
+		}
+
+		.footer-center-controls {
+			display: flex;
+			gap: 10px;
+			justify-content: center;
+		}
+
+		.hand-btn {
+			width: 60px;
+			height: 60px;
+			font-size: 24px;
+			font-weight: bold;
+			border-radius: 50%; /* 圓形按鈕，更適合點擊 */
+			background: linear-gradient(135deg, #33aaff 0%, #0088cc 100%);
+		}
+		
+		.hand-btn:hover:not(:disabled) {
+			box-shadow: 0 5px 15px rgba(51, 170, 255, 0.4);
+		}
+		
+		/* 移除舊的佔位規則 (如果有的話) */
+		.test-modal-footer .footer-placeholder {
+			display: none;
+		}
+		
+		/* 確保 test-cell 可以容納絕對定位的子元素 */
+		.test-cell {
+			position: relative;
+			overflow: hidden; /* 防止指示器溢出格子 */
+		}
+
+		/* 偏移指示器的樣式 */
+		.deviation-indicator {
+			position: absolute;
+			top: 5%;
+			bottom: 5%;
+			width: 3px; /* 指示器的寬度 */
+			background-color: rgba(0, 0, 0, 0.4); /* 預設為深色，與背景形成對比 */
+			border-radius: 2px;
+			transform: translateX(-50%); /* 讓 left 屬性代表其中央位置 */
+			transition: left 0.1s ease-out;
+			box-shadow: 0 0 2px white;
+		}
+
+		/* 當左右手錯誤時，讓偏移指示器也變色以增強提示 */
+		.deviation-indicator.wrong-hand {
+			background-color: #ff4d4d; /* 紅色 */
+			box-shadow: 0 0 4px #ff4d4d;
+		}
+
+		/* 調整手指標記的位置，避免與偏移指示器重疊 */
+		.test-cell .hand-indicator {
+			z-index: 1; /* 確保在指示器上方 */
+			font-size: 16px;
+			font-weight: bold;
+		}
 		/* ====================================================== */
 		/* END: Percussion Test Module Styles                     */
 		/* ====================================================== */
