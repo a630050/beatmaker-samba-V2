@@ -9,9 +9,12 @@ class PercussionTestModule {
         this.playbackInterval = null;
         this.currentPlaybackStep = 0;
         this.isHighPrecision = false;
-        // this.isExpandedView = false; // 已移除
         this.previousResult = null;
-        this.HIT_OFFSET_MS = -50;
+        this.HIT_OFFSET_MS = -100;
+
+        // 視覺吸附的寬容度 (毫秒)。
+        // 將在 prepareTestData 中根據 BPM 動態設定。
+        this.HIT_VISUAL_TOLERANCE_MS = 0; 
 
         this.dom = {
             modal: document.getElementById('testModal'),
@@ -27,13 +30,14 @@ class PercussionTestModule {
             scoreDisplay: document.getElementById('scoreDisplay'),
             statusDisplay: document.getElementById('testStatus'),
             highPrecisionToggle: document.getElementById('highPrecisionToggle'),
-            // expandToggleBtn: document.getElementById('expandToggleBtn'), // 已移除
-            // expandBtnText: document.getElementById('expandBtnText'),       // 已移除
             perfectCount: document.getElementById('perfectCount'),
             earlyCount: document.getElementById('earlyCount'),
             lateCount: document.getElementById('lateCount'),
             missedCount: document.getElementById('missedCount'),
             handAccuracyDisplay: document.getElementById('handAccuracyDisplay'),
+            leftHandBtn: document.getElementById('leftHandBtn'),
+            rightHandBtn: document.getElementById('rightHandBtn'),
+            recordCells: [], 
         };
         
         this.bindEvents();
@@ -47,11 +51,13 @@ class PercussionTestModule {
         this.dom.startBtn.addEventListener('click', () => this.startTest());
         this.dom.repeatBtn.addEventListener('click', () => this.startTest(true));
         this.dom.stopBtn.addEventListener('click', () => this.stopTest());
+        
+        this.dom.leftHandBtn.addEventListener('click', () => this.registerHit('L'));
+        this.dom.rightHandBtn.addEventListener('click', () => this.registerHit('R'));
 
         this.dom.highPrecisionToggle.addEventListener('change', (e) => {
             this.isHighPrecision = e.target.checked;
             this.renderGrids();
-            // 如果結果已經顯示，則立即用新精度重繪結果
             if (this.testData.results) {
                 this.visualizeResults(this.testData.results);
             }
@@ -104,6 +110,9 @@ class PercussionTestModule {
         this.dom.startBtn.disabled = false;
         this.dom.repeatBtn.style.display = 'none';
         this.dom.stopBtn.style.display = 'none';
+        this.dom.leftHandBtn.style.visibility = 'hidden';
+        this.dom.rightHandBtn.style.visibility = 'hidden';
+        
         this.dom.scoreDisplay.textContent = '--';
         this.dom.statusDisplay.innerHTML = '使用 <kbd>Z</kbd> (左手) 和 <kbd>/</kbd> (右手) 進行打擊<br>請點擊下方按鈕開始';
         this.dom.perfectCount.textContent = '0';
@@ -138,6 +147,9 @@ class PercussionTestModule {
                 });
             }
         });
+        
+        // 將視覺寬容度設定為半個 "step" 的長度 (即一個 micro step)。
+        this.HIT_VISUAL_TOLERANCE_MS = microStepDuration;
 
         this.testData = {
             track,
@@ -189,6 +201,8 @@ class PercussionTestModule {
             recordCell.dataset.index = i;
             this.dom.recordGrid.appendChild(recordCell);
         }
+        
+        this.dom.recordCells = Array.from(this.dom.recordGrid.children);
     }
 
     startTest(isRepeat = false) {
@@ -203,6 +217,9 @@ class PercussionTestModule {
         this.userHits = [];
         this.dom.startBtn.style.display = 'none';
         this.dom.stopBtn.style.display = 'inline-block';
+        this.dom.leftHandBtn.style.visibility = 'visible';
+        this.dom.rightHandBtn.style.visibility = 'visible';
+        
         this.dom.statusDisplay.textContent = '準備...';
 
         const prepCells = this.dom.modal.querySelectorAll('.prep-cell');
@@ -262,6 +279,27 @@ class PercussionTestModule {
         document.addEventListener('keydown', this.boundHandleKeyDown);
     }
 
+	registerHit(hand) {
+        if (this.testStartTime === 0) return;
+
+        const hitTime = performance.now();
+        
+        if (hitTime < this.testStartTime) {
+            this.dom.statusDisplay.textContent = '請在預備拍結束後敲擊！';
+            setTimeout(() => this.dom.statusDisplay.textContent = '進行中...', 1000);
+            return;
+        }
+
+        // const track = this.testData.track; // 這行也可以移除了
+        // this.beatmaker.playSound(track.drumType, true, track.volume); // 將播放聲音的程式碼移除
+        
+        const elapsedTime = (hitTime - this.testStartTime) + this.HIT_OFFSET_MS;
+        const hitData = { time: elapsedTime, hand: hand };
+        this.userHits.push(hitData);
+        
+        requestAnimationFrame(() => this.visualizeSingleHit(hitData));
+    }
+
     handleKeyDown(e) {
         if (e.repeat) return;
         let hand = null;
@@ -270,17 +308,7 @@ class PercussionTestModule {
 
         if (hand) {
             e.preventDefault();
-            const hitTime = performance.now();
-            if (hitTime < this.testStartTime) {
-                this.dom.statusDisplay.textContent = '請在預備拍結束後敲擊！';
-                setTimeout(() => this.dom.statusDisplay.textContent = '進行中...', 1000);
-                return;
-            }
-            
-            const elapsedTime = (hitTime - this.testStartTime) + this.HIT_OFFSET_MS;
-            const hitData = { time: elapsedTime, hand: hand };
-            this.userHits.push(hitData);
-            this.visualizeSingleHit(hitData);
+            this.registerHit(hand);
         }
     }
 
@@ -334,53 +362,83 @@ class PercussionTestModule {
         this.dom.startBtn.style.display = 'none';
         this.dom.repeatBtn.style.display = 'inline-block';
         this.dom.stopBtn.style.display = 'none';
+        this.dom.leftHandBtn.style.visibility = 'hidden';
+        this.dom.rightHandBtn.style.visibility = 'hidden';
         this.dom.statusDisplay.textContent = '測試完成！';
     }
 
-    visualizeSingleHit(hitData) {
+    drawHitMarker(cell, hitData, targetData) {
+        cell.innerHTML = '';
+        cell.className = 'test-cell';
+
         const microStep = this.testData.microStepDuration;
-        const currentPrecision = this.isHighPrecision ? 8 : 4;
+        const stepDuration = microStep * 2;
+        const delta = hitData.time - targetData.time;
+        const deviationRatio = Math.abs(delta) / stepDuration;
+
+        let hitClass = 'hit-bad';
+        if (deviationRatio < 0.25) hitClass = 'hit-perfect';
+        else if (deviationRatio < 0.5) hitClass = 'hit-ok';
         
-        const hitStepIndex = Math.round(hitData.time / (this.isHighPrecision ? microStep : microStep * 2));
+        const handCorrect = !targetData.hand || targetData.hand === hitData.hand;
+
+        cell.classList.add(hitClass);
+
+        const deviationIndicator = document.createElement('div');
+        deviationIndicator.className = 'deviation-indicator';
+        if (!handCorrect) {
+            deviationIndicator.classList.add('wrong-hand');
+        }
         
-        const displayIndex = hitStepIndex;
+        let offsetPercent = (delta / stepDuration) * 100;
+        offsetPercent = Math.max(-45, Math.min(45, offsetPercent));
+        deviationIndicator.style.left = `calc(50% + ${offsetPercent}%)`;
+        cell.appendChild(deviationIndicator);
         
-        const cell = this.dom.recordGrid.querySelector(`.test-cell[data-index="${displayIndex}"]`);
-        
+        const handSpan = document.createElement('span');
+        handSpan.className = 'hand-indicator';
+        handSpan.textContent = hitData.hand;
+        if (!handCorrect) {
+            handSpan.classList.add('wrong');
+        }
+        cell.appendChild(handSpan);
+    }
+    
+    drawExtraHitMarker(hitData) {
+        const microStep = this.testData.microStepDuration;
+        const stepIndex = Math.round(hitData.time / (this.isHighPrecision ? microStep : microStep * 2));
+        const cell = this.dom.recordCells[stepIndex];
         if (cell) {
-            cell.innerHTML = ''; 
+            cell.innerHTML = '';
             cell.className = 'test-cell';
-            
-            let closestTarget = null;
-            let minDiff = Infinity;
-            this.testData.targetHits.forEach(target => {
-                const diff = Math.abs(hitData.time - target.time);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestTarget = target;
-                }
-            });
-
-            let hitClass = 'hit-extra';
-            let handCorrect = true;
-            
-            if (closestTarget && minDiff < microStep * 2) {
-                const deviationRatio = minDiff / (microStep * 2);
-                if (deviationRatio < 0.25) hitClass = 'hit-perfect';
-                else if (deviationRatio < 0.5) hitClass = 'hit-ok';
-                else hitClass = 'hit-bad';
-
-                if(closestTarget.hand && closestTarget.hand !== hitData.hand) {
-                    handCorrect = false;
-                }
-            }
-            
-            cell.classList.add(hitClass);
+            cell.classList.add('hit-extra');
             const handSpan = document.createElement('span');
             handSpan.className = 'hand-indicator';
             handSpan.textContent = hitData.hand;
-            if (!handCorrect) handSpan.classList.add('wrong');
             cell.appendChild(handSpan);
+        }
+    }
+
+    visualizeSingleHit(hitData) {
+        let closestTarget = null;
+        let minDiff = Infinity;
+        this.testData.targetHits.forEach(target => {
+            const diff = Math.abs(hitData.time - target.time);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestTarget = target;
+            }
+        });
+
+        if (closestTarget && minDiff < this.HIT_VISUAL_TOLERANCE_MS) {
+            const microStep = this.testData.microStepDuration;
+            const targetStepIndex = Math.round(closestTarget.time / (this.isHighPrecision ? microStep : microStep * 2));
+            const cell = this.dom.recordCells[targetStepIndex];
+            if (cell) {
+                this.drawHitMarker(cell, hitData, closestTarget);
+            }
+        } else {
+            this.drawExtraHitMarker(hitData);
         }
     }
 
@@ -391,52 +449,27 @@ class PercussionTestModule {
         
         let totalScore = 0, perfect = 0, early = 0, late = 0, handCorrectCount = 0;
         const microStep = this.testData.microStepDuration;
-        const currentPrecision = this.isHighPrecision ? 8 : 4;
 
         results.matched.forEach(result => {
             totalScore += result.score;
             if (result.hitTime === undefined) return;
             
             const deviationRatio = Math.abs(result.delta) / (microStep * 2);
-            
-            let hitClass = 'hit-bad';
-            if (deviationRatio < 0.25) { hitClass = 'hit-perfect'; perfect++; }
-            else if (deviationRatio < 0.5) { hitClass = 'hit-ok'; }
-
+            if (deviationRatio < 0.25) perfect++;
             if (result.delta < -microStep/4) early++; else if (result.delta > microStep/4) late++;
-
-            const hitStepIndex = Math.round(result.hitTime / (this.isHighPrecision ? microStep : microStep * 2));
-            
-            const displayIndex = hitStepIndex;
-            const cell = this.dom.recordGrid.querySelector(`.test-cell[data-index="${displayIndex}"]`);
-            
-            if(cell) {
-                cell.innerHTML = '';
-                cell.className = 'test-cell';
-                cell.classList.add(hitClass);
-                const handSpan = document.createElement('span');
-                handSpan.className = 'hand-indicator';
-                handSpan.textContent = result.hitHand;
-                if (!result.handCorrect) handSpan.classList.add('wrong');
-                cell.appendChild(handSpan);
-            }
-            
             if(result.handCorrect) handCorrectCount++;
+            
+            const targetStepIndex = Math.round(result.targetTime / (this.isHighPrecision ? microStep : microStep * 2));
+            const cell = this.dom.recordCells[targetStepIndex];
+            if (cell) {
+                const hitData = { time: result.hitTime, hand: result.hitHand };
+                const targetData = { time: result.targetTime, hand: result.targetHand };
+                this.drawHitMarker(cell, hitData, targetData);
+            }
         });
         
         results.extra.forEach(extra => {
-             const hitStepIndex = Math.round(extra.hitTime / (this.isHighPrecision ? microStep : microStep * 2));
-             const displayIndex = hitStepIndex;
-             const cell = this.dom.recordGrid.querySelector(`.test-cell[data-index="${displayIndex}"]`);
-             if (cell) {
-                cell.innerHTML = '';
-                cell.className = 'test-cell';
-                cell.classList.add('hit-extra');
-                const handSpan = document.createElement('span');
-                handSpan.className = 'hand-indicator';
-                handSpan.textContent = extra.hitHand;
-                cell.appendChild(handSpan);
-             }
+             this.drawExtraHitMarker(extra);
         });
 
         const avgScore = results.matched.length > 0 ? (totalScore / results.matched.length) : 0;
