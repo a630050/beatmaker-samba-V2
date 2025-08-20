@@ -1,4 +1,4 @@
-       const NOTE_NAMES = {
+     const NOTE_NAMES = {
 			12: "附點4分", 8: "4分", 6: "附點8分", 4: "8分",
 			3: "附點16分", 2: "16分", 1: "32分"
 		};
@@ -53,6 +53,7 @@
                 this.historyIndex = -1;
                 this.maxHistory = 20;
 				this.lastNotationRenderArgs = null;
+				this.notationMarkerMode = 'lr'; // 新增：單軌轉譜記號模式（'lr' 或 'accent'）
 				this.soundTestCanPlay = true;
 				this.isSingleTrackNotationMode = false; // 需求1-a
                 this.singleTrackNotationIndex = -1;   // 需求1-a
@@ -3093,15 +3094,61 @@
 				return { valid: true };
 			}	
 
+            // 新增：依最後一次參數重繪樂譜
+            rerenderLastNotation() {
+                const info = this.lastNotationRenderArgs;
+                if (!info) return;
+                if (info.type === 'single') {
+                    this.convertRangeToNotation(...info.args);
+                } else if (info.type === 'stacked') {
+                    this.convertRangeToNotationStacked(...info.args);
+                }
+            }
 
 			convertRangeToNotation(startTrack, endTrack, startStep, endStep) {
                 this.lastNotationRenderArgs = { type: 'single', args: [startTrack, endTrack, startStep, endStep] };
                 const showHints = document.getElementById('showBeatHintCheckbox').checked;
-                const showHandHints = true; // 單軌轉譜保留左右手標記功能
+                const markerMode = this.notationMarkerMode; // 'lr' or 'accent'
 
                 try {
                     const notationContent = document.getElementById('notationContent');
                     notationContent.innerHTML = '';
+
+			// 新增：建立風格一致的「左右 / 強弱」切換鈕 (只建立一次)
+			const header = document.querySelector('#notationModal .notation-controls');
+			if (header && !document.getElementById('notationMarkerToggle')) {
+				const wrap = document.createElement('div');
+				wrap.id = 'notationMarkerToggle';
+				// 復用主介面的 class 來確保樣式一致
+				wrap.className = 'beat-setting-controls';
+				wrap.style.marginLeft = '15px'; // 添加一些左邊距
+
+				wrap.innerHTML = `
+					<span class="beat-setting-label">記號顯示:</span>
+					<button class="beat-setting-btn ${this.notationMarkerMode === 'lr' ? 'active' : ''}" data-mode="lr">左右</button>
+					<button class="beat-setting-btn ${this.notationMarkerMode === 'accent' ? 'active' : ''}" data-mode="accent">強弱</button>
+				`;
+
+				// 插入到「列印」按鈕之後，「拍號提示」之前
+				header.insertBefore(wrap, header.querySelector('#showBeatHintCheckbox'));
+
+				wrap.querySelectorAll('.beat-setting-btn').forEach(btn => {
+					btn.addEventListener('click', (e) => {
+						const clickedBtn = e.currentTarget;
+						if (clickedBtn.classList.contains('active')) return; // 如果已啟用則不動作
+
+						this.notationMarkerMode = clickedBtn.dataset.mode;
+
+						// 更新按鈕的啟用狀態
+						wrap.querySelectorAll('.beat-setting-btn').forEach(b => b.classList.remove('active'));
+						clickedBtn.classList.add('active');
+
+						// 根據新模式重繪樂譜
+						this.rerenderLastNotation();
+					});
+				});
+			}
+
 
                     for (let t = startTrack; t <= endTrack; t++) {
                         const track = this.tracks[t];
@@ -3122,7 +3169,7 @@
                         const trackMarkers = track.markers.slice(startStep, endStep + 1);
                         const measures = this.parseTrackToMeasures(trackSteps, trackMarkers);
                         
-                        this.renderMeasuresWithVexFlow(vexflowContainer, measures, showHints, showHandHints, startStep, t, trackMarkers);
+                        this.renderMeasuresWithVexFlow(vexflowContainer, measures, showHints, markerMode, startStep, t, trackMarkers);
                     }
                     
                     document.getElementById('notationModal').style.display = 'flex';
@@ -3238,7 +3285,7 @@
 				return { duration: durationMap[totalValue] || "q", dot: false };
 			}
 
-			renderMeasuresWithVexFlow(container, measures, showHints, showHandHints, selectionStartStep = 0, trackIndex = 0, trackMarkers = []) {
+			renderMeasuresWithVexFlow(container, measures, showHints, markerMode, selectionStartStep = 0, trackIndex = 0, trackMarkers = []) {
 				const VF = Vex.Flow;
 				container.innerHTML = '';
 
@@ -3278,14 +3325,27 @@
 
 						const note = new VF.StaveNote({ keys: ["b/4"], duration: vexData.duration + (symbol.type === 'rest' ? 'r' : ''), clef: "percussion" });
 
-                        if(symbol.type === 'note') {
+                        // 修改：依「左右 / 強弱」模式選擇顯示哪一種
+                        if (symbol.type === 'note') {
                             const globalStepIndex = selectionStartStep + measureStartStep + stepCounter;
-                            
-                            // 需求(C)-2: 添加左右手標記
-                            if (showHandHints && symbol.marker && symbol.marker.hand) {
-                                note.addModifier(new VF.Annotation(symbol.marker.hand).setFont('Arial', 10).setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM), 0);
+
+                            if (markerMode === 'lr' && symbol.marker && symbol.marker.hand) {
+                                note.addModifier(
+                                new VF.Annotation(symbol.marker.hand)
+                                    .setFont('Arial', 10)
+                                    .setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM),
+                                0
+                                );
+                            } else if (markerMode === 'accent' && symbol.marker && symbol.marker.accent) {
+                                note.addModifier(
+                                new VF.Annotation(symbol.marker.accent) // '>' 或 '()'
+                                    .setFont('Arial', 10)
+                                    .setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM),
+                                0
+                                );
                             }
 
+                            // 維持既有：給 SVG note 標上 track/step 方便播放高亮
                             setTimeout(() => {
                                 let noteElement = (note.attrs && note.attrs.el) || (note.getSVGElement && note.getSVGElement());
                                 if (noteElement) {
@@ -3675,4 +3735,3 @@
     renderer.resize(canvasWidth, totalHeight);
   };
 })();
-// === End: Multi-Track Wrap (no horizontal scroll) Patch ===
