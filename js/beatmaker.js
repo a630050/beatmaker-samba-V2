@@ -1685,7 +1685,7 @@
                             const marker = track.markers[this.currentStep] || {};
                             let volumeMultiplier = 1.0;
                             if (marker.accent === '>') volumeMultiplier = this.accentVolumeMultiplier;
-                            else if (marker.accent === '()') volumeMultiplier = this.ghostVolumeMultiplier;
+                            else if (marker.accent === '•') volumeMultiplier = this.ghostVolumeMultiplier;
                             this.playSound(track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
                         }
                     }
@@ -1702,7 +1702,7 @@
                         const marker = track.markers[this.currentStep] || {};
                         let volumeMultiplier = 1.0;
                         if (marker.accent === '>') volumeMultiplier = this.accentVolumeMultiplier;
-                        else if (marker.accent === '()') volumeMultiplier = this.ghostVolumeMultiplier;
+                        else if (marker.accent === '•') volumeMultiplier = this.ghostVolumeMultiplier;
                         this.playSound(track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
                     }
                 } else if (this.mode === 'ensemble') { // 原本的合奏邏輯
@@ -1713,7 +1713,7 @@
                             const marker = track.markers[this.currentStep] || {};
                             let volumeMultiplier = 1.0;
                             if (marker.accent === '>') volumeMultiplier = this.accentVolumeMultiplier;
-                            else if (marker.accent === '()') volumeMultiplier = this.ghostVolumeMultiplier;
+                            else if (marker.accent === '•') volumeMultiplier = this.ghostVolumeMultiplier;
                             this.playSound(track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
                         }
                     });
@@ -1725,7 +1725,7 @@
 						const marker = track.markers[this.currentStep] || {};
 						let volumeMultiplier = 1.0;
 						if (marker.accent === '>') volumeMultiplier =  this.accentVolumeMultiplier;
-						else if (marker.accent === '()') volumeMultiplier = this.ghostVolumeMultiplier;
+						else if (marker.accent === '•') volumeMultiplier = this.ghostVolumeMultiplier;
 						this.playSound(track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
                     }
                 }
@@ -1953,7 +1953,7 @@
 
                         if (this.colorHintMode === 'lr' && marker.hand === 'L') {
                             shouldDim = true;
-                        } else if (this.colorHintMode === 'accent' && marker.accent === '()') {
+                        } else if (this.colorHintMode === 'accent' && marker.accent === '•') {
                             shouldDim = true;
                         }
 
@@ -2626,6 +2626,13 @@
 								if (typeof m === 'string') {
 									return m ? { hand: m } : {};
 								}
+								
+								// --- START: 新增的相容性轉換邏輯 ---
+								if (m && m.accent === '()') {
+									m.accent = '•';
+								}
+								// --- END: 新增的相容性轉換邏輯 ---
+
 								return m || {};
 							});
 						}
@@ -2744,7 +2751,7 @@
 										let volumeMultiplier = 1.0;
 										if (marker.accent === '>') {
 											volumeMultiplier = this.accentVolumeMultiplier;
-										} else if (marker.accent === '()') {
+										} else if (marker.accent === '•') {
 											volumeMultiplier = this.ghostVolumeMultiplier;
 										}
 										this.scheduleSound(offlineContext, time, track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
@@ -2763,7 +2770,7 @@
                                         let volumeMultiplier = 1.0;
                                         if (marker.accent === '>') {
                                             volumeMultiplier = this.accentVolumeMultiplier;
-                                        } else if (marker.accent === '()') {
+                                        } else if (marker.accent === '•') {
                                             volumeMultiplier = this.ghostVolumeMultiplier;
                                         }
                                         this.scheduleSound(offlineContext, time, track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
@@ -2983,8 +2990,8 @@
 								case 'r': buttonSelector = '.marker-btn[data-marker="R"]'; break;
                                 case 'l': buttonSelector = '.marker-btn[data-marker="L"]'; break;
                                 case 'x': buttonSelector = '.marker-btn[data-marker="eraser"]'; break;
-                                case '.': buttonSelector = '.marker-btn[data-marker="accent"][data-value=">"]'; break;
-                                case 'o': buttonSelector = '.marker-btn[data-marker="accent"][data-value="()"]'; break;
+                                case '>': buttonSelector = '.marker-btn[data-marker="accent"][data-value=">"]'; break;
+                                case '.': buttonSelector = '.marker-btn[data-marker="accent"][data-value="•"]'; break;
 							}
                             if (buttonSelector) {
                                 e.preventDefault();
@@ -3338,7 +3345,7 @@
                                 );
                             } else if (markerMode === 'accent' && symbol.marker && symbol.marker.accent) {
                                 note.addModifier(
-                                new VF.Annotation(symbol.marker.accent) // '>' 或 '()'
+                                new VF.Annotation(symbol.marker.accent) // '>' 或 '•'
                                     .setFont('Arial', 10)
                                     .setVerticalJustification(VF.Annotation.VerticalJustify.BOTTOM),
                                 0
