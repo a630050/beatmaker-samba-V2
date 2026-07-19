@@ -934,9 +934,11 @@
                 font-size: 14px;
             }
             
-            .metronome-lights {
+            #metronomeDisplayWrapper {
                 top: 15px;
                 right: 15px;
+            }
+            .metronome-lights {
                 gap: 8px;
             }
             
@@ -1043,9 +1045,11 @@
                 font-size: 12px;
             }
             
-            .metronome-lights {
+            #metronomeDisplayWrapper {
                 top: 10px;
                 right: 10px;
+            }
+            .metronome-lights {
                 gap: 6px;
             }
             
@@ -1584,12 +1588,14 @@
 		.step.active.step-dimmed {
 				opacity: 0.65;
 		}
-		.metronome-lights {
-			display: flex;
-			gap: 12px;
+		#metronomeDisplayWrapper {
 			position: absolute;
 			top: 30px;
 			right: 30px;
+		}
+		.metronome-lights {
+			display: flex;
+			gap: 12px;
 		}
 
 		.metronome-light {
@@ -2039,3 +2045,84 @@
 #notationModal .modal-content { width: min(96vw, 1280px); }
 #notationModal .modal-body { overflow-x: hidden !important; overflow-y: auto !important; }
 #notationModal .vexflow-container svg { max-width: 100%; height: auto; display: block; }
+
+/* ====================================================== */
+/* START: Footprint Indicator Styles                      */
+/* ====================================================== */
+#metronomeDisplayWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.footprint-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px; /* spacing within a pair */
+    height: 70px;
+    padding: 0 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    border: 1px solid #444;
+}
+.foot-icon.right-inner {
+    margin-right: 30px; /* spacing between the two pairs */
+}
+.foot-icon {
+    position: relative;
+    width: 22px;
+    height: 48px;
+    border: 2px solid #666;
+    background: transparent;
+    transition: all 0.1s;
+    overflow: hidden; /* For the heel line */
+}
+
+/* Left foot shape (big toe on the right) */
+.foot-icon.left-outer, .foot-icon.left-inner {
+    border-radius: 40% 60% 30% 30% / 50% 70% 40% 40%;
+}
+
+/* Right foot shape (big toe on the left) */
+.foot-icon.right-outer, .foot-icon.right-inner {
+    border-radius: 60% 40% 30% 30% / 70% 50% 40% 40%;
+}
+
+/* The heel cut-out line */
+.foot-icon::after {
+    content: '';
+    position: absolute;
+    bottom: 10px;
+    left: -4px;
+    right: -4px;
+    height: 4px;
+    background: #1a1a1a;
+    border-top: 2px solid #666;
+}
+
+/* Outer feet are HIGH, Inner feet are LOW */
+/* Left pair points slightly left, Right pair points slightly right */
+.foot-icon.left-outer {
+    transform: translateY(-6px) rotate(-5deg);
+}
+.foot-icon.right-inner {
+    transform: translateY(6px) rotate(-5deg);
+}
+.foot-icon.left-inner {
+    transform: translateY(6px) rotate(5deg);
+}
+.foot-icon.right-outer {
+    transform: translateY(-6px) rotate(5deg);
+}
+
+.foot-icon.active {
+    background: var(--metronome-light-color, #00ff88);
+    border-color: var(--metronome-light-color, #00ff88);
+    box-shadow: 0 0 8px var(--metronome-light-color, #00ff88);
+}
+.foot-icon.active::after {
+    border-top-color: #1a1a1a; /* Hide the border line when filled, leaving the background cutout */
+}
+/* ====================================================== */
+/* END: Footprint Indicator Styles                        */
+/* ====================================================== */

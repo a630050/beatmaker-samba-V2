@@ -16,12 +16,20 @@
 		<div class="header">
 			<div class="logo">🎵 Samba Beatmaker</div>
 			
-			<div class="metronome-lights" id="metronomeLightsContainer">
-                <div class="metronome-light"></div>
-                <div class="metronome-light"></div>
-                <div class="metronome-light"></div>
-                <div class="metronome-light"></div>
-            </div>
+			<div id="metronomeDisplayWrapper">
+				<div class="metronome-lights" id="metronomeLightsContainer">
+					<div class="metronome-light"></div>
+					<div class="metronome-light"></div>
+					<div class="metronome-light"></div>
+					<div class="metronome-light"></div>
+				</div>
+				<div class="footprint-indicator" id="footprintIndicatorContainer" style="display: none;">
+					<div class="foot-icon left-outer"></div>
+					<div class="foot-icon right-inner"></div>
+					<div class="foot-icon left-inner"></div>
+					<div class="foot-icon right-outer"></div>
+				</div>
+			</div>
 			
 			<div class="controls">
 
@@ -250,6 +258,20 @@
                             <label>
                                 <input type="radio" name="metronome-enabled" value="false">
                                 <span>不啟用</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="metronome-setting-group">
+                        <h4 class="setting-title">顯示樣式</h4>
+                        <div class="sound-mode-selector" style="border: none; padding: 0; margin-bottom: 0;">
+                            <label>
+                                <input type="radio" name="metronome-visual" value="classic" checked>
+                                <span>經典燈號</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="metronome-visual" value="footprints">
+                                <span>步伐指示</span>
                             </label>
                         </div>
                     </div>

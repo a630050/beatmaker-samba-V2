@@ -62,6 +62,7 @@
 				this.metronome = {
                     enabled: true,
                     mode: 'sequential',
+                    visualStyle: 'classic',
                     color: '#00ff88',
                     sound: 'tick',
                     volume: 0.7
@@ -1270,6 +1271,13 @@
                     });
                 });
 
+                modal.querySelectorAll('input[name="metronome-visual"]').forEach(radio => {
+                    radio.addEventListener('change', (e) => {
+                        this.metronome.visualStyle = e.target.value;
+                        this.updateMetronomeDisplay();
+                    });
+                });
+
                 const colorPicker = document.getElementById('metronomeColorPicker');
                 const presetBtns = modal.querySelectorAll('.color-preset-btn');
                 
@@ -1296,8 +1304,15 @@
 
             updateMetronomeUI() {
                 document.querySelector(`input[name="metronome-enabled"][value="${this.metronome.enabled}"]`).checked = true;
-                document.querySelector(`input[name="metronome-mode"][value="${this.metronome.mode}"]`).checked = true;
                 
+                const modeRadio = document.querySelector(`input[name="metronome-mode"][value="${this.metronome.mode}"]`);
+                if (modeRadio) modeRadio.checked = true;
+
+                const visualRadio = document.querySelector(`input[name="metronome-visual"][value="${this.metronome.visualStyle}"]`);
+                if (visualRadio) visualRadio.checked = true;
+                
+                this.updateMetronomeDisplay();
+
                 const color = this.metronome.color;
                 document.getElementById('metronomeColorPicker').value = color;
                 document.documentElement.style.setProperty('--metronome-light-color', color);
@@ -1307,6 +1322,20 @@
 
                 document.getElementById('metronomeSoundSelect').value = this.metronome.sound;
                 document.getElementById('metronomeVolumeSlider').value = this.metronome.volume;
+            }
+
+            updateMetronomeDisplay() {
+                const classicLights = document.getElementById('metronomeLightsContainer');
+                const footprintIndicator = document.getElementById('footprintIndicatorContainer');
+                if (classicLights && footprintIndicator) {
+                    if (this.metronome.visualStyle === 'footprints') {
+                        classicLights.style.display = 'none';
+                        footprintIndicator.style.display = 'flex';
+                    } else {
+                        classicLights.style.display = 'flex';
+                        footprintIndicator.style.display = 'none';
+                    }
+                }
             }
 
             setupModalEvents(modalId, openBtnId, closeBtnId) {
@@ -1822,6 +1851,25 @@
             }
 			
 			triggerMetronome() {
+                if (this.metronome.visualStyle === 'footprints') {
+                    const footprintIcons = document.querySelectorAll('.foot-icon');
+                    if (!footprintIcons.length) return;
+                    
+                    this.playMetronomeSound();
+                    footprintIcons.forEach(icon => icon.classList.remove('active'));
+                    
+                    const beatInMeasure = Math.floor(this.currentStep / this.stepsPerBeat) % 4;
+                    // Sequence: 1: right-outer, 2: right-inner, 3: left-outer, 4: left-inner
+                    const seq = ['right-outer', 'right-inner', 'left-outer', 'left-inner'];
+                    const currentIconClass = seq[beatInMeasure];
+                    const activeIcon = document.querySelector(`.foot-icon.${currentIconClass}`);
+                    
+                    if (activeIcon) {
+                        activeIcon.classList.add('active');
+                    }
+                    return;
+                }
+
 				const lights = document.querySelectorAll('.metronome-light');
 				if (!lights.length) return;
 				
