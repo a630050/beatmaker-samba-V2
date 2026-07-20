@@ -2600,6 +2600,51 @@
 				this.saveState(true);
 			}
 
+            randomizeTracks() {
+                // Save state for undo
+                this.saveState();
+                
+                // We define the 3 possible patterns for a 4-step beat
+                const patterns = [
+                    [true, false, false, false], // Quarter note
+                    [true, false, true, false],  // Eighth notes
+                    [true, true, true, true]     // Sixteenth notes
+                ];
+                
+                // Target the first 4 tracks
+                for (let trackIdx = 0; trackIdx < 4 && trackIdx < this.tracks.length; trackIdx++) {
+                    const track = this.tracks[trackIdx];
+                    
+                    // Generate a random 4-beat sequence (1 measure)
+                    const measurePattern = [];
+                    for (let beat = 0; beat < 4; beat++) {
+                        const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
+                        measurePattern.push(...randomPattern);
+                    }
+                    
+                    // Apply this 4-beat pattern to the first 8 beats (2 measures)
+                    // Each beat has this.stepsPerBeat steps (which should be 4 in 4-step mode)
+                    // Total steps to fill = 8 beats * this.stepsPerBeat
+                    const totalStepsToFill = Math.min(track.steps.length, 8 * this.stepsPerBeat);
+                    
+                    for (let i = 0; i < totalStepsToFill; i++) {
+                        // Using modulo 16 to loop the 16-step (4-beat) measurePattern
+                        const stepInMeasure = i % (4 * this.stepsPerBeat);
+                        // If stepsPerBeat isn't 4, we might read out of bounds of measurePattern (length 16)
+                        // but the user's specific use case sets 1拍=4格.
+                        // To be safe against weird configs, just take step modulo 16.
+                        track.steps[i] = measurePattern[stepInMeasure % 16];
+                        
+                        // Also clear any markers in these steps to avoid confusion
+                        if (track.markers) {
+                            track.markers[i] = null;
+                        }
+                    }
+                }
+                
+                this.updateUI();
+            }
+
             exportPattern() {
                 const pattern = {
 					version: '2.5-markers-obj',
