@@ -91,7 +91,7 @@
 					<button class="btn btn-info" onclick="beatmaker.toggleMarkerModal()"><i class="fas fa-flag"></i> 標記</button>
 					<button class="btn btn-warning" onclick="beatmaker.randomizeTracks()"><i class="fas fa-dice"></i> 隨機</button>
 					<button class="btn btn-info" id="exportBtn" title="儲存鼓譜 (Ctrl + S)">存檔</button>
-					<button class="btn btn-info" id="importBtn">載入</button>
+					<button class="btn btn-info" onclick="beatmaker.toggleLoadModal()">載入</button>
 					<button class="btn btn-info" id="exportMp3Btn">匯出MP3</button>
 					<input type="file" class="file-input" id="fileInput" accept=".json">
 				</div>
@@ -335,6 +335,32 @@
 	<script src="js/beatmaker.js" defer></script>
 	
 	<!-- ====================================================== -->
+	<!-- START: Load Modal -->
+	<div id="loadModal" class="modal-overlay">
+		<div class="modal-content" style="max-width: 400px;">
+			<div class="modal-header">
+				<h3>載入鼓譜</h3>
+				<button id="closeLoadModal" class="close-btn" onclick="beatmaker.toggleLoadModal()">&times;</button>
+			</div>
+			<div class="modal-body" style="padding: 20px;">
+				<div style="margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid #444;">
+					<h4 style="margin-top: 0; color: var(--text-color);">線上預設腳本</h4>
+					<p style="font-size: 0.9em; color: #888; margin-bottom: 15px;">從雲端自動獲取最新教材</p>
+					<select id="presetBeatsSelect" class="tuning-select" style="width: 100%; margin-bottom: 15px; font-size: 1.1em; padding: 8px;">
+						<option value="">載入中...</option>
+					</select>
+					<button class="btn btn-primary" onclick="beatmaker.loadPresetBeat()" style="width: 100%; padding: 10px;">下載並載入</button>
+				</div>
+				<div>
+					<h4 style="margin-top: 0; color: var(--text-color);">本機檔案</h4>
+					<p style="font-size: 0.9em; color: #888; margin-bottom: 15px;">載入您電腦中的 .json 檔案</p>
+					<button class="btn btn-info" onclick="document.getElementById('fileInput').click()" style="width: 100%; padding: 10px;">從本機選擇檔案</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- END: Load Modal -->
+
 	<!-- START: 打擊測試模組 (Percussion Test Module) Modal    -->
 	<!-- ====================================================== -->
 	<div id="testModal" class="modal-overlay">

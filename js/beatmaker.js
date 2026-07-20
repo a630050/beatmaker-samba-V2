@@ -575,9 +575,12 @@
 				document.getElementById('redoBtn').addEventListener('click', () => this.redo());
 
 				document.getElementById('exportBtn').addEventListener('click', () => this.exportPattern());
-				document.getElementById('importBtn').addEventListener('click', () => document.getElementById('fileInput').click());
 				document.getElementById('exportMp3Btn').addEventListener('click', () => this.exportMP3());
-				document.getElementById('fileInput').addEventListener('change', (e) => this.importPattern(e.target.files[0]));
+				document.getElementById('fileInput').addEventListener('change', (e) => {
+					this.importPattern(e.target.files[0]);
+					const modal = document.getElementById('loadModal');
+					if(modal && modal.style.display === 'flex') this.toggleLoadModal();
+				});
 				document.getElementById('addTrackBtn').addEventListener('click', () => this.addTrack());
 
 				document.getElementById('collapseBtn').addEventListener('click', () => this.toggleControlsCollapse());
@@ -2599,6 +2602,80 @@
 
 				this.saveState(true);
 			}
+
+            toggleLoadModal() {
+                const modal = document.getElementById('loadModal');
+                if (modal.style.display === 'flex') {
+                    modal.style.display = 'none';
+                } else {
+                    modal.style.display = 'flex';
+                    this.fetchPresetBeats();
+                }
+            }
+
+            async fetchPresetBeats() {
+                const select = document.getElementById('presetBeatsSelect');
+                select.innerHTML = '<option value="">載入中...</option>';
+                try {
+                    const response = await fetch('https://api.github.com/repos/a630050/beatmaker-samba-V2/contents/beats');
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const files = await response.json();
+                    
+                    const jsonFiles = files.filter(f => f.name.endsWith('.json'));
+                    
+                    if (jsonFiles.length === 0) {
+                        select.innerHTML = '<option value="">沒有找到預設腳本</option>';
+                        return;
+                    }
+                    
+                    select.innerHTML = '<option value="">-- 請選擇預設腳本 --</option>';
+                    jsonFiles.forEach(file => {
+                        const option = document.createElement('option');
+                        option.value = file.download_url;
+                        option.textContent = file.name.replace('.json', '');
+                        select.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error fetching preset beats:', error);
+                    select.innerHTML = '<option value="">無法載入腳本列表</option>';
+                }
+            }
+
+            async loadPresetBeat() {
+                const select = document.getElementById('presetBeatsSelect');
+                const downloadUrl = select.value;
+                if (!downloadUrl) {
+                    alert('請先選擇一個預設腳本');
+                    return;
+                }
+                
+                try {
+                    const btn = document.querySelector('#loadModal .btn-primary');
+                    const oldText = btn.textContent;
+                    btn.textContent = '載入中...';
+                    btn.disabled = true;
+                    
+                    const response = await fetch(downloadUrl);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const text = await response.text();
+                    
+                    const file = new File([text], 'preset.json', { type: 'application/json' });
+                    const originalConfirm = window.confirm;
+                    window.confirm = () => true;
+                    await this.importPattern(file);
+                    window.confirm = originalConfirm;
+                    
+                    this.toggleLoadModal();
+                    
+                    btn.textContent = oldText;
+                    btn.disabled = false;
+                } catch (error) {
+                    console.error('Error loading preset beat:', error);
+                    alert('載入腳本時發生錯誤。');
+                    document.querySelector('#loadModal .btn-primary').textContent = '下載並載入';
+                    document.querySelector('#loadModal .btn-primary').disabled = false;
+                }
+            }
 
             randomizeTracks() {
                 // Save state for undo
