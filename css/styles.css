@@ -2150,16 +2150,125 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
-/* 3. 手機版專屬懸浮位置 (置底居中) */
+/* 3. 手機版專屬懸浮位置 (置頂居中) */
 @media (max-width: 768px) {
     #metronomeDisplayWrapper {
-        top: auto !important;
-        bottom: 20px !important;
+        top: 5px !important;
+        bottom: auto !important;
         left: 50% !important;
         right: auto !important;
         transform: translateX(-50%) !important;
+        padding: 6px 12px !important;
     }
 }
 /* ====================================================== */
 /* END: RWD & First Beat Adjustments                      */
+/* ====================================================== */
+
+/* ====================================================== */
+/* START: Mobile Landscape Extreme Compression            */
+/* ====================================================== */
+@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+    /* Hide Logo to save vertical space */
+    .header .logo {
+        display: none !important;
+    }
+    
+    /* Compress Header */
+    .header {
+        padding: 5px !important;
+        gap: 5px !important;
+        margin-bottom: 5px !important;
+        flex-direction: row !important;
+    }
+    
+    /* Compress Controls */
+    .controls {
+        gap: 4px !important;
+    }
+    .btn, .mode-btn, .beat-setting-btn {
+        padding: 3px 8px !important;
+        font-size: 11px !important;
+        min-width: auto !important;
+    }
+    
+    /* Control Row Compression */
+    .control-row {
+        padding: 4px 10px !important;
+        gap: 4px !important;
+    }
+    
+    /* Sequencer: Force side-by-side (Row) layout */
+    .sequencer {
+        flex-direction: row !important;
+        padding: 5px !important;
+        height: auto !important;
+    }
+    
+    .tracks-controls {
+        width: 140px !important;
+        max-height: none !important;
+        margin-bottom: 0 !important;
+        padding: 2px !important;
+        margin-right: 5px !important;
+    }
+    
+    .tracks-sequencer {
+        flex: 1 !important;
+        height: auto !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+    }
+    
+    /* Ensure perfect alignment between track controls and steps */
+    .track-control-item, .track-steps {
+        height: 35px !important;
+        min-height: 35px !important;
+        margin-bottom: 2px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    
+    .track-number {
+        width: 20px !important;
+        height: 20px !important;
+        line-height: 20px !important;
+        font-size: 10px !important;
+    }
+    
+    .drum-select {
+        font-size: 10px !important;
+        padding: 1px 4px !important;
+        height: 22px !important;
+    }
+    
+    .track-control-btn {
+        width: 20px !important;
+        height: 20px !important;
+        font-size: 9px !important;
+    }
+    
+    .step {
+        min-width: 16px !important;
+        min-height: 16px !important;
+        font-size: 7px !important;
+    }
+    
+    /* Adjust Sticky Metronome for Landscape */
+    #metronomeDisplayWrapper {
+        top: 5px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        bottom: auto !important;
+        padding: 5px 10px !important;
+        border-radius: 8px !important;
+    }
+    .metronome-light {
+        width: 12px !important;
+        height: 12px !important;
+    }
+}
+/* ====================================================== */
+/* END: Mobile Landscape Extreme Compression              */
 /* ====================================================== */
