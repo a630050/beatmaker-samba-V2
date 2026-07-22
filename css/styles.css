@@ -2126,3 +2126,40 @@
 /* ====================================================== */
 /* END: Footprint Indicator Styles                        */
 /* ====================================================== */
+
+/* ====================================================== */
+/* START: RWD & First Beat Adjustments                    */
+/* ====================================================== */
+
+/* 1. 第一拍右腳 (Beat 1) 強制為紅色 */
+.foot-icon.right-outer.active {
+    background: #ff4444 !important;
+    border-color: #ff4444 !important;
+    box-shadow: 0 0 8px #ff4444 !important;
+}
+
+/* 2. 讓節拍器燈號全域固定懸浮 */
+#metronomeDisplayWrapper {
+    position: fixed !important; /* Overrides previous absolute positioning */
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 10px 15px;
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* 3. 手機版專屬懸浮位置 (置底居中) */
+@media (max-width: 768px) {
+    #metronomeDisplayWrapper {
+        top: auto !important;
+        bottom: 20px !important;
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+    }
+}
+/* ====================================================== */
+/* END: RWD & First Beat Adjustments                      */
+/* ====================================================== */
