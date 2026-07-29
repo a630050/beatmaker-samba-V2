@@ -2719,7 +2719,7 @@
                     }
                 }
                 
-                this.updateUI();
+                this.renderTracks();
             }
 
             exportPattern() {
