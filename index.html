@@ -12,103 +12,109 @@
 
 </head>
 <body>
+	<div id="metronomeDisplayWrapper" title="拖曳可移動位置 | 雙擊全螢幕放大 | 右鍵/長按重置位置">
+		<div class="metronome-lights" id="metronomeLightsContainer">
+			<div class="metronome-light"></div>
+			<div class="metronome-light"></div>
+			<div class="metronome-light"></div>
+			<div class="metronome-light"></div>
+		</div>
+		<div class="footprint-indicator" id="footprintIndicatorContainer" style="display: none;">
+			<div class="foot-icon left-outer"></div>
+			<div class="foot-icon right-inner"></div>
+			<div class="foot-icon left-inner"></div>
+			<div class="foot-icon right-outer"></div>
+		</div>
+	</div>
+
     <div class="container">
 		<div class="header">
-			<div class="logo">🎵 Samba Beatmaker</div>
-			
-			<div id="metronomeDisplayWrapper">
-				<div class="metronome-lights" id="metronomeLightsContainer">
-					<div class="metronome-light"></div>
-					<div class="metronome-light"></div>
-					<div class="metronome-light"></div>
-					<div class="metronome-light"></div>
-				</div>
-				<div class="footprint-indicator" id="footprintIndicatorContainer" style="display: none;">
-					<div class="foot-icon left-outer"></div>
-					<div class="foot-icon right-inner"></div>
-					<div class="foot-icon left-inner"></div>
-					<div class="foot-icon right-outer"></div>
-				</div>
+			<div class="header-top">
+				<div class="logo">🎵 Samba Beatmaker</div>
 			</div>
 			
-			<div class="controls">
+			<div class="header-toolbar">
+				<div class="controls">
 
-				<div class="control-group">
-					<button class="btn btn-help" id="helpBtn">? 指引</button>
+					<div class="control-group">
+						<button class="btn btn-help" id="helpBtn">? 指引</button>
+					</div>
+					
+					<div class="control-group">
+						<button class="btn btn-special" id="metronomeBtn" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">⏱️ 節拍器</button>
+					</div>
+
+					<div class="control-group">
+						<button class="btn btn-special" id="soundAdjustBtn">🎵 調音</button>
+					</div>
+
+					<div class="control-group">
+						<button class="btn" id="playBtn" title="播放/暫停 (Space 或 P)">▶ 播放</button>
+					</div>
+
+					<div class="control-group">
+						<button class="btn btn-danger" id="resetBtn" title="重置鼓譜 (R)">重設</button>
+					</div>
+
+					<div class="control-group">
+						<button class="btn btn-secondary" id="undoBtn" disabled title="上一步 (Ctrl + Z)">上一步</button>
+						<button class="btn btn-secondary" id="redoBtn" disabled title="下一步 (Ctrl + Y 或 Ctrl + Shift + Z)">下一步</button>
+					</div>
+
+					<div class="control-group">
+						 <button class="btn action-btn" id="selectBtn" title="切換選取模式 (E)">編輯</button>
+					</div>
+
+					<div id="selectionControls" class="selection-controls" style="display: none;">
+						<button class="selection-btn" id="copySelectionBtn" title="複製選取範圍 (Ctrl + C)">複製</button>
+						<button class="selection-btn" id="pasteSelectionBtn" title="貼上樣式 (Ctrl + V)">貼上</button>
+						<button class="selection-btn" id="savePatternBtn">儲存樣式</button>
+						<button class="selection-btn" id="loadPatternBtn">載入樣式</button>
+						<button class="selection-btn" id="convertNotationBtn">轉鼓譜</button>
+						<input type="file" class="file-input" id="patternFileInput" accept=".pa">
+					</div>
+
+					<div class="control-group">
+						<button class="btn btn-marking" id="markBtn" title="切換標記模式 (M)">標記</button>
+					</div>
+
+					<div id="markerControls" class="marker-controls" style="display: none;">
+						<button class="btn btn-marking" id="clearBtn">清除標記</button>
+						<button class="marker-btn" data-marker="R">R</button>
+						<button class="marker-btn" data-marker="L">L</button>
+						<button class="marker-btn" data-marker="accent" data-value=">">&gt;</button>
+						<button class="marker-btn" data-marker="accent" data-value="•">•</button>
+						<button class="marker-btn" data-marker="rest" data-value="-">-</button>
+						<button class="marker-btn active" data-marker="eraser">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+						</button>
+					</div>
+
+					<div class="control-group">
+						<button class="btn btn-warning" onclick="beatmaker.randomizeTracks()"><i class="fas fa-dice"></i> 隨機</button>
+						<button class="btn btn-info" id="exportBtn" title="儲存鼓譜 (Ctrl + S)">存檔</button>
+						<button class="btn btn-info" onclick="beatmaker.toggleLoadModal()">載入</button>
+						<button class="btn btn-info" id="exportMp3Btn">匯出MP3</button>
+						<input type="file" class="file-input" id="fileInput" accept=".json">
+					</div>
+
+					<div class="control-group">
+						<label for="loopCountSelect" style="color: white;">循環次數:</label>
+						<select id="loopCountSelect" style="background: rgba(0,0,0,0.7); color: #00ff88; border: 1px solid #00ff88; border-radius: 5px; padding: 4px;">
+							<option value="1" selected>1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+							<option value="7">7</option>
+							<option value="8">8</option>
+						</select>
+					</div>
+
 				</div>
-				
-				<div class="control-group">
-                    <button class="btn btn-special" id="metronomeBtn" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">⏱️ 節拍器</button>
-                </div>
 
-				<div class="control-group">
-					<button class="btn btn-special" id="soundAdjustBtn">🎵 調音</button>
-				</div>
-
-				<div class="control-group">
-					<button class="btn" id="playBtn" title="播放/暫停 (Space 或 P)">▶ 播放</button>
-				</div>
-
-				<div class="control-group">
-					<button class="btn btn-danger" id="resetBtn" title="重置鼓譜 (R)">重設</button>
-				</div>
-
-				<div class="control-group">
-					<button class="btn btn-secondary" id="undoBtn" disabled title="上一步 (Ctrl + Z)">上一步</button>
-					<button class="btn btn-secondary" id="redoBtn" disabled title="下一步 (Ctrl + Y 或 Ctrl + Shift + Z)">下一步</button>
-				</div>
-
-				<div class="control-group">
-					 <button class="btn action-btn" id="selectBtn" title="切換選取模式 (E)">編輯</button>
-				</div>
-
-				<div id="selectionControls" class="selection-controls" style="display: none;">
-					<button class="selection-btn" id="copySelectionBtn" title="複製選取範圍 (Ctrl + C)">複製</button>
-					<button class="selection-btn" id="pasteSelectionBtn" title="貼上樣式 (Ctrl + V)">貼上</button>
-					<button class="selection-btn" id="savePatternBtn">儲存樣式</button>
-					<button class="selection-btn" id="loadPatternBtn">載入樣式</button>
-                    <button class="selection-btn" id="convertNotationBtn">轉鼓譜</button>
-					<input type="file" class="file-input" id="patternFileInput" accept=".pa">
-				</div>
-
-                <div class="control-group">
-                    <button class="btn btn-marking" id="markBtn" title="切換標記模式 (M)">標記</button>
-                </div>
-
-				<div id="markerControls" class="marker-controls" style="display: none;">
-					<button class="btn btn-marking" id="clearBtn">清除標記</button>
-					<button class="marker-btn" data-marker="R">R</button>
-					<button class="marker-btn" data-marker="L">L</button>
-					<button class="marker-btn" data-marker="accent" data-value=">">&gt;</button>
-					<button class="marker-btn" data-marker="accent" data-value="•">•</button>
-					<button class="marker-btn" data-marker="rest" data-value="-">-</button>
-                    <button class="marker-btn active" data-marker="eraser">
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
-					</button>
-				</div>
-
-				<div class="control-group">
-					<button class="btn btn-warning" onclick="beatmaker.randomizeTracks()"><i class="fas fa-dice"></i> 隨機</button>
-					<button class="btn btn-info" id="exportBtn" title="儲存鼓譜 (Ctrl + S)">存檔</button>
-					<button class="btn btn-info" onclick="beatmaker.toggleLoadModal()">載入</button>
-					<button class="btn btn-info" id="exportMp3Btn">匯出MP3</button>
-					<input type="file" class="file-input" id="fileInput" accept=".json">
-				</div>
-
-				<div class="control-group">
-					<label for="loopCountSelect" style="color: white;">循環次數:</label>
-					<select id="loopCountSelect" style="background: rgba(0,0,0,0.7); color: #00ff88; border: 1px solid #00ff88; border-radius: 5px; padding: 4px;">
-						<option value="1" selected>1</option>
-						<option value="2">2</option>
-						<option value="3">3</option>
-						<option value="4">4</option>
-						<option value="5">5</option>
-						<option value="6">6</option>
-						<option value="7">7</option>
-						<option value="8">8</option>
-					</select>
-				</div>
-
+				<button class="btn collapse-row-btn" id="toggleControlRowBtn" title="顯示/隱藏下方詳細設定面板">▲</button>
 			</div>
 		</div>
 
@@ -136,7 +142,7 @@
                 <span>BPM:</span>
                 <input type="number" class="bpm-input" id="bpmInput" value="65" min="40" max="200">
             </div>
-			<div class="bpm-control">
+			<div class="bpm-control" style="display: none;">
 				<span>全域音量:</span>
 				<input type="number" class="bpm-input" id="globalVolumeInput" value="80" min="0" max="100" title="全域音量">
 				<span style="margin-left: -10px;">%</span>
@@ -268,11 +274,11 @@
                         <div class="sound-mode-selector" style="border: none; padding: 0; margin-bottom: 0;">
                             <label>
                                 <input type="radio" name="metronome-visual" value="classic" checked>
-                                <span>經典燈號</span>
+                                <span>燈號</span>
                             </label>
                             <label>
                                 <input type="radio" name="metronome-visual" value="footprints">
-                                <span>步伐指示</span>
+                                <span>腳步</span>
                             </label>
                         </div>
                     </div>
@@ -325,10 +331,94 @@
                         </div>
                     </div>
 
+                    <div class="metronome-setting-group" style="margin-top: 10px;">
+                        <button id="resetMetronomePosBtn" class="btn btn-secondary" style="width: 100%;">↺ 重置面板位置</button>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
+	
+	<!-- START: 全螢幕大節拍器 Modal (Metronome Expanded Overlay) -->
+	<div id="metronomeExpandedOverlay" class="modal-overlay metronome-expanded-overlay">
+		<div class="metronome-expanded-content">
+			<div class="metronome-expanded-header">
+				<div class="expanded-controls-row">
+					<!-- 0. 播放/暫停按鈕 -->
+					<button class="expanded-play-btn" id="expandedPlayBtn">▶ 播放</button>
+
+					<!-- 1. BPM 速度控制 -->
+					<div class="expanded-bpm-group">
+						<button class="expanded-bpm-btn" id="expandedBpmMinus">-</button>
+						<span class="expanded-bpm-text" id="expandedBpmDisplay">BPM: 65</span>
+						<button class="expanded-bpm-btn" id="expandedBpmPlus">+</button>
+					</div>
+
+					<!-- 2. 顯示模式二選一 -->
+					<div class="expanded-mode-group">
+						<button class="expanded-mode-btn active" id="expandedVisualClassicBtn" data-visual="classic">燈號</button>
+						<button class="expanded-mode-btn" id="expandedVisualFootprintsBtn" data-visual="footprints">腳步</button>
+					</div>
+
+					<!-- 3. 拍數顯示 Checkbox -->
+					<div class="expanded-checkbox-group">
+						<label for="expandedShowBeatNumbersCheckbox">
+							<input type="checkbox" id="expandedShowBeatNumbersCheckbox">
+							<span>拍數顯示</span>
+						</label>
+					</div>
+				</div>
+
+				<button id="closeMetronomeExpandedModal" class="close-btn">&times;</button>
+			</div>
+
+			<div class="metronome-expanded-body">
+				<div class="expanded-visual-container" id="expandedVisualContainer">
+					<!-- 燈號模式 -->
+					<div class="expanded-lights-wrapper metronome-lights" id="expandedMetronomeLights">
+						<div class="expanded-beat-item">
+							<div class="metronome-light"></div>
+							<div class="expanded-beat-number">1</div>
+						</div>
+						<div class="expanded-beat-item">
+							<div class="metronome-light"></div>
+							<div class="expanded-beat-number">2</div>
+						</div>
+						<div class="expanded-beat-item">
+							<div class="metronome-light"></div>
+							<div class="expanded-beat-number">3</div>
+						</div>
+						<div class="expanded-beat-item">
+							<div class="metronome-light"></div>
+							<div class="expanded-beat-number">4</div>
+						</div>
+					</div>
+
+					<!-- 腳步模式 (獨立拍數順序：物理位置左至右對應第 3, 2, 4, 1 拍) -->
+					<div class="expanded-footprints-wrapper footprint-indicator" id="expandedFootprintIndicator" style="display: none;">
+						<div class="expanded-beat-item">
+							<div class="foot-icon left-outer"></div>
+							<div class="expanded-beat-number">3</div>
+						</div>
+						<div class="expanded-beat-item">
+							<div class="foot-icon right-inner"></div>
+							<div class="expanded-beat-number">2</div>
+						</div>
+						<div class="expanded-beat-item">
+							<div class="foot-icon left-inner"></div>
+							<div class="expanded-beat-number">4</div>
+						</div>
+						<div class="expanded-beat-item">
+							<div class="foot-icon right-outer"></div>
+							<div class="expanded-beat-number">1</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- END: 全螢幕大節拍器 Modal -->
 	
 	<script src="js/percussion-test.js" defer></script>
 	<script src="js/beatmaker.js" defer></script>

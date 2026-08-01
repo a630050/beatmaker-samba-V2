@@ -88,6 +88,7 @@
 			_updatePlayButtons(isPlaying) {
                 const mainPlayBtn = document.getElementById('playBtn');
                 const notationPlayBtn = document.getElementById('notationPlayBtn');
+                const expandedPlayBtn = document.getElementById('expandedPlayBtn');
                 const text = isPlaying ? '⏸ 暫停' : '▶ 播放';
 
                 if (mainPlayBtn) {
@@ -97,6 +98,10 @@
                 if (notationPlayBtn) {
                     notationPlayBtn.textContent = text;
                     notationPlayBtn.classList.toggle('active', isPlaying);
+                }
+                if (expandedPlayBtn) {
+                    expandedPlayBtn.textContent = text;
+                    expandedPlayBtn.classList.toggle('active', isPlaying);
                 }
             }
 
@@ -532,7 +537,7 @@
 						let numberHTML = '';
 						if (this.showNumbers && active) {
 							const beatNumber = Math.floor(stepIndex / this.stepsPerBeat) + 1;
-							numberHTML = beatNumber;
+							numberHTML = `<span class="beat-number-text">${beatNumber}</span>`;
 						}
 
 						return `<div class="step ${active ? 'active' : ''} ${stepIndex % this.stepsPerBeat === 0 ? 'beat-marker' : ''}" data-track="${trackIndex}" data-step="${stepIndex}">${numberHTML}${handMarkerHTML}${accentMarkerHTML}${restMarkerHTML}</div>`;
@@ -623,6 +628,22 @@
 				document.getElementById('reduceEndBtn').addEventListener('click', () => this.reduceBeatsFromEnd());
 
 				document.getElementById('positionIndicator').addEventListener('click', (e) => this.handleSeek(e));
+
+				const toggleRowBtn = document.getElementById('toggleControlRowBtn');
+				if (toggleRowBtn) {
+					toggleRowBtn.addEventListener('click', () => {
+						const controlRow = document.querySelector('.control-row');
+						if (controlRow) {
+							controlRow.classList.toggle('collapsed');
+							const isCollapsed = controlRow.classList.contains('collapsed');
+							toggleRowBtn.textContent = isCollapsed ? '▼' : '▲';
+							setTimeout(() => {
+								this.updateStepSize();
+								this.updateBeatNumbers();
+							}, 100);
+						}
+					});
+				}
 
 				document.getElementById('selectBtn').addEventListener('click', () => this.toggleSelectionMode());
 				document.getElementById('markBtn').addEventListener('click', () => this.toggleMarkingMode());
@@ -720,6 +741,8 @@
 				
 				this.setupModalEvents('metronomeModal', 'metronomeBtn', 'closeMetronomeModal');
                 this.bindMetronomePanelEvents();
+                this.initDraggableMetronome();
+                this.bindMetronomeExpandedEvents();
 				
 				
 				document.getElementById('resetSounds').addEventListener('click', () => this.resetSounds());
@@ -1303,6 +1326,21 @@
                 document.getElementById('metronomeVolumeSlider').addEventListener('input', (e) => {
                     this.metronome.volume = parseFloat(e.target.value);
                 });
+
+                const resetPosBtn = document.getElementById('resetMetronomePosBtn');
+                if (resetPosBtn) {
+                    resetPosBtn.addEventListener('click', () => {
+                        const wrapper = document.getElementById('metronomeDisplayWrapper');
+                        if (wrapper) {
+                            localStorage.removeItem('metronome_panel_position');
+                            wrapper.style.left = '';
+                            wrapper.style.top = '';
+                            wrapper.style.right = '';
+                            wrapper.style.bottom = '';
+                            wrapper.style.transform = '';
+                        }
+                    });
+                }
             }
 
             updateMetronomeUI() {
@@ -1330,14 +1368,307 @@
             updateMetronomeDisplay() {
                 const classicLights = document.getElementById('metronomeLightsContainer');
                 const footprintIndicator = document.getElementById('footprintIndicatorContainer');
+                const expandedLights = document.getElementById('expandedMetronomeLights');
+                const expandedFootprints = document.getElementById('expandedFootprintIndicator');
+
+                const isFootprints = this.metronome.visualStyle === 'footprints';
+
                 if (classicLights && footprintIndicator) {
-                    if (this.metronome.visualStyle === 'footprints') {
-                        classicLights.style.display = 'none';
-                        footprintIndicator.style.display = 'flex';
-                    } else {
-                        classicLights.style.display = 'flex';
-                        footprintIndicator.style.display = 'none';
+                    classicLights.style.display = isFootprints ? 'none' : 'flex';
+                    footprintIndicator.style.display = isFootprints ? 'flex' : 'none';
+                }
+
+                if (expandedLights && expandedFootprints) {
+                    expandedLights.style.display = isFootprints ? 'none' : 'flex';
+                    expandedFootprints.style.display = isFootprints ? 'flex' : 'none';
+                }
+
+                // 同步全屏控制组按扭激活状态
+                const classicBtn = document.getElementById('expandedVisualClassicBtn');
+                const footprintsBtn = document.getElementById('expandedVisualFootprintsBtn');
+                if (classicBtn && footprintsBtn) {
+                    classicBtn.classList.toggle('active', !isFootprints);
+                    footprintsBtn.classList.toggle('active', isFootprints);
+                }
+
+                // 同步设置弹窗中的 radio 选中状态
+                const visualRadio = document.querySelector(`input[name="metronome-visual"][value="${this.metronome.visualStyle}"]`);
+                if (visualRadio) visualRadio.checked = true;
+            }
+
+            /**
+             * 初始化可拖拽的节拍器面板
+             */
+            initDraggableMetronome() {
+                const wrapper = document.getElementById('metronomeDisplayWrapper');
+                if (!wrapper) return;
+
+                let isDragging = false;
+                let startX = 0;
+                let startY = 0;
+                let initialLeft = 0;
+                let initialTop = 0;
+                let hasMoved = false;
+
+                // 从 localStorage 恢复保存的位置（如果存在）
+                const savedPos = localStorage.getItem('metronome_panel_position');
+                if (savedPos) {
+                    try {
+                        const { left, top } = JSON.parse(savedPos);
+                        const maxLeft = Math.max(0, window.innerWidth - wrapper.offsetWidth);
+                        const maxTop = Math.max(0, window.innerHeight - wrapper.offsetHeight);
+                        const clampLeft = Math.min(Math.max(0, left), maxLeft);
+                        const clampTop = Math.min(Math.max(0, top), maxTop);
+                        wrapper.style.left = clampLeft + 'px';
+                        wrapper.style.top = clampTop + 'px';
+                        wrapper.style.right = 'auto';
+                        wrapper.style.bottom = 'auto';
+                        wrapper.style.transform = 'none';
+                    } catch (e) {
+                        console.warn('解析节拍器面板位置失败:', e);
                     }
+                }
+
+                // 重置浮动面板位置
+                const resetPosition = () => {
+                    localStorage.removeItem('metronome_panel_position');
+                    wrapper.style.left = '';
+                    wrapper.style.top = '';
+                    wrapper.style.right = '';
+                    wrapper.style.bottom = '';
+                    wrapper.style.transform = '';
+                };
+
+                // 右键点击直接重置面板位置
+                wrapper.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    resetPosition();
+                });
+
+                let longPressTimer = null;
+
+                const onPointerDown = (e) => {
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.tagName === 'SELECT') {
+                        return;
+                    }
+                    isDragging = true;
+                    hasMoved = false;
+
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                    startX = clientX;
+                    startY = clientY;
+
+                    const rect = wrapper.getBoundingClientRect();
+                    initialLeft = rect.left;
+                    initialTop = rect.top;
+
+                    wrapper.classList.add('dragging');
+
+                    // 移动端长按 600ms 重置位置
+                    longPressTimer = setTimeout(() => {
+                        if (!hasMoved) {
+                            resetPosition();
+                        }
+                    }, 600);
+                };
+
+                const onPointerMove = (e) => {
+                    if (!isDragging) return;
+
+                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                    const deltaX = clientX - startX;
+                    const deltaY = clientY - startY;
+
+                    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+                        hasMoved = true;
+                        if (longPressTimer) clearTimeout(longPressTimer);
+                    }
+
+                    if (hasMoved) {
+                        if (e.cancelable) e.preventDefault();
+
+                        let newLeft = initialLeft + deltaX;
+                        let newTop = initialTop + deltaY;
+
+                        const maxLeft = Math.max(0, window.innerWidth - wrapper.offsetWidth);
+                        const maxTop = Math.max(0, window.innerHeight - wrapper.offsetHeight);
+
+                        newLeft = Math.min(Math.max(0, newLeft), maxLeft);
+                        newTop = Math.min(Math.max(0, newTop), maxTop);
+
+                        wrapper.style.left = newLeft + 'px';
+                        wrapper.style.top = newTop + 'px';
+                        wrapper.style.right = 'auto';
+                        wrapper.style.bottom = 'auto';
+                        wrapper.style.transform = 'none';
+                    }
+                };
+
+                let lastClickTime = 0;
+
+                const onPointerUp = () => {
+                    if (longPressTimer) clearTimeout(longPressTimer);
+                    if (!isDragging) return;
+                    isDragging = false;
+                    wrapper.classList.remove('dragging');
+
+                    if (hasMoved) {
+                        const rect = wrapper.getBoundingClientRect();
+                        localStorage.setItem('metronome_panel_position', JSON.stringify({
+                            left: rect.left,
+                            top: rect.top
+                        }));
+                    } else {
+                        // 如果没有移动，进行双击/双点按检测（350ms 内连续点击两次）
+                        const now = Date.now();
+                        if (now - lastClickTime < 350) {
+                            const overlay = document.getElementById('metronomeExpandedOverlay');
+                            const bpmDisplay = document.getElementById('expandedBpmDisplay');
+                            if (overlay) {
+                                overlay.style.display = 'flex';
+                                if (bpmDisplay) bpmDisplay.textContent = `BPM: ${this.bpm}`;
+                                this.updateMetronomeDisplay();
+                            }
+                            lastClickTime = 0;
+                        } else {
+                            lastClickTime = now;
+                        }
+                    }
+                };
+
+                // 鼠标事件
+                wrapper.addEventListener('mousedown', onPointerDown);
+                window.addEventListener('mousemove', onPointerMove);
+                window.addEventListener('mouseup', onPointerUp);
+
+                // 触摸屏 / 手机事件
+                wrapper.addEventListener('touchstart', onPointerDown, { passive: false });
+                window.addEventListener('touchmove', onPointerMove, { passive: false });
+                window.addEventListener('touchend', onPointerUp);
+                window.addEventListener('touchcancel', onPointerUp);
+
+                // 窗口改变或转屏时，校正面板位置避免越界
+                window.addEventListener('resize', () => {
+                    if (wrapper.style.left) {
+                        const rect = wrapper.getBoundingClientRect();
+                        const maxLeft = Math.max(0, window.innerWidth - wrapper.offsetWidth);
+                        const maxTop = Math.max(0, window.innerHeight - wrapper.offsetHeight);
+                        if (rect.left > maxLeft || rect.top > maxTop) {
+                            const clampLeft = Math.min(Math.max(0, rect.left), maxLeft);
+                            const clampTop = Math.min(Math.max(0, rect.top), maxTop);
+                            wrapper.style.left = clampLeft + 'px';
+                            wrapper.style.top = clampTop + 'px';
+                        }
+                    }
+                });
+            }
+
+            /**
+             * 绑定全屏大节拍器弹窗相关事件
+             */
+            bindMetronomeExpandedEvents() {
+                const wrapper = document.getElementById('metronomeDisplayWrapper');
+                const overlay = document.getElementById('metronomeExpandedOverlay');
+                const closeBtn = document.getElementById('closeMetronomeExpandedModal');
+                const expandedPlayBtn = document.getElementById('expandedPlayBtn');
+                const bpmMinusBtn = document.getElementById('expandedBpmMinus');
+                const bpmPlusBtn = document.getElementById('expandedBpmPlus');
+                const bpmDisplay = document.getElementById('expandedBpmDisplay');
+                const classicBtn = document.getElementById('expandedVisualClassicBtn');
+                const footprintsBtn = document.getElementById('expandedVisualFootprintsBtn');
+                const beatNumbersCheckbox = document.getElementById('expandedShowBeatNumbersCheckbox');
+                const visualContainer = document.getElementById('expandedVisualContainer');
+
+                if (!wrapper || !overlay) return;
+
+                // 打开全屏大节拍器弹窗
+                const openExpandedModal = () => {
+                    overlay.style.display = 'flex';
+                    if (bpmDisplay) bpmDisplay.textContent = `BPM: ${this.bpm}`;
+                    this._updatePlayButtons(this.isPlaying);
+                    this.updateMetronomeDisplay();
+                };
+
+                // 播放/暂停控制
+                if (expandedPlayBtn) {
+                    expandedPlayBtn.addEventListener('click', (e) => {
+                        this.togglePlay(e);
+                    });
+                }
+
+                // 原生 dblclick 双击监听作为备用
+                wrapper.addEventListener('dblclick', (e) => {
+                    e.stopPropagation();
+                    openExpandedModal();
+                });
+
+                // 关闭全屏弹窗
+                const closeExpandedModal = () => {
+                    overlay.style.display = 'none';
+                };
+
+                if (closeBtn) closeBtn.addEventListener('click', closeExpandedModal);
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) closeExpandedModal();
+                });
+
+                // 1. BPM 速度调节 (- / +)
+                const updateBpm = (delta) => {
+                    const newBpm = Math.min(200, Math.max(40, this.bpm + delta));
+                    if (newBpm !== this.bpm) {
+                        this.bpm = newBpm;
+                        document.getElementById('bpmInput').value = this.bpm;
+                        if (bpmDisplay) bpmDisplay.textContent = `BPM: ${this.bpm}`;
+                        if (this.isPlaying) {
+                            clearInterval(this.stepInterval);
+                            const stepDuration = (60 / this.bpm) / this.stepsPerBeat * 1000;
+                            this.stepInterval = setInterval(() => {
+                                this.updateStep();
+                                this.currentStep = (this.currentStep + 1);
+                                const totalSteps = this.totalBeats * this.stepsPerBeat;
+                                if (this.playSelectionMode) {
+                                    if (this.currentStep > this.playSelectionRange.endStep) {
+                                        this.currentStep = this.playSelectionRange.startStep;
+                                    }
+                                } else if (this.currentStep >= totalSteps) {
+                                    this.currentStep = 0;
+                                    this.scrollToBeginning();
+                                    if (this.mode === 'sequential') {
+                                        this.currentTrack = this.getNextEnabledTrack();
+                                    }
+                                }
+                            }, stepDuration);
+                        }
+                        this.saveState();
+                    }
+                };
+
+                if (bpmMinusBtn) bpmMinusBtn.addEventListener('click', () => updateBpm(-1));
+                if (bpmPlusBtn) bpmPlusBtn.addEventListener('click', () => updateBpm(1));
+
+                // 2. 模式二选一切换 (灯号 / 脚步)
+                if (classicBtn) {
+                    classicBtn.addEventListener('click', () => {
+                        this.metronome.visualStyle = 'classic';
+                        this.updateMetronomeDisplay();
+                    });
+                }
+                if (footprintsBtn) {
+                    footprintsBtn.addEventListener('click', () => {
+                        this.metronome.visualStyle = 'footprints';
+                        this.updateMetronomeDisplay();
+                    });
+                }
+
+                // 3. 拍数显示复选框
+                if (beatNumbersCheckbox && visualContainer) {
+                    beatNumbersCheckbox.addEventListener('change', (e) => {
+                        visualContainer.classList.toggle('show-beat-numbers', e.target.checked);
+                    });
                 }
             }
 
@@ -1854,50 +2185,39 @@
             }
 			
 			triggerMetronome() {
+                this.playMetronomeSound();
+
+                const beatInMeasure = Math.floor(this.currentStep / this.stepsPerBeat) % 4;
+
                 if (this.metronome.visualStyle === 'footprints') {
-                    const footprintIcons = document.querySelectorAll('.foot-icon');
-                    if (!footprintIcons.length) return;
-                    
-                    this.playMetronomeSound();
-                    footprintIcons.forEach(icon => icon.classList.remove('active'));
-                    
-                    const beatInMeasure = Math.floor(this.currentStep / this.stepsPerBeat) % 4;
-                    // Sequence: 1: right-outer, 2: right-inner, 3: left-outer, 4: left-inner
+                    document.querySelectorAll('.foot-icon').forEach(icon => icon.classList.remove('active'));
+
                     const seq = ['right-outer', 'right-inner', 'left-outer', 'left-inner'];
                     const currentIconClass = seq[beatInMeasure];
-                    const activeIcon = document.querySelector(`.foot-icon.${currentIconClass}`);
-                    
-                    if (activeIcon) {
+                    document.querySelectorAll(`.foot-icon.${currentIconClass}`).forEach(activeIcon => {
                         activeIcon.classList.add('active');
-                    }
+                    });
                     return;
                 }
 
-				const lights = document.querySelectorAll('.metronome-light');
-				if (!lights.length) return;
-				
-				this.playMetronomeSound();
+                document.querySelectorAll('.metronome-lights').forEach(container => {
+                    const lights = container.querySelectorAll('.metronome-light');
+                    lights.forEach(light => light.classList.remove('active'));
 
-				lights.forEach(light => light.classList.remove('active'));
+                    if (this.metronome.mode === 'conductor') {
+                        lights.forEach(light => light.classList.add('active'));
+                    } else if (this.metronome.mode === 'sequential') {
+                        if (lights[beatInMeasure]) {
+                            lights[beatInMeasure].classList.add('active');
+                        }
+                    } else { // 'single' 模式
+                        lights.forEach(light => light.classList.add('active'));
+                    }
+                });
 
-				// 根據不同模式決定燈號行為
-				if (this.metronome.mode === 'conductor') {
-					// 指揮模式：所有燈一起亮，代表一個指揮動作
-					lights.forEach(light => light.classList.add('active'));
-				} else if (this.metronome.mode === 'sequential') {
-					// 輪播模式：照順序亮燈
-					const beatInMeasure = Math.floor(this.currentStep / this.stepsPerBeat) % 4;
-					if (lights[beatInMeasure]) {
-						lights[beatInMeasure].classList.add('active');
-					}
-				} else { // 'single' 模式
-					// 單一模式：所有燈一起亮
-					lights.forEach(light => light.classList.add('active'));
-				}
-
-				setTimeout(() => {
-					lights.forEach(light => light.classList.remove('active'));
-				}, 100);
+                setTimeout(() => {
+                    document.querySelectorAll('.metronome-light').forEach(light => light.classList.remove('active'));
+                }, 100);
 			}
 
 			playMetronomeSound() {
