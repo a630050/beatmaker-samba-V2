@@ -70,6 +70,8 @@
 						<button class="selection-btn" id="pasteSelectionBtn" title="貼上樣式 (Ctrl + V)">貼上</button>
 						<button class="selection-btn" id="savePatternBtn">儲存樣式</button>
 						<button class="selection-btn" id="loadPatternBtn">載入樣式</button>
+						<button class="selection-btn" id="splitStepBtn" title="分割選取的格子（需先點選一格；可重複分割到 64 分音符）">分割</button>
+						<button class="selection-btn" id="mergeStepBtn" title="合併選取的格子（還原一層分割）">合併</button>
 						<button class="selection-btn" id="convertNotationBtn">轉鼓譜</button>
 						<input type="file" class="file-input" id="patternFileInput" accept=".pa">
 					</div>
@@ -96,6 +98,15 @@
 						<button class="btn btn-info" onclick="beatmaker.toggleLoadModal()">載入</button>
 						<button class="btn btn-info" id="exportMp3Btn">匯出MP3</button>
 						<input type="file" class="file-input" id="fileInput" accept=".json">
+					</div>
+
+					<div class="control-group">
+						<label for="stepZoomSelect" style="color: white;">格寬:</label>
+						<select id="stepZoomSelect" style="background: rgba(0,0,0,0.7); color: #00ff88; border: 1px solid #00ff88; border-radius: 5px; padding: 4px;" title="格子寬度（分割後看得更清楚；只動寬度不影響高度）">
+							<option value="1" selected>1×</option>
+							<option value="1.5">1.5×</option>
+							<option value="2">2×</option>
+						</select>
 					</div>
 
 					<div class="control-group">
@@ -126,9 +137,8 @@
             <div class="beat-setting-controls">
                 <span class="beat-setting-label">一拍長度:</span>
                 <button class="beat-setting-btn" data-beat-setting="2">2格</button>
-                <button class="beat-setting-btn active" data-beat-setting="4">4格</button>
-                <button class="beat-setting-btn" data-beat-setting="8">8格</button>
-            </div>
+                <button class="beat-setting-btn active" data-beat-setting="4">4格</button>				<button class="beat-setting-btn" data-beat-setting="8">8格</button>
+			</div>
 			<div class="expand-controls">
                 <button class="expand-btn reduce-start" id="reduceStartBtn" title="從開頭減少4拍">-</button>
 				<button class="expand-btn" id="expandBtn" title="增加4拍">+</button>

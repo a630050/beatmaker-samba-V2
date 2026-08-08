@@ -36,9 +36,12 @@
             constructor() {
 				this.audioCache = new AudioCache();
 			    this.maxTracks = 16;
-				this.minTracks = 4;
-                this.isPlaying = false;
+				this.minTracks = 4;				this.isPlaying = false;
 				this.colorHintMode = null;
+				this.maxSub = 1;              // 全曲最大子格數（播放 tick 基準）
+				this.currentTick = 0;         // 播放用全域 tick（= 粗格 index * maxSub + 子格偏移）
+				this.currentSub = 0;          // 目前掃到的子格（依 tick 動態算出）
+				this.stepSizeMultiplier = 1;  // 格寬解析度：1 / 1.5 / 2（不記憶，重新整理一律回到 1×）
                 this.currentStep = 0;
                 this.currentTrack = 0;
                 this.bpm = 65;
@@ -157,6 +160,7 @@
                         drumType: track.drumType,
                         steps: track.steps.map(s => s ? 1 : 0),
                         markers: track.markers,
+                        subdivisions: track.subdivisions ? track.subdivisions.map(sd => sd ? { count: sd.count, notes: sd.notes.map(n => n ? 1 : 0), markers: sd.markers } : null) : null,
                         enabled: track.enabled,
                         soundEnabled: track.soundEnabled,
                         volume: track.volume
@@ -189,13 +193,12 @@
                 const state = JSON.parse(stateString);
 
                 this.totalBeats = state.totalBeats;
-                this.stepsPerBeat = state.stepsPerBeat;
-
-                this.tracks = state.tracks.map((trackData, index) => ({
+                this.stepsPerBeat = state.stepsPerBeat;				this.tracks = state.tracks.map((trackData, index) => ({
                     ...trackData,
 					label: trackData.label || this.defaultTrackLabels[index],
                     steps: trackData.steps.map(s => s === 1 || s === true),
-                    markers: trackData.markers || Array(this.totalBeats * this.stepsPerBeat).fill({})
+                    markers: trackData.markers || Array(this.totalBeats * this.stepsPerBeat).fill({}),
+                    subdivisions: this.normalizeSubdivisions(trackData.subdivisions, this.totalBeats * this.stepsPerBeat)
                 }));
 
                 this.updateExpandButton();
@@ -303,6 +306,7 @@
 					drumType: this.defaultDrums[i] || 'agogo',
 					steps: Array(this.totalBeats * this.stepsPerBeat).fill(false),
 					markers: Array.from({ length: this.totalBeats * this.stepsPerBeat }, () => ({})),
+					subdivisions: Array(this.totalBeats * this.stepsPerBeat).fill(null),
 					enabled: true,
 					soundEnabled: true,
 					volume: 0.8
@@ -321,15 +325,15 @@
                 const newTrack = {
                     id: newTrackIndex,
                     label: 'UN',
-                    drumType: this.defaultDrums[newTrackIndex] || 'agogo',
-                    steps: Array(this.totalBeats * this.stepsPerBeat).fill(false),
-                    markers: Array.from({ length: this.totalBeats * this.stepsPerBeat }, () => ({})),
-                    enabled: true,
-                    soundEnabled: true,
-                    volume: 0.8
-                };
+                    drumType: this.defaultDrums[newTrackIndex] || 'agogo',					steps: Array(this.totalBeats * this.stepsPerBeat).fill(false),
+					markers: Array.from({ length: this.totalBeats * this.stepsPerBeat }, () => ({})),
+					subdivisions: Array(this.totalBeats * this.stepsPerBeat).fill(null),
+					enabled: true,
+					soundEnabled: true,
+					volume: 0.8
+				};
 
-                this.tracks.push(newTrack);
+				this.tracks.push(newTrack);
                 this.renderTracks();
                 this.saveState();
                 return true;
@@ -351,15 +355,59 @@
 
                 this.tracks.forEach((track, index) => {
                     track.id = index;
-                });
+                });				this.renderTracks();
+				this.saveState();
+				return true;
+			}
 
-                this.renderTracks();
-                this.saveState();
-                return true;
-            }
+			// 將 subdivisions 正規化為指定長度（缺省補 null，舊資料相容）
+			normalizeSubdivisions(subdivisions, length) {
+				const result = Array(length).fill(null);
+				const source = subdivisions || [];
+				for (let i = 0; i < length && i < source.length; i++) {
+					const sd = source[i];
+					if (!sd) continue;
+					const count = Math.max(2, Math.min(64, sd.count | 0));
+					result[i] = {
+						count,
+						notes: Array.from({ length: count }, (_, j) => !!(sd.notes && (sd.notes[j] === 1 || sd.notes[j] === true))),
+						markers: Array.from({ length: count }, (_, j) => (sd.markers && sd.markers[j]) ? { ...sd.markers[j] } : {})
+					};
+				}
+				return result;
+			}
 
-            initUI() {
+			// 全曲最大的子格數（無分割 = 1）
+			computeMaxSubdivision() {
+				let max = 1;
+				this.tracks.forEach(track => {
+					(track.subdivisions || []).forEach(sd => {
+						if (sd && sd.count > max) max = sd.count;
+					});
+				});
+				return max;
+			}
+
+			// 任一軌道是否已有音符（綠格或子格）
+			hasAnyNotes() {
+				return this.tracks.some(track =>
+					track.steps.some(s => s) ||
+					(track.subdivisions || []).some(sd => sd && sd.notes.some(n => n))
+				);
+			}
+
+			// 依「是否已有音符」鎖定/解鎖「一拍 2/4/8 格」切換按鈕
+			updateBeatSettingLock() {
+				const locked = this.hasAnyNotes();
+				document.querySelectorAll('.beat-setting-btn[data-beat-setting]').forEach(btn => {
+					btn.disabled = locked;
+					btn.title = locked ? '已有音符（綠格），為避免鼓譜錯亂，請先清除或重設後再切換' : '';
+				});
+			}			initUI() {
                 this.renderTracks();
+                const stepZoomSelect = document.getElementById('stepZoomSelect');
+                if (stepZoomSelect) stepZoomSelect.value = String(this.stepSizeMultiplier);
+                this.updateStepSize();
                 this.initSoundAdjustPanel();
                 this.bindEvents();
                 this.updateExpandButton();
@@ -539,6 +587,21 @@
 					stepsElement.className = `track-steps ${!track.enabled ? 'disabled' : ''}`;
 
 					const steps = track.steps.map((active, stepIndex) => {
+						const sub = (track.subdivisions || [])[stepIndex];
+						const beatClass = stepIndex % this.stepsPerBeat === 0 ? ' beat-marker' : '';
+
+						// 已分割的格子：在原本一格的範圍內顯示多個子格長條（留空隙）
+						if (sub) {
+							const bars = sub.notes.map((subActive, subIndex) => {
+								const m = sub.markers[subIndex] || {};
+								const handHTML = m.hand && this.showMarkers ? `<span class="sub-marker-text">${m.hand}</span>` : '';
+								const accentHTML = m.accent ? `<span class="sub-marker-text sub-accent-marker">${m.accent}</span>` : '';
+								const restHTML = m.rest ? `<span class="sub-marker-text sub-rest-marker">${m.rest}</span>` : '';
+								return `<div class="sub-step ${subActive ? 'active' : ''}" data-track="${trackIndex}" data-step="${stepIndex}" data-sub="${subIndex}">${handHTML}${accentHTML}${restHTML}</div>`;
+							}).join('');
+							return `<div class="step split${beatClass}" data-track="${trackIndex}" data-step="${stepIndex}">${bars}</div>`;
+						}
+
 						const marker = track.markers[stepIndex] || {};
 						
 						const handMarkerHTML = marker.hand ? `<span class="marker-text">${marker.hand}</span>` : '';
@@ -551,13 +614,14 @@
 							numberHTML = `<span class="beat-number-text">${beatNumber}</span>`;
 						}
 
-						return `<div class="step ${active ? 'active' : ''} ${stepIndex % this.stepsPerBeat === 0 ? 'beat-marker' : ''}" data-track="${trackIndex}" data-step="${stepIndex}">${numberHTML}${handMarkerHTML}${accentMarkerHTML}${restMarkerHTML}</div>`;
+						return `<div class="step ${active ? 'active' : ''}${beatClass}" data-track="${trackIndex}" data-step="${stepIndex}">${numberHTML}${handMarkerHTML}${accentMarkerHTML}${restMarkerHTML}</div>`;
 					}).join('');
 
 					stepsElement.innerHTML = `<div class="steps">${steps}</div>`;
 					trackStepsContainer.appendChild(stepsElement);
 				});
 				this.updateColorHints();
+				this.updateBeatSettingLock();
 			}
 
             updateExpandButton() {
@@ -634,6 +698,16 @@
 					this.changeBeatSetting(parseInt(e.target.dataset.beatSetting));
 				}));
 
+				const stepZoomSelect = document.getElementById('stepZoomSelect');
+				if (stepZoomSelect) {
+					stepZoomSelect.value = String(this.stepSizeMultiplier);
+					stepZoomSelect.addEventListener('change', (e) => {
+						const zoom = parseFloat(e.target.value);
+						this.stepSizeMultiplier = zoom;
+						this.updateStepSize();
+					});
+				}
+
 				document.getElementById('expandBtn').addEventListener('click', () => this.expandBeats());
                 document.getElementById('reduceStartBtn').addEventListener('click', () => this.reduceBeatsFromStart());
 				document.getElementById('reduceEndBtn').addEventListener('click', () => this.reduceBeatsFromEnd());
@@ -666,8 +740,9 @@
 				document.getElementById('patternFileInput').addEventListener('change', (e) => {
 					this.loadPatternToClipboard(e.target.files[0]);
 					e.target.value = '';
-				});
-                document.getElementById('convertNotationBtn').addEventListener('click', () => this.convertSelectionToNotation());
+				});				document.getElementById('convertNotationBtn').addEventListener('click', () => this.convertSelectionToNotation());
+				document.getElementById('splitStepBtn').addEventListener('click', () => this.splitSelection());
+				document.getElementById('mergeStepBtn').addEventListener('click', () => this.mergeSelection());
 
 				document.getElementById('markerControls').addEventListener('click', (e) => {
 					const btn = e.target.closest('.marker-btn');
@@ -707,6 +782,12 @@
 					if (e.target.classList.contains('step')) {
 						this.handleStepClick(e.target);
 					}
+					if (e.target.classList.contains('sub-step')) {
+						const trackIndex = parseInt(e.target.dataset.track);
+						const stepIndex = parseInt(e.target.dataset.step);
+						const subIndex = parseInt(e.target.dataset.sub);
+						this.handleSubStepClick(e.target, trackIndex, stepIndex, subIndex);
+					}
 					if (e.target.classList.contains('track-control-btn')) {
 						const trackIndex = parseInt(e.target.dataset.track);
 						const type = e.target.dataset.type;
@@ -716,14 +797,18 @@
 							this.toggleTrackControl(trackIndex, type);
 						}
 					}
-				});
-                
-                sequencer.addEventListener('contextmenu', (e) => {
+				});				sequencer.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     if (e.target.classList.contains('step')) {
                         const trackIndex = parseInt(e.target.dataset.track);
                         const stepIndex = parseInt(e.target.dataset.step);
                         this.applyRestMarker(trackIndex, stepIndex, e.target);
+                    }
+                    if (e.target.classList.contains('sub-step')) {
+                        const trackIndex = parseInt(e.target.dataset.track);
+                        const stepIndex = parseInt(e.target.dataset.step);
+                        const subIndex = parseInt(e.target.dataset.sub);
+                        this.applySubRestMarker(trackIndex, stepIndex, subIndex);
                     }
                 });
 
@@ -884,12 +969,13 @@
                 const targetStep = Math.min(
                     Math.floor(clickX / fullStepWidth),
                     (this.totalBeats * this.stepsPerBeat) - 1
-                );
-                
-                if (targetStep >= 0) {
+                );				if (targetStep >= 0) {
                     this.currentStep = targetStep;
+                    this.currentTick = targetStep * this.maxSub;
+                    this.currentOffsetInCell = 0;
                     this.updateSeekHighlight(this.currentStep);
                     this.updateBeatNumbers();
+                    this.snapScrollToCurrentStep(); // 寬格時讓點選的位置滾進可視範圍
                 }
             }
 
@@ -1003,10 +1089,9 @@
                 const STAVE_H = 52;
                 const STAVE_GAP = 10;
                 const LINE_GAP = 46;
-                const TOP_MARGIN = 24;
-                
-                // 計算每行可容納的小節數
-                const FIXED_MEASURE_W = (this.stepsPerBeat === 8) ? 440 : 380;
+                const TOP_MARGIN = 24;				// 計算每行可容納的小節數（有分割時有效一拍格數變多，需較寬）
+                const espbForLayout = this.stepsPerBeat * this.computeMaxSubdivision();
+                const FIXED_MEASURE_W = (espbForLayout >= 8) ? 440 : 380;
                 const modalBodyWidth = modalBody.clientWidth || 960;
                 const LEFT_MARGIN = 8, RIGHT_MARGIN = 12, LEFT_LABEL_W = 90;
                 const available = Math.max(320, modalBodyWidth - (LEFT_MARGIN + RIGHT_MARGIN + LEFT_LABEL_W));
@@ -1806,8 +1891,11 @@
                 const stepsToFit = 8 * this.stepsPerBeat;
                 const totalGapWidth = (stepsToFit - 1) * STEP_GAP;
                 const idealStepSize = (contentWidth - totalGapWidth) / stepsToFit;
-                const finalStepSize = Math.max(MIN_STEP_SIZE, Math.min(MAX_STEP_SIZE, idealStepSize));
-                document.documentElement.style.setProperty('--step-size', `${finalStepSize}px`);
+                const baseStepSize = Math.max(MIN_STEP_SIZE, Math.min(MAX_STEP_SIZE, idealStepSize));
+                const finalStepSize = baseStepSize * this.stepSizeMultiplier;
+                // 高度固定基準大小；寬度 = 基準 × 解析度倍率（只動寬度）
+                document.documentElement.style.setProperty('--step-size', `${baseStepSize}px`);
+                document.documentElement.style.setProperty('--step-width', `${finalStepSize}px`);
             }
 
 			toggleControlsCollapse() {
@@ -1829,6 +1917,15 @@
 			}
 
             changeBeatSetting(newStepsPerBeat) {
+                // 只要有任何音符（綠格）就禁止切換，避免鼓譜錯亂
+                if (this.hasAnyNotes()) {
+                    alert('目前已有音符（綠格），為避免鼓譜錯亂，請先「重設」清除所有音符後再切換「一拍長度」。');
+                    document.querySelectorAll('.beat-setting-btn[data-beat-setting]').forEach(btn => {
+                        btn.classList.toggle('active', parseInt(btn.dataset.beatSetting) === this.stepsPerBeat);
+                    });
+                    return;
+                }
+
                 if (this.isPlaying) this.stop();
                 this.clearSelection();
                 const oldStepsPerBeat = this.stepsPerBeat;
@@ -1844,6 +1941,8 @@
                         }
                     }
                     track.steps = newSteps;
+                    // 切換一拍長度時一併清除所有分割（避免資料錯亂）
+                    track.subdivisions = Array(this.totalBeats * this.stepsPerBeat).fill(null);
                 });
 				
 				this.currentStep = 0;
@@ -1974,37 +2073,44 @@
 				this.snapScrollToCurrentStep();
 
                 const stepDuration = (60 / this.bpm) / this.stepsPerBeat * 1000;
+                // 播放引擎改為「tick 制」：全曲以最大子格數為基準切成細 tick，
+                // 讓分割格內的每個子格都能在正確的時機發聲並依序高亮
+                this.maxSub = this.computeMaxSubdivision();
+                const tickDuration = stepDuration / this.maxSub;
+                const totalSteps = this.totalBeats * this.stepsPerBeat;
+                const totalTicks = totalSteps * this.maxSub;
+
+                this.currentTick = this.currentStep * this.maxSub;
 
                 this.updateStep();
 
-                const totalSteps = this.totalBeats * this.stepsPerBeat;
-                this.currentStep = (this.currentStep + 1); // 暫時不取餘數，讓 updateStep 判斷
+                this.currentTick = (this.currentTick + 1); // 暫時不取餘數，讓 updateStep 判斷
                 
-                if (!this.playSelectionMode && this.currentStep >= totalSteps) {
-                    this.currentStep = 0;
+                if (!this.playSelectionMode && this.currentTick >= totalTicks) {
+                    this.currentTick = 0;
                     if (this.mode === 'sequential') this.currentTrack = this.getNextEnabledTrack();
                 }
 
 
 				this.stepInterval = setInterval(() => {
 					this.updateStep();
-					this.currentStep = (this.currentStep + 1);
+					this.currentTick = (this.currentTick + 1);
 					
-					// === START: 新增的循環邏輯 ===
+					// === START: 新增的循環邏輯（tick 制） ===
 					if (this.playSelectionMode) {
-						if (this.currentStep > this.playSelectionRange.endStep) {
-							this.currentStep = this.playSelectionRange.startStep;
+						if (this.currentTick > (this.playSelectionRange.endStep + 1) * this.maxSub - 1) {
+							this.currentTick = this.playSelectionRange.startStep * this.maxSub;
 						}
 					} 
 					// === END: 新增的循環邏輯 ===
-					else if (!this.playSelectionMode && this.currentStep >= totalSteps) { // 將 if 改為 else if
-						this.currentStep = 0;
+					else if (!this.playSelectionMode && this.currentTick >= totalTicks) { // 將 if 改為 else if
+						this.currentTick = 0;
 						this.scrollToBeginning();
 						if (this.mode === 'sequential') {
 							this.currentTrack = this.getNextEnabledTrack();
 						}
 					}
-				}, stepDuration);
+				}, tickDuration);
             }
 			
 			
@@ -2014,6 +2120,7 @@
                 if (this.stepInterval) clearInterval(this.stepInterval);
                 this.stepInterval = null;
                 document.querySelectorAll('.playing').forEach(el => el.classList.remove('playing'));
+                document.querySelectorAll('.sub-step.playing').forEach(el => el.classList.remove('playing'));
             }
 
 			stop() {
@@ -2022,9 +2129,11 @@
                 if (this.stepInterval) clearInterval(this.stepInterval);
                 this.stepInterval = null;
                 this.currentStep = 0;
+                this.currentTick = 0;
                 this.currentTrack = 0;
                 this.scrollToBeginning();
                 document.querySelectorAll('.playing').forEach(el => el.classList.remove('playing'));
+                document.querySelectorAll('.sub-step.playing').forEach(el => el.classList.remove('playing'));
                 
                 document.querySelectorAll('.vf-note-playing').forEach(el => el.classList.remove('vf-note-playing'));
 
@@ -2036,72 +2145,86 @@
                 this.playSelectionRange = { startTrack: 0, endTrack: 0, startStep: 0, endStep: 0 };
             }
 
+            // 某一格目前的子格 index（依該格自己的分割數與目前 tick 偏移換算）
+            getSubIndexForCell(track, stepIndex) {
+                if (!track) return 0;
+                const cell = track.subdivisions && track.subdivisions[stepIndex];
+                if (!cell) return 0;
+                const offsetInCell = this.currentTick % this.maxSub;
+                return Math.min(cell.count - 1, Math.floor(offsetInCell * cell.count / this.maxSub));
+            }
+
+            // 判斷某一格在目前 tick 偏移下是否該發聲（支援分割格）
+            isNoteAt(track, stepIndex, offsetInCell) {
+                if (!track) return false;
+                const cell = track.subdivisions && track.subdivisions[stepIndex];
+                if (cell) {
+                    const j = Math.min(cell.count - 1, Math.floor(offsetInCell * cell.count / this.maxSub));
+                    const startOffset = Math.round(j * this.maxSub / cell.count);
+                    return startOffset === offsetInCell && cell.notes[j] && !(cell.markers[j] && cell.markers[j].rest);
+                }
+                return offsetInCell === 0 && !!track.steps[stepIndex] && !(track.markers[stepIndex] && track.markers[stepIndex].rest);
+            }
+
+            // 在目前 tick 對指定軌道與粗格播放該發聲的音符（支援分割格子格）
+            playStepSounds(track, stepIndex) {
+                if (!track || !track.enabled || !track.soundEnabled) return;
+                const cell = track.subdivisions && track.subdivisions[stepIndex];
+                const offsetInCell = this.currentOffsetInCell;
+
+                if (cell) {
+                    for (let j = 0; j < cell.count; j++) {
+                        const startOffset = Math.round(j * this.maxSub / cell.count);
+                        if (startOffset === offsetInCell && cell.notes[j] && !(cell.markers[j] && cell.markers[j].rest)) {
+                            const m = cell.markers[j] || {};
+                            let v = 1.0;
+                            if (m.accent === '>') v = this.accentVolumeMultiplier;
+                            else if (m.accent === '•') v = this.ghostVolumeMultiplier;
+                            this.playSound(track.drumType, track.soundEnabled, track.volume * v);
+                        }
+                    }
+                } else if (offsetInCell === 0 && track.steps[stepIndex] && !(track.markers[stepIndex] && track.markers[stepIndex].rest)) {
+                    const m = track.markers[stepIndex] || {};
+                    let v = 1.0;
+                    if (m.accent === '>') v = this.accentVolumeMultiplier;
+                    else if (m.accent === '•') v = this.ghostVolumeMultiplier;
+                    this.playSound(track.drumType, track.soundEnabled, track.volume * v);
+                }
+            }
+
             updateStep() {
+                // tick 制：由 currentTick 推導目前所在的粗格與子格偏移
+                const totalSteps = this.totalBeats * this.stepsPerBeat;
+                this.currentStep = Math.min(totalSteps - 1, Math.max(0, Math.floor(this.currentTick / this.maxSub)));
+                this.currentOffsetInCell = this.currentTick % this.maxSub;
+                this.currentSub = this.getSubIndexForCell(this.tracks[this.currentTrack] || this.tracks[0], this.currentStep);
+
                 // 需求(B)-3: 框選播放模式的邏輯
                 if (this.playSelectionMode) {
-                    const { startTrack, endTrack, startStep, endStep } = this.playSelectionRange;
-                    
-                  //  if (this.currentStep > endStep || this.currentStep < startStep) {
-                  //      this.stop();
-                   //     return;
-                  //  }
+                    const { startTrack, endTrack } = this.playSelectionRange;
                     
                     this.updateBeatNumbers();
                     this.autoScroll();
-                    
 
                     // 只播放被框選軌道範圍內的聲音
                     for (let t = startTrack; t <= endTrack; t++) {
-                        const track = this.tracks[t];
-                        if (!track || !track.enabled || !track.soundEnabled) continue;
-
-                        if (track.steps[this.currentStep] && !(track.markers[this.currentStep] && track.markers[this.currentStep].rest)) {
-                            const marker = track.markers[this.currentStep] || {};
-                            let volumeMultiplier = 1.0;
-                            if (marker.accent === '>') volumeMultiplier = this.accentVolumeMultiplier;
-                            else if (marker.accent === '•') volumeMultiplier = this.ghostVolumeMultiplier;
-                            this.playSound(track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
-                        }
+                        this.playStepSounds(this.tracks[t], this.currentStep);
                     }
-                    //return; // 結束此函式，不執行後面的正常播放邏輯
                 }
-
 
                 // 需求1-c: 單軌轉譜播放模式的邏輯
                 else if (this.isSingleTrackNotationMode && this.singleTrackNotationIndex !== -1) {
                     this.updateBeatNumbers();
                     this.autoScroll();
-                    const track = this.tracks[this.singleTrackNotationIndex];
-                    if (track && track.enabled && track.steps[this.currentStep] && !(track.markers[this.currentStep] && track.markers[this.currentStep].rest)) {
-                        const marker = track.markers[this.currentStep] || {};
-                        let volumeMultiplier = 1.0;
-                        if (marker.accent === '>') volumeMultiplier = this.accentVolumeMultiplier;
-                        else if (marker.accent === '•') volumeMultiplier = this.ghostVolumeMultiplier;
-                        this.playSound(track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
-                    }
+                    this.playStepSounds(this.tracks[this.singleTrackNotationIndex], this.currentStep);
                 } else if (this.mode === 'ensemble') { // 原本的合奏邏輯
                     this.updateBeatNumbers();
                     this.autoScroll();
-                    this.tracks.forEach((track) => {
-                        if (track.enabled && track.steps[this.currentStep] && !(track.markers[this.currentStep] && track.markers[this.currentStep].rest)) {
-                            const marker = track.markers[this.currentStep] || {};
-                            let volumeMultiplier = 1.0;
-                            if (marker.accent === '>') volumeMultiplier = this.accentVolumeMultiplier;
-                            else if (marker.accent === '•') volumeMultiplier = this.ghostVolumeMultiplier;
-                            this.playSound(track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
-                        }
-                    });
+                    this.tracks.forEach((track) => this.playStepSounds(track, this.currentStep));
                 } else if (this.mode === 'sequential') { // 原本的輪奏邏輯
                     this.updateBeatNumbers();
                     this.autoScroll();
-                    const track = this.tracks[this.currentTrack];
-                    if (track && track.enabled && track.steps[this.currentStep] && !(track.markers[this.currentStep] && track.markers[this.currentStep].rest)) {
-						const marker = track.markers[this.currentStep] || {};
-						let volumeMultiplier = 1.0;
-						if (marker.accent === '>') volumeMultiplier =  this.accentVolumeMultiplier;
-						else if (marker.accent === '•') volumeMultiplier = this.ghostVolumeMultiplier;
-						this.playSound(track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
-                    }
+                    this.playStepSounds(this.tracks[this.currentTrack], this.currentStep);
                 }
 
                 // 節拍器和樂譜高亮邏輯（對所有模式通用）
@@ -2109,13 +2232,13 @@
 					if (this.metronome.mode === 'conductor') {
 						// 在指揮模式下，每一格都要檢查指揮軌
 						const conductorTrack = this.tracks[this.tracks.length - 1];
-						if (conductorTrack && conductorTrack.enabled && conductorTrack.steps[this.currentStep]) {
+						if (conductorTrack && conductorTrack.enabled && this.isNoteAt(conductorTrack, this.currentStep, this.currentOffsetInCell)) {
 							// 只有當指揮軌在當前音格有音符時，才觸發燈號
 							this.triggerMetronome();
 						}
 					} else {
-						// 對於'sequential'和'single'模式，維持原本的邏輯，只在每拍開頭觸發
-						if (this.currentStep % this.stepsPerBeat === 0) {
+						// 對於'sequential'和'single'模式，維持原本的邏輯，只在每拍開頭觸發（子格偏移 0 時）
+						if (this.currentOffsetInCell === 0 && this.currentStep % this.stepsPerBeat === 0) {
 							this.triggerMetronome();
 						}
 					}
@@ -2146,8 +2269,11 @@
 
                     let bottomMostNote = null;
 					tracksToHighlight.forEach(trackIndex => {
-						if (this.tracks[trackIndex] && this.tracks[trackIndex].enabled && this.tracks[trackIndex].steps[this.currentStep] && !(this.tracks[trackIndex].markers[this.currentStep] && this.tracks[trackIndex].markers[this.currentStep].rest)) {
-							const possibleNoteElements = this.findNoteElementsForTrackStep(trackIndex, this.currentStep);
+						const hlTrack = this.tracks[trackIndex];
+						if (hlTrack && hlTrack.enabled && this.isNoteAt(hlTrack, this.currentStep, this.currentOffsetInCell)) {
+							// 有分割時，用展開後的有效 index 找到對應的 32 分音符
+							const effIdx = this.getEffectiveIndexForTrack(hlTrack, this.currentStep);
+							const possibleNoteElements = this.findNoteElementsForTrackStep(trackIndex, effIdx);
 							if (possibleNoteElements.length > 0) {
 								possibleNoteElements.forEach(noteEl => {
 									noteEl.classList.add('vf-note-playing'); // 應用外層光暈效果
@@ -2305,44 +2431,71 @@
 					const stepWidth = firstStep.offsetWidth;
 					const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
 					const totalStepWidth = stepWidth + gap;
-					positionLine.style.left = `${this.currentStep * totalStepWidth}px`;
-					document.documentElement.style.setProperty('--step-size', `${stepWidth}px`);
+					// 播放中：位置線隨子格在格內平滑前進，讓使用者知道目前掃到格內哪個位置
+					let lineLeft = this.currentStep * totalStepWidth;
+					if (this.isPlaying && this.maxSub > 1) {
+						lineLeft += (this.currentOffsetInCell / this.maxSub) * stepWidth;
+					}
+					positionLine.style.left = `${lineLeft}px`;
+					// 注意：不把量到的寬度寫回 --step-width。格子寬度只由 updateStepSize() 控制，
+					// 否則播放中（0.2s transition 未跑完時量測）會把寬度鎖在錯誤值（例如 2× 卡住回不去 1×）
 				}
 
-				document.querySelectorAll('.step.playing').forEach(el => el.classList.remove('playing'));
+				document.querySelectorAll('.step.playing, .sub-step.playing').forEach(el => el.classList.remove('playing'));
 
 				if (this.isPlaying) {
 					if (this.mode === 'ensemble' || this.playSelectionMode || this.isSingleTrackNotationMode) {
-						document.querySelectorAll(`.step[data-step="${this.currentStep}"]`).forEach(el => el.classList.add('playing'));
+						this.tracks.forEach((track, t) => this.highlightCell(track, t, this.currentStep));
 					} else {
-						document.querySelectorAll(`.step[data-track="${this.currentTrack}"][data-step="${this.currentStep}"]`).forEach(el => el.classList.add('playing'));
+						this.highlightCell(this.tracks[this.currentTrack], this.currentTrack, this.currentStep);
 					}
+				}
+			}
+
+			// 對某一格加上播放高亮：分割格亮子格，未分割格亮整格
+			highlightCell(track, trackIndex, stepIndex) {
+				if (!track) return;
+				const cell = track.subdivisions && track.subdivisions[stepIndex];
+				if (cell) {
+					const subIdx = Math.min(cell.count - 1, Math.floor(this.currentOffsetInCell * cell.count / this.maxSub));
+					document.querySelectorAll(`.sub-step[data-track="${trackIndex}"][data-step="${stepIndex}"][data-sub="${subIdx}"]`).forEach(el => el.classList.add('playing'));
+				} else {
+					document.querySelectorAll(`.step[data-track="${trackIndex}"][data-step="${stepIndex}"]`).forEach(el => el.classList.add('playing'));
 				}
 			}
 			
 			
 			updateColorHints() {
                 document.querySelectorAll('.step.active.step-dimmed').forEach(el => el.classList.remove('step-dimmed'));
+                document.querySelectorAll('.sub-step.active.sub-step-dimmed').forEach(el => el.classList.remove('sub-step-dimmed'));
 
                 if (!this.colorHintMode) return;
+
+                const shouldDim = (marker) => {
+                    if (!marker) return false;
+                    if (this.colorHintMode === 'lr' && marker.hand === 'L') return true;
+                    if (this.colorHintMode === 'accent' && marker.accent === '•') return true;
+                    return false;
+                };
 
                 this.tracks.forEach((track, trackIndex) => {
                     track.steps.forEach((isActive, stepIndex) => {
                         if (!isActive) return;
-
-                        const marker = track.markers[stepIndex] || {};
-                        let shouldDim = false;
-
-                        if (this.colorHintMode === 'lr' && marker.hand === 'L') {
-                            shouldDim = true;
-                        } else if (this.colorHintMode === 'accent' && marker.accent === '•') {
-                            shouldDim = true;
-                        }
-
-                        if (shouldDim) {
+                        if (shouldDim(track.markers[stepIndex])) {
                             const stepEl = document.querySelector(`.step[data-track="${trackIndex}"][data-step="${stepIndex}"]`);
                             if (stepEl) stepEl.classList.add('step-dimmed');
                         }
+                    });
+                    // 子格色差
+                    (track.subdivisions || []).forEach((cell, stepIndex) => {
+                        if (!cell) return;
+                        cell.notes.forEach((subActive, subIndex) => {
+                            if (!subActive) return;
+                            if (shouldDim(cell.markers[subIndex])) {
+                                const subEl = document.querySelector(`.sub-step[data-track="${trackIndex}"][data-step="${stepIndex}"][data-sub="${subIndex}"]`);
+                                if (subEl) subEl.classList.add('sub-step-dimmed');
+                            }
+                        });
                     });
                 });
             }
@@ -2375,28 +2528,32 @@
                     left: scrollTarget - scrollOffset, 
                     behavior: 'smooth' 
                 });
-            }
+            }				autoScroll() {
+					const sequencer = document.querySelector('.tracks-sequencer');
+					const trackStepsContainer = document.getElementById('trackSteps');
+					const firstStep = trackStepsContainer ? trackStepsContainer.querySelector('.step') : null;
 
-			autoScroll() {
-				const sequencer = document.querySelector('.tracks-sequencer');
-				const trackStepsContainer = document.getElementById('trackSteps');
-				const firstStep = trackStepsContainer ? trackStepsContainer.querySelector('.step') : null;
+					if (!firstStep || !sequencer) return;
 
-				if (!firstStep || !sequencer) return;
+					const stepWidth = firstStep.offsetWidth;
+					const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
+					const fullStepWidth = stepWidth + gap;
+					const scrollLeft = sequencer.scrollLeft;
+					const clientWidth = sequencer.clientWidth;
+					const playheadPosition = this.currentStep * fullStepWidth;
+					const scrollTriggerPoint = scrollLeft + (clientWidth * 0.8);
 
-				const stepWidth = firstStep.offsetWidth;
-				const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
-				const fullStepWidth = stepWidth + gap;
-				const scrollLeft = sequencer.scrollLeft;
-				const clientWidth = sequencer.clientWidth;
-				const playheadPosition = this.currentStep * fullStepWidth;
-				const scrollTriggerPoint = scrollLeft + (clientWidth * 0.8);
-
-				if (playheadPosition > scrollTriggerPoint && (scrollLeft + clientWidth) < sequencer.scrollWidth) {
-					const newScrollLeft = playheadPosition - (clientWidth * 0.1);
-					sequencer.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+					// 往前：播放軸超過可視區 80% 時跟著捲
+					if (playheadPosition > scrollTriggerPoint && (scrollLeft + clientWidth) < sequencer.scrollWidth) {
+						const newScrollLeft = playheadPosition - (clientWidth * 0.1);
+						sequencer.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+					}
+					// 往後：播放軸跑到可視區左側之外時，捲回來讓它可見（格寬放大時尤其需要）
+					else if (playheadPosition < scrollLeft) {
+						const newScrollLeft = Math.max(0, playheadPosition - (clientWidth * 0.1));
+						sequencer.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
+					}
 				}
-			}
 
 			scrollToBeats(startBeat) {
 				const sequencer = document.querySelector('.tracks-sequencer');
@@ -2419,6 +2576,7 @@
 				this.tracks.forEach(track => {
 					track.steps.push(...Array(beatsToAdd * this.stepsPerBeat).fill(false));
 					track.markers.push(...Array.from({ length: beatsToAdd * this.stepsPerBeat }, () => ({})));
+					track.subdivisions.push(...Array(beatsToAdd * this.stepsPerBeat).fill(null));
 				});
 				this.renderTracks();
 				this.updateExpandButton();
@@ -2437,6 +2595,7 @@
 				this.tracks.forEach(track => {
 					track.steps.length = this.totalBeats * this.stepsPerBeat;
 					track.markers.length = this.totalBeats * this.stepsPerBeat;
+					track.subdivisions.length = this.totalBeats * this.stepsPerBeat;
 				});
 
 				if (this.currentStep >= this.totalBeats * this.stepsPerBeat) {
@@ -2463,11 +2622,10 @@
 
                 const beatsToRemove = 4;
                 const stepsToRemove = beatsToRemove * this.stepsPerBeat;
-                this.totalBeats -= beatsToRemove;
-
-                this.tracks.forEach(track => {
+                this.totalBeats -= beatsToRemove;				this.tracks.forEach(track => {
                     track.steps.splice(0, stepsToRemove);
                     track.markers.splice(0, stepsToRemove);
+                    track.subdivisions.splice(0, stepsToRemove);
                 });
                 
                 this.currentStep = 0;
@@ -2580,6 +2738,192 @@
 				}
 			}
 
+			handleSubStepClick(el, trackIndex, stepIndex, subIndex) {
+				const track = this.tracks[trackIndex];
+				const sub = track && track.subdivisions ? track.subdivisions[stepIndex] : null;
+				if (!sub) return;
+
+				if (this.markingMode) {
+					let markerObj = sub.markers[subIndex] || {};
+					const isErasing = this.currentMarker === 'eraser';
+
+					if (this.currentMarker === 'rest') {
+						if (markerObj.rest) {
+							delete markerObj.rest;
+						} else {
+							markerObj = { rest: '-' };
+							if (sub.notes[subIndex]) sub.notes[subIndex] = false;
+						}
+					} else if (this.currentMarker === 'accent') {
+						if (markerObj.accent === this.currentAccent) {
+							delete markerObj.accent;
+						} else {
+							delete markerObj.rest;
+							markerObj.accent = this.currentAccent;
+						}
+					} else if (this.currentMarker === 'R' || this.currentMarker === 'L') {
+						if (markerObj.hand === this.currentMarker) {
+							delete markerObj.hand;
+						} else {
+							delete markerObj.rest;
+							markerObj.hand = this.currentMarker;
+						}
+					} else if (isErasing) {
+						markerObj = {};
+					}
+
+					sub.markers[subIndex] = markerObj;
+					this.renderTracks();
+					this.saveState();
+					return;
+				}
+
+				if (this.selectionMode) {
+					// 子格點擊視為選取該粗格（與點擊整格相同）
+					const container = document.querySelector(`.step[data-track="${trackIndex}"][data-step="${stepIndex}"]`);
+					if (container) this.handleStepClick(container);
+					return;
+				}
+
+				this.toggleSubStep(trackIndex, stepIndex, subIndex);
+			}
+
+			toggleSubStep(trackIndex, stepIndex, subIndex) {
+				const track = this.tracks[trackIndex];
+				const sub = track.subdivisions[stepIndex];
+				if (!sub) return;
+				if (sub.markers[subIndex] && sub.markers[subIndex].rest) {
+					delete sub.markers[subIndex].rest;
+				}
+				sub.notes[subIndex] = !sub.notes[subIndex];
+				this.renderTracks();
+				this.saveState();
+			}
+
+			applySubRestMarker(trackIndex, stepIndex, subIndex) {
+				const track = this.tracks[trackIndex];
+				if (!track) return;
+				const sub = track.subdivisions[stepIndex];
+				if (!sub) return;
+				const currentMarker = sub.markers[subIndex] || {};
+
+				if (currentMarker.rest) {
+					delete currentMarker.rest;
+				} else {
+					currentMarker.rest = '-';
+					if (sub.notes[subIndex]) sub.notes[subIndex] = false;
+				}
+
+				sub.markers[subIndex] = currentMarker;
+				this.renderTracks();
+				this.saveState();
+			}
+
+			// 將某一格細分一層（1→2→4→8…），最深到 64 分音符（3 條線）。不回存，由呼叫端統一回存。
+			splitStep(trackIndex, stepIndex) {
+				const track = this.tracks[trackIndex];
+				if (!track || stepIndex >= track.steps.length) return false;
+				const current = track.subdivisions[stepIndex];
+				const newCount = current ? current.count * 2 : 2;
+				// 最深以 64 分音符為限：子格時值 = 1/(stepsPerBeat × count) 拍，
+				// 64 分 = 1/16 拍 → count 上限 = 16 / stepsPerBeat
+				const maxCount = Math.max(2, Math.floor(16 / this.stepsPerBeat));
+				if (newCount > maxCount) {
+					alert('已達最小顆粒度（64 分音符），無法再分割。');
+					return false;
+				}
+
+				// 依需求：第一次分割時，清除原本格子的音符與標記；再分割則保留既有子格內容
+				if (!current) {
+					track.steps[stepIndex] = false;
+					track.markers[stepIndex] = {};
+				}
+				const notes = current ? [...current.notes, ...Array(newCount - current.count).fill(false)] : Array(newCount).fill(false);
+				const markers = current ? [...current.markers.map(m => ({ ...m })), ...Array.from({ length: newCount - current.count }, () => ({}))] : Array.from({ length: newCount }, () => ({}));
+				track.subdivisions[stepIndex] = { count: newCount, notes, markers };
+				return true;
+			}
+
+			// 將某一格合併一層（…8→4→2→1）。不回存，由呼叫端統一回存。
+			mergeStep(trackIndex, stepIndex) {
+				const track = this.tracks[trackIndex];
+				if (!track || stepIndex >= track.steps.length) return false;
+				const sub = track.subdivisions[stepIndex];
+				if (!sub || sub.count < 2) return false;
+				const newCount = sub.count / 2;
+
+				if (newCount === 1) {
+					// 合併回未分割：任一子格有音 → 粗格有音；標記取第一個子格
+					const hasNote = sub.notes.some(n => n);
+					const firstMarker = (sub.markers[0] && Object.keys(sub.markers[0]).length > 0) ? { ...sub.markers[0] } : {};
+					track.steps[stepIndex] = hasNote;
+					track.markers[stepIndex] = firstMarker;
+					if (track.markers[stepIndex].rest) {
+						track.steps[stepIndex] = false; // 休止符與音符互斥
+					}
+					track.subdivisions[stepIndex] = null;
+				} else {
+					// 兩兩合併：音符 OR，標記取每對的第一個
+					const notes = [], markers = [];
+					for (let j = 0; j < newCount; j++) {
+						notes.push(sub.notes[j * 2] || sub.notes[j * 2 + 1]);
+						const m0 = sub.markers[j * 2] || {};
+						const m1 = sub.markers[j * 2 + 1] || {};
+						markers.push(Object.keys(m0).length > 0 ? { ...m0 } : (Object.keys(m1).length > 0 ? { ...m1 } : {}));
+					}
+					track.subdivisions[stepIndex] = { count: newCount, notes, markers };
+				}
+				return true;
+			}
+
+			// 對選取範圍（單格或矩形）執行分割
+			splitSelection() {
+				if (!this.selectionMode || this.selection.startTrack === null || this.selection.endTrack === null) {
+					alert('請先進入編輯模式（E），點選要分割的格子，再按「分割」。');
+					return;
+				}
+				const startTrack = Math.min(this.selection.startTrack, this.selection.endTrack);
+				const endTrack = Math.max(this.selection.startTrack, this.selection.endTrack);
+				const startStep = Math.min(this.selection.startStep, this.selection.endStep);
+				const endStep = Math.max(this.selection.startStep, this.selection.endStep);
+
+				let changed = false;
+				for (let t = startTrack; t <= endTrack; t++) {
+					for (let s = startStep; s <= endStep; s++) {
+						if (this.splitStep(t, s)) changed = true;
+					}
+				}
+				if (!changed) return;
+
+				this.renderTracks();
+				this.saveState();
+				this.updateSelectionUI();
+			}
+
+			// 對選取範圍（單格或矩形）執行合併
+			mergeSelection() {
+				if (!this.selectionMode || this.selection.startTrack === null || this.selection.endTrack === null) {
+					alert('請先進入編輯模式（E），點選要合併的格子，再按「合併」。');
+					return;
+				}
+				const startTrack = Math.min(this.selection.startTrack, this.selection.endTrack);
+				const endTrack = Math.max(this.selection.startTrack, this.selection.endTrack);
+				const startStep = Math.min(this.selection.startStep, this.selection.endStep);
+				const endStep = Math.max(this.selection.startStep, this.selection.endStep);
+
+				let changed = false;
+				for (let t = startTrack; t <= endTrack; t++) {
+					for (let s = startStep; s <= endStep; s++) {
+						if (this.mergeStep(t, s)) changed = true;
+					}
+				}
+				if (!changed) return;
+
+				this.renderTracks();
+				this.saveState();
+				this.updateSelectionUI();
+			}
+
 
 
             toggleSelectionMode() {
@@ -2637,12 +2981,14 @@
 
 				const patternData = {
 					steps: [],
-					markers: []
+					markers: [],
+					subdivisions: []
 				};
 
 				for (let t = startTrack; t <= endTrack; t++) {
 					patternData.steps.push(this.tracks[t].steps.slice(startStep, endStep + 1));
 					patternData.markers.push(this.tracks[t].markers.slice(startStep, endStep + 1));
+					patternData.subdivisions.push((this.tracks[t].subdivisions || []).slice(startStep, endStep + 1).map(sd => sd ? { count: sd.count, notes: sd.notes.slice(), markers: sd.markers.map(m => ({ ...m })) } : null));
 				}
 
 				this.clipboard.pattern = patternData;
@@ -2683,20 +3029,22 @@
 					const beatsNeeded = Math.ceil(stepsNeeded / this.stepsPerBeat);
 					const beatsToAdd = Math.ceil(beatsNeeded / 4) * 4;
 					this.expandBeats(beatsToAdd);
-				}
-
-				for (let t = 0; t < patternHeight; t++) {
-					const targetTrackIndex = pasteStartTrack + t;
-					if (this.tracks[targetTrackIndex]) {
-						for (let s = 0; s < patternWidth; s++) {
-							const targetStepIndex = pasteStartStep + s;
-							if (targetStepIndex < this.tracks[targetTrackIndex].steps.length) {
-								this.tracks[targetTrackIndex].steps[targetStepIndex] = this.clipboard.pattern.steps[t][s];
-								this.tracks[targetTrackIndex].markers[targetStepIndex] = { ...this.clipboard.pattern.markers[t][s] };
+				}					for (let t = 0; t < patternHeight; t++) {
+						const targetTrackIndex = pasteStartTrack + t;
+						if (this.tracks[targetTrackIndex]) {
+							for (let s = 0; s < patternWidth; s++) {
+								const targetStepIndex = pasteStartStep + s;
+								if (targetStepIndex < this.tracks[targetTrackIndex].steps.length) {
+									this.tracks[targetTrackIndex].steps[targetStepIndex] = this.clipboard.pattern.steps[t][s];
+									this.tracks[targetTrackIndex].markers[targetStepIndex] = { ...this.clipboard.pattern.markers[t][s] };
+									// 貼上分割資料（舊樣式檔無此欄位 → 視為未分割）
+									const srcSub = this.clipboard.pattern.subdivisions && this.clipboard.pattern.subdivisions[t] ? this.clipboard.pattern.subdivisions[t][s] : null;
+									if (!this.tracks[targetTrackIndex].subdivisions) this.tracks[targetTrackIndex].subdivisions = Array(this.tracks[targetTrackIndex].steps.length).fill(null);
+									this.tracks[targetTrackIndex].subdivisions[targetStepIndex] = srcSub ? { count: srcSub.count, notes: srcSub.notes.slice(), markers: srcSub.markers.map(m => ({ ...m })) } : null;
+								}
 							}
 						}
 					}
-				}
 
 				this.renderTracks();
 				this.saveState();
@@ -2903,6 +3251,8 @@
 
 				this.tracks.forEach(track => {
 					track.markers = Array.from({ length: track.markers.length }, () => ({}));
+					// 子格標記一併清除
+					(track.subdivisions || []).forEach(sd => { if (sd) sd.markers = Array.from({ length: sd.count }, () => ({})); });
 				});
 
 				this.renderTracks();
@@ -2922,6 +3272,7 @@
 				this.tracks.forEach(track => {
 					track.steps.fill(false);
 					track.markers = Array.from({ length: track.markers.length }, () => ({}));
+					track.subdivisions = Array(track.steps.length).fill(null);
 				});
 
 				this.currentStep = 0;
@@ -3073,17 +3424,17 @@
                         // If stepsPerBeat isn't 4, we might read out of bounds of measurePattern (length 16)
                         // but the user's specific use case sets 1拍=4格.
                         // To be safe against weird configs, just take step modulo 16.
-                        track.steps[i] = measurePattern[stepInMeasure % 16];
-                        
-                        // Also clear any markers in these steps to avoid confusion
-                        if (track.markers) {
-                            track.markers[i] = null;
-                        }
-                    }
-                }
-                
-                this.renderTracks();
-            }
+                        track.steps[i] = measurePattern[stepInMeasure % 16];						// Also clear any markers in these steps to avoid confusion
+						if (track.markers) {
+							track.markers[i] = null;
+						}
+					}
+					// 隨機化時一併清除分割，避免狀態混亂
+					track.subdivisions = Array(track.steps.length).fill(null);
+				}
+
+				this.renderTracks();
+			}
 
             exportPattern() {
                 const pattern = {
@@ -3098,12 +3449,12 @@
                     showNumbers: this.showNumbers,
 					showMarkers: this.showMarkers,
                     stepsPerBeat: this.stepsPerBeat,
-					metronome: this.metronome,
-                    tracks: this.tracks.map(track => ({
+					metronome: this.metronome,						tracks: this.tracks.map(track => ({
 						label: track.label,
                         drumType: track.drumType,
                         steps: track.steps,
 						markers: track.markers,
+                        subdivisions: track.subdivisions ? track.subdivisions.map(sd => sd ? { count: sd.count, notes: sd.notes.map(n => n ? 1 : 0), markers: sd.markers } : null) : null,
                         enabled: track.enabled,
                         soundEnabled: track.soundEnabled,
                         volume: track.volume
@@ -3176,6 +3527,7 @@
 							drumType: trackData.drumType || this.defaultDrums[index] || 'agogo',
 							steps: trackData.steps || Array(this.totalBeats * this.stepsPerBeat).fill(false),
 							markers: newMarkers,
+							subdivisions: this.normalizeSubdivisions(trackData.subdivisions, this.totalBeats * this.stepsPerBeat),
 							enabled: trackData.enabled !== undefined ? trackData.enabled : true,
 							soundEnabled: trackData.soundEnabled !== undefined ? trackData.soundEnabled : true,
 							volume: trackData.volume !== undefined ? trackData.volume : 0.8
@@ -3278,17 +3630,7 @@
 							const loopStartTime = loop * durationOfOneLoop;
 							for (let step = 0; step < stepsInOneLoop; step++) {
 								this.tracks.forEach(track => {
-                                    if (track.enabled && track.steps[step] && !(track.markers[step] && track.markers[step].rest)) {
-										const time = loopStartTime + step * stepDurationInSeconds;
-										const marker = track.markers[step] || {};
-										let volumeMultiplier = 1.0;
-										if (marker.accent === '>') {
-											volumeMultiplier = this.accentVolumeMultiplier;
-										} else if (marker.accent === '•') {
-											volumeMultiplier = this.ghostVolumeMultiplier;
-										}
-										this.scheduleSound(offlineContext, time, track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
-									}
+									this.scheduleStepSounds(offlineContext, track, step, loopStartTime + step * stepDurationInSeconds, stepDurationInSeconds);
 								});
 							}
 						}
@@ -3297,17 +3639,7 @@
 						for (let loop = 0; loop < loopCount; loop++) {
 							for (const track of enabledTracks) {
 								for (let step = 0; step < stepsInOneLoop; step++) {
-                                    if (track.steps[step] && !(track.markers[step] && track.markers[step].rest)) {
-										const time = timeOffset + step * stepDurationInSeconds;
-                                        const marker = track.markers[step] || {};
-                                        let volumeMultiplier = 1.0;
-                                        if (marker.accent === '>') {
-                                            volumeMultiplier = this.accentVolumeMultiplier;
-                                        } else if (marker.accent === '•') {
-                                            volumeMultiplier = this.ghostVolumeMultiplier;
-                                        }
-                                        this.scheduleSound(offlineContext, time, track.drumType, track.soundEnabled, track.volume * volumeMultiplier);
-									}
+									this.scheduleStepSounds(offlineContext, track, step, timeOffset + step * stepDurationInSeconds, stepDurationInSeconds);
 								}
 								timeOffset += durationOfOneLoop;
 							}
@@ -3358,6 +3690,30 @@
                     exportBtn.classList.remove('loading');
                 }
             }
+
+			// MP3 離線匯出用：排程某一格（含子格）應發出的聲音
+			scheduleStepSounds(offlineContext, track, step, timeBase, stepDurationInSeconds) {
+				if (!track || !track.enabled || !track.soundEnabled) return;
+				const cell = track.subdivisions && track.subdivisions[step];
+				if (cell) {
+					for (let j = 0; j < cell.count; j++) {
+						if (cell.notes[j] && !(cell.markers[j] && cell.markers[j].rest)) {
+							const time = timeBase + (j / cell.count) * stepDurationInSeconds;
+							const m = cell.markers[j] || {};
+							let v = 1.0;
+							if (m.accent === '>') v = this.accentVolumeMultiplier;
+							else if (m.accent === '•') v = this.ghostVolumeMultiplier;
+							this.scheduleSound(offlineContext, time, track.drumType, track.soundEnabled, track.volume * v);
+						}
+					}
+				} else if (track.steps[step] && !(track.markers[step] && track.markers[step].rest)) {
+					const m = track.markers[step] || {};
+					let v = 1.0;
+					if (m.accent === '>') v = this.accentVolumeMultiplier;
+					else if (m.accent === '•') v = this.ghostVolumeMultiplier;
+					this.scheduleSound(offlineContext, timeBase, track.drumType, track.soundEnabled, track.volume * v);
+				}
+			}
 
 			scheduleSound(context, time, drumType, soundEnabled = true, trackVolume = 1.0) {
 				if (!soundEnabled) return;
@@ -3690,6 +4046,11 @@
 			}
 
 
+                    // 有分割時：把每軌展開成「有效細格」（每粗格 × 全曲最大子格數），
+                    // 使 32 分音符（甚至更深）能正確顯示在樂譜上
+                    const maxSub = this.computeMaxSubdivision();
+                    const espb = this.stepsPerBeat * maxSub;
+
                     for (let t = startTrack; t <= endTrack; t++) {
                         const track = this.tracks[t];
                         const trackContainer = document.createElement('div');
@@ -3705,11 +4066,13 @@
 
                         notationContent.appendChild(trackContainer);
                         
-                        const trackSteps = track.steps.slice(startStep, endStep + 1);
-                        const trackMarkers = track.markers.slice(startStep, endStep + 1);
-                        const measures = this.parseTrackToMeasures(trackSteps, trackMarkers);
+                        const slicedSteps = track.steps.slice(startStep, endStep + 1);
+                        const slicedMarkers = track.markers.slice(startStep, endStep + 1);
+                        const slicedSubs = (track.subdivisions || []).slice(startStep, endStep + 1);
+                        const expanded = this.expandSteps(slicedSteps, slicedMarkers, slicedSubs, maxSub);
+                        const measures = this.parseTrackToMeasures(expanded.steps, expanded.markers, espb);
                         
-                        this.renderMeasuresWithVexFlow(vexflowContainer, measures, showHints, markerMode, startStep, t, trackMarkers);
+                        this.renderMeasuresWithVexFlow(vexflowContainer, measures, showHints, markerMode, startStep * maxSub, t, expanded.markers, espb);
                     }
                     
                     document.getElementById('notationModal').style.display = 'flex';
@@ -3759,45 +4122,102 @@
 				this.convertRangeToNotation(startTrack, endTrack, startStep, endStep);
 			}
 
-			parseTrackToMeasures(steps, markers) {
+			// 將（可能含分割的）steps/markers/subdivisions 展開為「有效細格」陣列，供樂譜解析
+			// 分割格：每個子格只佔「1 個有效細格」，空隙標記為休止符，
+			// 讓樂譜正確顯示 32/64 分音符，不會被 sustain 合併成較長音符
+			expandSteps(steps, markers, subdivisions, maxSub) {
+					const outSteps = [], outMarkers = [];
+					steps.forEach((active, i) => {
+						const cell = subdivisions && subdivisions[i];
+						if (cell) {
+							// 每個子格跨 maxSub/count 個單位
+							const span = maxSub / cell.count;
+							for (let k = 0; k < maxSub; k++) {
+								const j = Math.round(k * cell.count / maxSub);
+								const isSubStart = (k === Math.round(j * maxSub / cell.count));
+								if (isSubStart) {
+									const hasNote = !!cell.notes[j];
+									outSteps.push(hasNote);
+									const subMarker = (cell.markers[j] && { ...cell.markers[j] }) || {};
+									// _subNote = 此子格到「格界」剩餘的單位數：子格音符在格子範圍內 sustain
+									// （例：一拍4格、2 分割、只敲子格 0 → 16 分音符 1 條線；兩子格都敲 → 仍兩個 32 分）
+									// 空子格也標記（不加休止），讓前一格的 sustain 在格界停住
+									subMarker._subNote = span * (cell.count - j);
+									outMarkers.push(subMarker);
+								} else {
+									// 子格內部：留空（不標休止），讓子格音符能在格內 sustain 到格界
+									outSteps.push(false);
+									outMarkers.push({});
+								}
+							}
+						} else {
+							// 未分割格維持原本 sustain 語意（舊鼓譜轉譜不變）
+							for (let k = 0; k < maxSub; k++) {
+								outSteps.push(k === 0 ? !!active : false);
+								outMarkers.push(k === 0 ? ((markers[i] && { ...markers[i] }) || {}) : {});
+							}
+						}
+					});
+					return { steps: outSteps, markers: outMarkers };
+				}
+
+			// 播放高亮用：把 (粗格, 目前子格) 換算成樂譜展開後的有效 index
+			getEffectiveIndexForTrack(track, stepIndex) {
+				const cell = track.subdivisions && track.subdivisions[stepIndex];
+				const off = this.currentOffsetInCell;
+				if (cell) {
+					const j = Math.min(cell.count - 1, Math.floor(off * cell.count / this.maxSub));
+					return stepIndex * this.maxSub + Math.round(j * this.maxSub / cell.count);
+				}
+				return stepIndex * this.maxSub + off;
+			}
+
+			parseTrackToMeasures(steps, markers, espb) {
+				// espb = 有效一拍格數（含子格展開後）；未指定時用目前的 stepsPerBeat
+				const effectiveSpb = espb || this.stepsPerBeat;
 				const measures = [];
-				const stepsPerMeasure = 4 * this.stepsPerBeat;
+				const stepsPerMeasure = 4 * effectiveSpb;
 
 				for (let i = 0; i < steps.length; i += stepsPerMeasure) {
 					const measureSteps = steps.slice(i, i + stepsPerMeasure);
 					const measureMarkers = markers.slice(i, i + stepsPerMeasure);
-					measures.push(this.parseMeasure(measureSteps, measureMarkers));
+					measures.push(this.parseMeasure(measureSteps, measureMarkers, effectiveSpb));
 				}
 				return measures;
 			}
 
-			parseMeasure(measureSteps, measureMarkers) {
+			parseMeasure(measureSteps, measureMarkers, espb) {
+				const effectiveSpb = espb || this.stepsPerBeat;
 				const symbols = [];
 				let i = 0;
 				
-				while (i < measureSteps.length) {
-					if (measureSteps[i] && !(measureMarkers[i] && measureMarkers[i].rest)) {
+				while (i < measureSteps.length) {					if (measureSteps[i] && !(measureMarkers[i] && measureMarkers[i].rest)) {
 						let duration = 1;
-						while (i + duration < measureSteps.length && 
-							   !measureSteps[i + duration] && 
-							   !(measureMarkers[i + duration] && measureMarkers[i + duration].rest)) {
+						// 子格音符：_subNote = 到格界剩餘單位數，音符在「格子範圍內」sustain 到格界或下一個音符
+						// （例：一拍4格、2 分割、只敲子格 0 → 16 分音符 1 條線）
+						const subCap = (measureMarkers[i] && typeof measureMarkers[i]._subNote === 'number') ? measureMarkers[i]._subNote : 0;
+						// 未分割音符：維持原本跨格 sustain，但在分割格邊界（_subNote 標記）停住
+						while (i + duration < measureSteps.length &&
+						   !measureSteps[i + duration] &&
+						   !(measureMarkers[i + duration] && measureMarkers[i + duration].rest) &&
+						   (subCap ? (duration < subCap) : !(measureMarkers[i + duration] && measureMarkers[i + duration]._subNote))) {
 							duration++;
 						}
 						symbols.push({ type: 'note', duration, marker: measureMarkers[i] });
-						i += duration;
-					} else {
+						i += duration;					} else {
 						let duration = 1;
 						while (i + duration < measureSteps.length && 
-							   (!measureSteps[i + duration] || (measureMarkers[i + duration] && measureMarkers[i + duration].rest))) {
+						   (!measureSteps[i + duration] || (measureMarkers[i + duration] && measureMarkers[i + duration].rest)) &&
+						   !(measureMarkers[i + duration] && measureMarkers[i + duration]._subNote)) {
 							duration++;
 						}
 						
-						const beatsInDuration = duration / this.stepsPerBeat;
+						const beatsInDuration = duration / effectiveSpb;
 						const wholeBeatRests = Math.floor(beatsInDuration);
-						const remainingSteps = duration % this.stepsPerBeat;
+						const remainingSteps = duration % effectiveSpb;
 						
 						for (let b = 0; b < wholeBeatRests; b++) {
-							symbols.push({ type: 'rest', duration: this.stepsPerBeat });
+							symbols.push({ type: 'rest', duration: effectiveSpb });
 						}
 						
 						if (remainingSteps > 0) {
@@ -3811,8 +4231,8 @@
 				return symbols;
 			}
 
-			getVexFlowDuration(duration) {
-				const totalValue = duration / this.stepsPerBeat;
+			getVexFlowDuration(duration, espb) {
+				const totalValue = duration / (espb || this.stepsPerBeat);
 
 				if (totalValue === 3)    return { duration: "h",  dot: true };
 				if (totalValue === 1.5)  return { duration: "q",  dot: true };
@@ -3825,17 +4245,19 @@
 				return { duration: durationMap[totalValue] || "q", dot: false };
 			}
 
-			renderMeasuresWithVexFlow(container, measures, showHints, markerMode, selectionStartStep = 0, trackIndex = 0, trackMarkers = []) {
+			renderMeasuresWithVexFlow(container, measures, showHints, markerMode, selectionStartStep = 0, trackIndex = 0, trackMarkers = [], espb) {
 				const VF = Vex.Flow;
 				container.innerHTML = '';
 
 				const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
 				const context = renderer.getContext();
 				
-				const measuresPerLine = this.stepsPerBeat === 8 ? 3 : 4;
+				// espb = 有效一拍格數（有分割時為 stepsPerBeat × maxSub，格子更細需更多寬度）
+				const effectiveSpb = espb || this.stepsPerBeat;
+				const measuresPerLine = effectiveSpb >= 8 ? 3 : 4;
 				const LEFT_MARGIN = 10, RIGHT_MARGIN = 20;
 				let currentX = LEFT_MARGIN, currentY = 20;
-				const MIN_MEASURE_WIDTH = (this.stepsPerBeat === 8) ? 360 : 300;
+				const MIN_MEASURE_WIDTH = (effectiveSpb >= 8) ? 360 : 300;
 				const visibleWidth =  (container.getBoundingClientRect?.().width) || container.clientWidth || 960;
 				const canvasWidth = Math.max(visibleWidth, MIN_MEASURE_WIDTH * measuresPerLine + LEFT_MARGIN + RIGHT_MARGIN);
 				const staveWidth = Math.max(MIN_MEASURE_WIDTH, (visibleWidth - LEFT_MARGIN - RIGHT_MARGIN) / measuresPerLine);
@@ -3857,13 +4279,15 @@
 					let stepsInCurrentBeat = 0;
                     let stepCounter = 0;
 					
-					const measureStartStep = measureIndex * 4 * this.stepsPerBeat;
+					const measureStartStep = measureIndex * 4 * effectiveSpb;
 
 					measure.forEach(symbol => {
-						const vexData = this.getVexFlowDuration(symbol.duration);
+						const vexData = this.getVexFlowDuration(symbol.duration, effectiveSpb);
 						if (!vexData || !vexData.duration) return;
 
 						const note = new VF.StaveNote({ keys: ["b/4"], duration: vexData.duration + (symbol.type === 'rest' ? 'r' : ''), clef: "percussion" });
+						// 只有 8/16/32/64 分音符才能加 Beam（避免長音符造成 VexFlow 錯誤）
+						note._canBeam = symbol.type !== 'rest' && ['8', '16', '32', '64'].includes(vexData.duration);
 
                         // 修改：依「左右 / 強弱」模式選擇顯示哪一種
                         if (symbol.type === 'note') {
@@ -3910,8 +4334,9 @@
 						stepsInCurrentBeat += symbol.duration;
                         stepCounter += symbol.duration;
 
-						if (stepsInCurrentBeat >= this.stepsPerBeat) {
-						  if (notesInCurrentBeat.length > 1) allBeams.push(new VF.Beam(notesInCurrentBeat));
+						if (stepsInCurrentBeat >= effectiveSpb) {
+						  const beamableNotes = notesInCurrentBeat.filter(n => n._canBeam);
+						  if (beamableNotes.length > 1) allBeams.push(new VF.Beam(beamableNotes));
 						  notesInCurrentBeat = [];
 						  stepsInCurrentBeat = 0;
 						}
@@ -3944,7 +4369,7 @@
 							}
 							const boundaryX = [];
 							for (let k = 0; k <= beatsInMeasure; k++) {
-							  const target = k * this.stepsPerBeat;
+							  const target = k * effectiveSpb;
 							  let r = pieceInfos.find(p => target <= p.end) || pieceInfos[pieceInfos.length - 1];
 							  let x;
 							  if (!r) x = 0;
@@ -4004,27 +4429,32 @@
     container.className = 'vexflow-container system';
     notationContent.appendChild(container);
 
+    const maxSub = this.computeMaxSubdivision();
+    const espb = this.stepsPerBeat * maxSub;
     const measuresByTrack = [];
     const trackInfos = [];
     for (let t = startTrack; t <= endTrack; t++) {
       const track = this.tracks[t];
       const steps   = track.steps.slice(startStep, endStep + 1);
       const markers = track.markers.slice(startStep, endStep + 1);
+      const subs    = (track.subdivisions || []).slice(startStep, endStep + 1);
       if (typeof this.parseTrackToMeasures !== 'function') {
         alert('缺少 parseTrackToMeasures 方法，無法轉譜。');
         return;
       }
-      measuresByTrack.push(this.parseTrackToMeasures(steps, markers));
+      const expanded = this.expandSteps(steps, markers, subs, maxSub);
+      measuresByTrack.push(this.parseTrackToMeasures(expanded.steps, expanded.markers, espb));
       const snd = (this.drumSounds && this.drumSounds[track.drumType]) || {};
       trackInfos.push({ label: track.label, drumName: snd.name || track.drumType });
     }
 
-    this.renderAlignedMeasuresNoHScroll(container, measuresByTrack, trackInfos, showHints, startStep, startTrack);
+    this.renderAlignedMeasuresNoHScroll(container, measuresByTrack, trackInfos, showHints, startStep * maxSub, startTrack, espb);
   };
 
   const RULER_MODE = 'maxAcrossTracks';
 
-  Beatmaker.prototype.renderAlignedMeasuresNoHScroll = function(container, measuresByTrack, trackInfos, showHints, selectionStartStep = 0, startTrack = 0) {
+  Beatmaker.prototype.renderAlignedMeasuresNoHScroll = function(container, measuresByTrack, trackInfos, showHints, selectionStartStep = 0, startTrack = 0, espb) {
+    const effectiveSpb = espb || this.stepsPerBeat;
     container.innerHTML = '';
     const renderer = new VF.Renderer(container, VF.Renderer.Backends.SVG);
     const context  = renderer.getContext();
@@ -4139,7 +4569,7 @@
         let stepCounter = 0;
 
         for (const sym of symbols) {
-          const vex = this.getVexFlowDuration ? this.getVexFlowDuration(sym.duration) : null;
+          const vex = this.getVexFlowDuration ? this.getVexFlowDuration(sym.duration, effectiveSpb) : null;
           if (!vex || !vex.duration) continue;
 
           const note = new VF.StaveNote({
@@ -4147,9 +4577,10 @@
             duration: vex.duration + (sym.type === 'rest' ? 'r' : ''),
             clef: 'percussion'
           });
+          note._canBeam = sym.type !== 'rest' && ['8', '16', '32', '64'].includes(vex.duration);
 
           if (sym.type === 'note') {
-            const globalStepIndex = selectionStartStep + m * 4 * this.stepsPerBeat + stepCounter;
+            const globalStepIndex = selectionStartStep + m * 4 * effectiveSpb + stepCounter;
             noteStepMap.push({ note, track: startTrack + t, step: globalStepIndex });
           }
           stepCounter += sym.duration;
@@ -4164,8 +4595,9 @@
           if (sym.type !== 'rest') notesInBeat.push(note);
 
           stepsInBeat += sym.duration;
-          if (stepsInBeat >= this.stepsPerBeat) {
-            if (notesInBeat.length > 1) beams.push(new VF.Beam(notesInBeat));
+          if (stepsInBeat >= effectiveSpb) {
+            const beamableNotes = notesInBeat.filter(n => n._canBeam);
+            if (beamableNotes.length > 1) beams.push(new VF.Beam(beamableNotes));
             notesInBeat = [];
             stepsInBeat = 0;
           }
@@ -4217,8 +4649,8 @@
           if (!n) {
             pieceInfos.push({
               start: acc, end: acc + sym.duration,
-              left:  startX + (acc / (4 * this.stepsPerBeat)) * (endX - startX),
-              right: startX + ((acc + sym.duration) / (4 * this.stepsPerBeat)) * (endX - startX),
+              left:  startX + (acc / (4 * effectiveSpb)) * (endX - startX),
+              right: startX + ((acc + sym.duration) / (4 * effectiveSpb)) * (endX - startX),
             });
             acc += sym.duration;
             continue;
@@ -4233,7 +4665,7 @@
         }
         const res = [startX];
         for (let k = 1; k < 4; k++) {
-          const target = k * this.stepsPerBeat;
+          const target = k * effectiveSpb;
           let seg = pieceInfos.find(p => target <= p.end) || pieceInfos[pieceInfos.length - 1];
           let xk;
           if (!seg) xk = startX + (endX - startX) * (k / 4);

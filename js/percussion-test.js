@@ -136,13 +136,30 @@ class PercussionTestModule {
         const stepsPerBeat = this.beatmaker.stepsPerBeat;
         const totalSteps = this.beatmaker.totalBeats * stepsPerBeat;
 
-        const microStepDuration = (60 / bpm) / (stepsPerBeat * 2) * 1000;
+        const stepDurationMs = (60 / bpm) / stepsPerBeat * 1000;
+        const microStepDuration = stepDurationMs / 2;
         const targetHits = [];
+
+        // 此軌道最大的子格數（無分割 = 1）
+        let trackMaxSub = 1;
+        (track.subdivisions || []).forEach(sd => { if (sd && sd.count > trackMaxSub) trackMaxSub = sd.count; });
+
         track.steps.forEach((step, index) => {
-            if (step) {
+            const sub = (track.subdivisions || [])[index];
+            if (sub) {
+                // 分割格：每個有音的子格都是一個目標
+                sub.notes.forEach((on, j) => {
+                    if (!on) return;
+                    const marker = sub.markers[j] || {};
+                    targetHits.push({
+                        time: (index + j / sub.count) * stepDurationMs,
+                        hand: marker.hand || null
+                    });
+                });
+            } else if (step) {
                 const marker = track.markers[index] || {};
                 targetHits.push({
-                    time: (index * 2) * microStepDuration,
+                    time: index * stepDurationMs,
                     hand: marker.hand || null
                 });
             }
@@ -156,16 +173,23 @@ class PercussionTestModule {
             bpm,
             stepsPerBeat,
             totalSteps,
-            totalDuration: totalSteps * 2 * microStepDuration,
+            totalDuration: totalSteps * stepDurationMs,
+            stepDurationMs,
             microStepDuration,
+            trackMaxSub,
             targetHits
         };
     }
+
+    // 測試網格解析度：取「此軌最大子格數」與「高精度(2)」的較大值
+    getGridRes() {
+        return Math.max(this.testData.trackMaxSub || 1, this.isHighPrecision ? 2 : 1);
+    }
     
     renderGrids() {
-        const precision = this.isHighPrecision ? 8 : 4;
-        const steps = this.testData.totalSteps * (precision / 4);
-        const precisionClass = precision === 8 ? 'high-precision' : '';
+        const res = this.getGridRes();
+        const steps = this.testData.totalSteps * res;
+        const precisionClass = res > 1 ? 'high-precision' : '';
         
         this.dom.targetGrid.className = `test-grid ${precisionClass}`;
         this.dom.recordGrid.className = `test-grid ${precisionClass}`;
@@ -182,10 +206,21 @@ class PercussionTestModule {
             let isActive = false;
             let markerText = '';
             
-            const originalStepIndex = Math.floor(i / (precision / 4));
+            const originalStepIndex = Math.floor(i / res);
+            const sub = (track.subdivisions || [])[originalStepIndex];
 
-            if (track.steps[originalStepIndex]) {
-                if ((precision === 8 && i % 2 === 0) || precision === 4) {
+            if (sub) {
+                // 分割格：落在目前 cell 的有音子格
+                for (let j = 0; j < sub.count; j++) {
+                    if (sub.notes[j] && i === originalStepIndex * res + Math.round(j * res / sub.count)) {
+                        isActive = true;
+                        const m = sub.markers[j] || {};
+                        if (m.hand) markerText = m.hand;
+                    }
+                }
+            } else if (track.steps[originalStepIndex]) {
+                // 未分割格：音符位於格子開頭（高精度時每格分兩格，只亮第一格）
+                if (i % res === 0) {
                     isActive = true;
                     const marker = track.markers[originalStepIndex] || {};
                     if (marker.hand) markerText = marker.hand;
@@ -226,18 +261,18 @@ class PercussionTestModule {
         prepCells.forEach(c => c.className = 'test-cell prep-cell');
         ['預', '備', '音', '格'].forEach((text, i) => { if(prepCells[i]) prepCells[i].textContent = text; });
 
-        const precisionMultiplier = this.isHighPrecision ? 2 : 1;
-        const stepDuration = ((60 / this.beatmaker.bpm) / this.testData.stepsPerBeat) * 1000 / precisionMultiplier;
+        const res = this.getGridRes();
+        const stepDuration = this.testData.stepDurationMs / res;
         
-        this.currentPlaybackStep = -4 * this.testData.stepsPerBeat * precisionMultiplier;
+        this.currentPlaybackStep = -4 * this.testData.stepsPerBeat * res;
         
         this.playbackInterval = setInterval(() => {
-            const totalSteps = this.testData.totalSteps * precisionMultiplier;
+            const totalSteps = this.testData.totalSteps * res;
 
             if (this.currentPlaybackStep < 0) {
-                const prepBeat = Math.floor(this.currentPlaybackStep / (this.testData.stepsPerBeat * precisionMultiplier)) + 4;
+                const prepBeat = Math.floor(this.currentPlaybackStep / (this.testData.stepsPerBeat * res)) + 4;
                 
-                if (this.currentPlaybackStep % (this.testData.stepsPerBeat * precisionMultiplier) === 0) {
+                if (this.currentPlaybackStep % (this.testData.stepsPerBeat * res) === 0) {
                     this.beatmaker.playMetronomeSound();
                     prepCells.forEach(c => c.classList.remove('countdown'));
                     if(prepCells[prepBeat]) prepCells[prepBeat].classList.add('countdown');
@@ -405,8 +440,9 @@ class PercussionTestModule {
     }
     
     drawExtraHitMarker(hitData) {
-        const microStep = this.testData.microStepDuration;
-        const stepIndex = Math.round(hitData.time / (this.isHighPrecision ? microStep : microStep * 2));
+        const res = this.getGridRes();
+        const cellDuration = this.testData.stepDurationMs / res;
+        const stepIndex = Math.round(hitData.time / cellDuration);
         const cell = this.dom.recordCells[stepIndex];
         if (cell) {
             cell.innerHTML = '';
@@ -431,8 +467,9 @@ class PercussionTestModule {
         });
 
         if (closestTarget && minDiff < this.HIT_VISUAL_TOLERANCE_MS) {
-            const microStep = this.testData.microStepDuration;
-            const targetStepIndex = Math.round(closestTarget.time / (this.isHighPrecision ? microStep : microStep * 2));
+        const res = this.getGridRes();
+        const cellDuration = this.testData.stepDurationMs / res;
+        const targetStepIndex = Math.round(closestTarget.time / cellDuration);
             const cell = this.dom.recordCells[targetStepIndex];
             if (cell) {
                 this.drawHitMarker(cell, hitData, closestTarget);
@@ -459,7 +496,9 @@ class PercussionTestModule {
             if (result.delta < -microStep/4) early++; else if (result.delta > microStep/4) late++;
             if(result.handCorrect) handCorrectCount++;
             
-            const targetStepIndex = Math.round(result.targetTime / (this.isHighPrecision ? microStep : microStep * 2));
+            const res = this.getGridRes();
+            const cellDuration = this.testData.stepDurationMs / res;
+            const targetStepIndex = Math.round(result.targetTime / cellDuration);
             const cell = this.dom.recordCells[targetStepIndex];
             if (cell) {
                 const hitData = { time: result.hitTime, hand: result.hitHand };
