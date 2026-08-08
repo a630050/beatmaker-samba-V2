@@ -3,6 +3,17 @@
 			3: "附點16分", 2: "16分", 1: "32分"
 		};
 
+        // 內建預設腳本清單（beats/ 資料夾），離線時也能列出並載入
+        // 之後若在 beats/ 新增 .json 檔案，記得同步更新此清單
+        const LOCAL_PRESET_BEATS = [
+            'Antü Gira Break 2.json',
+            'Antü Gira 主節奏.json',
+            'Antü Gira 前奏.json',
+            'Break 2.json',
+            'Break 3.json',
+            'Break 4.json',
+            'Break 5.json'
+        ];
         class AudioCache {
             constructor() { this.cache = new Map(); }
             async getSample(url, audioContext) {
@@ -2936,28 +2947,54 @@
             async fetchPresetBeats() {
                 const select = document.getElementById('presetBeatsSelect');
                 select.innerHTML = '<option value="">載入中...</option>';
+
+                // 1) 離線優先：立即列出內建 beats/ 資料夾的腳本（相對路徑，不等待網路）
+                //    之後若在 beats/ 新增 .json 檔案，記得同步更新 LOCAL_PRESET_BEATS
+                const localBeats = LOCAL_PRESET_BEATS;
+                if (localBeats.length === 0) {
+                    select.innerHTML = '<option value="">沒有找到預設腳本</option>';
+                } else {
+                    select.innerHTML = '<option value="">-- 請選擇預設腳本 --</option>';
+                    localBeats.forEach(name => {
+                        const option = document.createElement('option');
+                        // beats/ 實際檔名是 NFD 編碼（如 Antu%CC%88），先 normalize('NFD') 再 encode，避免 NFC（Antu%C3%BC）產生 404
+                        option.value = 'beats/' + encodeURIComponent(name.normalize('NFD'));
+                        option.textContent = name.replace(/\.json$/i, '');
+                        option.dataset.source = 'local';
+                        select.appendChild(option);
+                    });
+                }
+
+                // 2) 線上備援（不阻塞）：背景嘗試抓 GitHub API 清單，只補上內建清單沒有的新腳本
                 try {
                     const response = await fetch('https://api.github.com/repos/a630050/beatmaker-samba-V2/contents/beats');
                     if (!response.ok) throw new Error('Network response was not ok');
                     const files = await response.json();
-                    
-                    const jsonFiles = files.filter(f => f.name.endsWith('.json'));
-                    
-                    if (jsonFiles.length === 0) {
-                        select.innerHTML = '<option value="">沒有找到預設腳本</option>';
-                        return;
+
+                    // 用 NFC 正規化比對，避免 precomposed（ü）與 combining（u+¨）形式的同檔名被當成不同腳本
+                    const toLabel = name => name.replace(/\.json$/i, '').normalize('NFC');
+                    const localLabels = new Set(localBeats.map(toLabel));
+                    const remoteOnly = files
+                        .filter(f => f.name.toLowerCase().endsWith('.json'))
+                        .map(f => ({ label: toLabel(f.name), value: f.download_url }))
+                        .filter(opt => !localLabels.has(opt.label));
+
+                    if (remoteOnly.length === 0) return;
+
+                    if (select.options.length <= 1) {
+                        // 本機清單為空時，改用線上清單當主要內容
+                        select.innerHTML = '<option value="">-- 請選擇預設腳本 --</option>';
                     }
-                    
-                    select.innerHTML = '<option value="">-- 請選擇預設腳本 --</option>';
-                    jsonFiles.forEach(file => {
+                    remoteOnly.forEach(opt => {
                         const option = document.createElement('option');
-                        option.value = file.download_url;
-                        option.textContent = file.name.replace('.json', '');
+                        option.value = opt.value;
+                        option.textContent = opt.label + '（線上）';
+                        option.dataset.source = 'remote';
                         select.appendChild(option);
                     });
                 } catch (error) {
-                    console.error('Error fetching preset beats:', error);
-                    select.innerHTML = '<option value="">無法載入腳本列表</option>';
+                    // 備援失敗沒關係，本機清單已經顯示
+                    console.warn('GitHub API 備援抓取失敗，僅顯示內建腳本:', error);
                 }
             }
 
@@ -2968,35 +3005,41 @@
                     alert('請先選擇一個預設腳本');
                     return;
                 }
-                
+
+                const btn = document.querySelector('#loadModal .btn-primary');
+                const oldText = btn.textContent;
+                btn.textContent = '載入中...';
+                btn.disabled = true;
+
                 try {
-                    const btn = document.querySelector('#loadModal .btn-primary');
-                    const oldText = btn.textContent;
-                    btn.textContent = '載入中...';
-                    btn.disabled = true;
-                    
                     const response = await fetch(downloadUrl);
                     if (!response.ok) throw new Error('Network response was not ok');
                     const text = await response.text();
-                    
+
                     const file = new File([text], 'preset.json', { type: 'application/json' });
+
+                    // importPattern 會彈確認框，這裡自動同意；用 finally 確保失敗時也能還原
                     const originalConfirm = window.confirm;
                     window.confirm = () => true;
-                    await this.importPattern(file);
-                    window.confirm = originalConfirm;
-                    
+                    try {
+                        await this.importPattern(file);
+                    } finally {
+                        window.confirm = originalConfirm;
+                    }
+
                     this.toggleLoadModal();
-                    
-                    btn.textContent = oldText;
-                    btn.disabled = false;
                 } catch (error) {
                     console.error('Error loading preset beat:', error);
-                    alert('載入腳本時發生錯誤。');
-                    document.querySelector('#loadModal .btn-primary').textContent = '下載並載入';
-                    document.querySelector('#loadModal .btn-primary').disabled = false;
+                    let message = '載入腳本時發生錯誤。';
+                    if (window.location.protocol === 'file:') {
+                        message = '以 file:// 開啟時，瀏覽器會封鎖讀取內建腳本。\n請改用「從本機選擇檔案」，或用本地伺服器（如 VS Code Live Server）開啟本資料夾。';
+                    }
+                    alert(message);
+                } finally {
+                    btn.textContent = oldText;
+                    btn.disabled = false;
                 }
             }
-
             randomizeTracks() {
                 // Save state for undo
                 this.saveState();
