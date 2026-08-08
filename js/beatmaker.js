@@ -4190,40 +4190,50 @@
 				const effectiveSpb = espb || this.stepsPerBeat;
 				const symbols = [];
 				let i = 0;
+
+				// 輔助函數：計算在某個拍內偏移位置上，允許的最大延展長度，以符合量化對齊原則
+				const getMaxDuration = (offset, maxLen) => {
+					if (offset === 0) return maxLen;
+					let p = offset;
+					let power = 1;
+					while (p % 2 === 0 && power < maxLen) {
+						p = p / 2;
+						power *= 2;
+					}
+					return power;
+				};
 				
-				while (i < measureSteps.length) {					if (measureSteps[i] && !(measureMarkers[i] && measureMarkers[i].rest)) {
+				while (i < measureSteps.length) {
+					let offsetInBeat = i % effectiveSpb;
+					let maxAllowed = getMaxDuration(offsetInBeat, effectiveSpb);
+
+					if (measureSteps[i] && !(measureMarkers[i] && measureMarkers[i].rest)) {
 						let duration = 1;
 						// 子格音符：_subNote = 到格界剩餘單位數，音符在「格子範圍內」sustain 到格界或下一個音符
-						// （例：一拍4格、2 分割、只敲子格 0 → 16 分音符 1 條線）
 						const subCap = (measureMarkers[i] && typeof measureMarkers[i]._subNote === 'number') ? measureMarkers[i]._subNote : 0;
+						
 						// 未分割音符：維持原本跨格 sustain，但在分割格邊界（_subNote 標記）停住
+						// 新增：同時限制不可跨越拍子的「強邊界」 (maxAllowed)
 						while (i + duration < measureSteps.length &&
+						   duration < maxAllowed &&
 						   !measureSteps[i + duration] &&
 						   !(measureMarkers[i + duration] && measureMarkers[i + duration].rest) &&
 						   (subCap ? (duration < subCap) : !(measureMarkers[i + duration] && measureMarkers[i + duration]._subNote))) {
 							duration++;
 						}
 						symbols.push({ type: 'note', duration, marker: measureMarkers[i] });
-						i += duration;					} else {
+						i += duration;
+					} else {
 						let duration = 1;
+						// 休止符同樣不能跨越強邊界，避免產生跨半拍或跨拍的不良排版
 						while (i + duration < measureSteps.length && 
+						   duration < maxAllowed &&
 						   (!measureSteps[i + duration] || (measureMarkers[i + duration] && measureMarkers[i + duration].rest)) &&
 						   !(measureMarkers[i + duration] && measureMarkers[i + duration]._subNote)) {
 							duration++;
 						}
 						
-						const beatsInDuration = duration / effectiveSpb;
-						const wholeBeatRests = Math.floor(beatsInDuration);
-						const remainingSteps = duration % effectiveSpb;
-						
-						for (let b = 0; b < wholeBeatRests; b++) {
-							symbols.push({ type: 'rest', duration: effectiveSpb });
-						}
-						
-						if (remainingSteps > 0) {
-							symbols.push({ type: 'rest', duration: remainingSteps });
-						}
-						
+						symbols.push({ type: 'rest', duration });
 						i += duration;
 					}
 				}
