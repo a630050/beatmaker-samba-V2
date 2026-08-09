@@ -6,13 +6,12 @@
         // 內建預設腳本清單（beats/ 資料夾），離線時也能列出並載入
         // 之後若在 beats/ 新增 .json 檔案，記得同步更新此清單
         const LOCAL_PRESET_BEATS = [
-            'Antü Gira Break 2.json',
-            'Antü Gira 主節奏.json',
             'Antü Gira 前奏.json',
-            'Break 2.json',
-            'Break 3.json',
-            'Break 4.json',
-            'Break 5.json'
+            'Antü Gira 主節奏.json',
+            'Antü Gira Break 1.json',
+            'Antü Gira Break 3.json',
+            'Antü Gira Break 4.json',
+            'Antü Gira Break 5.json'
         ];
         class AudioCache {
             constructor() { this.cache = new Map(); }
