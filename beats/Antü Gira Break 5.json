@@ -41,16 +41,16 @@
         false,
         true,
         false,
+        true,
         false,
+        true,
         false,
-        false,
-        false,
-        false,
+        true,
         false,
         true,
         false,
         false,
-        false,
+        true,
         false,
         false,
         false,
@@ -126,7 +126,7 @@
       ],
       "enabled": true,
       "soundEnabled": true,
-      "volume": 0.8
+      "volume": 0.9
     },
     {
       "label": "S2",
@@ -150,17 +150,17 @@
         false,
         false,
         false,
+        true,
         false,
+        true,
+        false,
+        true,
         false,
         true,
         false,
         false,
-        false,
-        false,
-        false,
-        false,
-        false,
         true,
+        false,
         false,
         false,
         false
@@ -235,7 +235,7 @@
       ],
       "enabled": true,
       "soundEnabled": true,
-      "volume": 0.8
+      "volume": 0.9
     },
     {
       "label": "S3",
@@ -247,7 +247,6 @@
         false,
         false,
         false,
-        true,
         false,
         false,
         false,
@@ -255,24 +254,25 @@
         false,
         false,
         false,
+        false,
+        false,
+        false,
+        false,
+        false,
         true,
         false,
         true,
+        false,
         true,
+        false,
         true,
+        false,
+        false,
         true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
+        false,
+        false,
+        false,
+        false
       ],
       "markers": [
         {},
@@ -367,21 +367,21 @@
         true,
         true,
         true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
       ],
       "markers": [
         {},
@@ -410,27 +410,19 @@
         {},
         {},
         {},
-        {
-          "accent": ">"
-        },
         {},
         {},
         {},
-        {
-          "accent": ">"
-        },
         {},
         {},
         {},
-        {
-          "accent": ">"
-        },
         {},
         {},
         {},
-        {
-          "accent": ">"
-        },
+        {},
+        {},
+        {},
+        {},
         {}
       ],
       "subdivisions": [
@@ -469,7 +461,7 @@
       ],
       "enabled": true,
       "soundEnabled": true,
-      "volume": 0.4
+      "volume": 0.5
     },
     {
       "label": "C",
@@ -578,34 +570,22 @@
       ],
       "enabled": true,
       "soundEnabled": true,
-      "volume": 0
+      "volume": 0.8
     },
     {
       "label": "R",
       "drumType": "repinique",
       "steps": [
-        false,
-        true,
-        false,
-        false,
-        true,
-        false,
         true,
         true,
-        false,
-        false,
-        false,
-        false,
         true,
-        false,
-        false,
-        false,
-        false,
         true,
-        false,
-        false,
         true,
-        false,
+        true,
+        true,
+        true,
+        true,
+        true,
         true,
         true,
         true,
@@ -613,12 +593,23 @@
         true,
         false,
         true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
         false,
         false,
         false
       ],
       "markers": [
-        {},
         {
           "accent": ">"
         },
@@ -627,22 +618,6 @@
         {
           "accent": ">"
         },
-        {},
-        {
-          "accent": ">"
-        },
-        {
-          "accent": ">"
-        },
-        {},
-        {},
-        {},
-        {},
-        {
-          "accent": ">"
-        },
-        {},
-        {},
         {},
         {},
         {
@@ -654,44 +629,33 @@
           "accent": ">"
         },
         {},
-        {
-          "accent": ">"
-        },
-        {
-          "accent": ">"
-        },
-        {
-          "accent": ">"
-        },
         {},
         {
           "accent": ">"
         },
         {},
+        {},
+        {},
         {
           "accent": ">"
         },
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
         {},
         {},
         {}
       ],
       "subdivisions": [
-        {
-          "count": 2,
-          "notes": [
-            1,
-            1
-          ],
-          "markers": [
-            {
-              "accent": ">"
-            },
-            {
-              "accent": ">"
-            }
-          ]
-        },
-        null,
         null,
         null,
         null,
@@ -713,14 +677,22 @@
             1
           ],
           "markers": [
-            {
-              "accent": ">"
-            },
-            {
-              "accent": ">"
-            }
+            {},
+            {}
           ]
         },
+        {
+          "count": 2,
+          "notes": [
+            1,
+            1
+          ],
+          "markers": [
+            {},
+            {}
+          ]
+        },
+        null,
         null,
         null,
         null,
@@ -1135,5 +1107,5 @@
       "name": "Cuíca"
     }
   },
-  "exportDate": "2026-08-09T03:41:06.953Z"
+  "exportDate": "2026-08-09T03:24:16.459Z"
 }
