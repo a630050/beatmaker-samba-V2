@@ -76,7 +76,12 @@
 				this.currentlyPlayingStepElements = [];
 				this.currentlyPlayingNotationElements = [];
 				this.notationNoteCache = new Map();
+				this.isNotationCacheBuilt = false;
 				this.lastAutoScrollStep = -1;
+				this.cachedStepWidth = 0;
+				this.cachedGap = 2;
+				this.isStepSizeCached = false;
+				this.stepDomMap = [];
 				this.metronome = {
                     enabled: true,
                     mode: 'sequential',
@@ -626,6 +631,8 @@
 				});
 				this.updateColorHints();
 				this.updateBeatSettingLock();
+				this.rebuildStepDomMap();
+				this.updateStepMetricsCache();
 			}
 
             updateExpandButton() {
@@ -849,6 +856,7 @@
 				this.bindSoundPanelEvents();
 
 				window.addEventListener('resize', () => {
+					this.isStepSizeCached = false;
 					this.updateStepSize();
 					setTimeout(() => this.updateBeatNumbers(), 50);
 				});
@@ -991,6 +999,39 @@
                 document.querySelectorAll(`.step[data-step="${stepIndex}"]`).forEach(el => el.classList.add('step-highlighted'));
             }
 
+            updateStepMetricsCache() {
+                const trackStepsContainer = document.getElementById('trackSteps');
+                if (!trackStepsContainer) return;
+                const firstStep = trackStepsContainer.querySelector('.step');
+                if (firstStep) {
+                    this.cachedStepWidth = firstStep.offsetWidth;
+                    this.cachedGap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
+                    this.isStepSizeCached = true;
+                }
+            }
+
+            rebuildStepDomMap() {
+                this.stepDomMap = [];
+                if (!this.tracks || this.tracks.length === 0) return;
+                this.tracks.forEach((track, t) => {
+                    this.stepDomMap[t] = [];
+                    track.steps.forEach((_, s) => {
+                        const cell = track.subdivisions && track.subdivisions[s];
+                        if (cell) {
+                            const subs = [];
+                            for (let sub = 0; sub < cell.count; sub++) {
+                                const el = document.querySelector(`.sub-step[data-track="${t}"][data-step="${s}"][data-sub="${sub}"]`);
+                                if (el) subs.push(el);
+                            }
+                            this.stepDomMap[t][s] = subs;
+                        } else {
+                            const el = document.querySelector(`.step[data-track="${t}"][data-step="${s}"]`);
+                            this.stepDomMap[t][s] = el ? [el] : [];
+                        }
+                    });
+                });
+            }
+
             buildNotationNoteCache() {
                 this.notationNoteCache.clear();
                 const allNoteElements = document.querySelectorAll('[id^="vf-note-"], [data-note-id^="vf-note-"]');
@@ -1010,18 +1051,15 @@
                         }
                     }
                 });
+                this.isNotationCacheBuilt = this.notationNoteCache.size > 0;
             }
 
             findNoteElementsForTrackStep(trackIndex, stepIndex) {
-                if (this.notationNoteCache.size === 0) {
-                    this.buildNotationNoteCache();
+                if (!this.isNotationCacheBuilt) {
+                    return [];
                 }
                 const key = `${trackIndex}-${stepIndex}`;
-                if (this.notationNoteCache.has(key)) {
-                    return this.notationNoteCache.get(key);
-                }
-                const directId = document.getElementById(`vf-note-${trackIndex}-${stepIndex}`);
-                return directId ? [directId] : [];
+                return this.notationNoteCache.get(key) || [];
             }
 
             scrollToNoteInModal(noteEl) {
@@ -2406,33 +2444,35 @@
 
 			updateBeatNumbers() {
 				const positionLine = document.getElementById('positionLine');
-				const trackStepsContainer = document.getElementById('trackSteps');
-				if (!trackStepsContainer) return;
+				if (!positionLine) return;
 
-				const firstStep = trackStepsContainer.querySelector('.step');
+				if (!this.isStepSizeCached || this.cachedStepWidth === 0) {
+					this.updateStepMetricsCache();
+				}
 
-				if (firstStep) {
-					const stepWidth = firstStep.offsetWidth;
-					const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
-					const totalStepWidth = stepWidth + gap;
-					// 播放中：位置線隨子格在格內平滑前進，讓使用者知道目前掃到格內哪個位置
+				if (this.cachedStepWidth > 0) {
+					const totalStepWidth = this.cachedStepWidth + this.cachedGap;
 					let lineLeft = this.currentStep * totalStepWidth;
 					if (this.isPlaying && this.maxSub > 1) {
-						lineLeft += (this.currentOffsetInCell / this.maxSub) * stepWidth;
+						lineLeft += (this.currentOffsetInCell / this.maxSub) * this.cachedStepWidth;
 					}
 					positionLine.style.left = `${lineLeft}px`;
 				}
 
 				if (this.currentlyPlayingStepElements.length > 0) {
-					this.currentlyPlayingStepElements.forEach(el => el.classList.remove('playing'));
-					this.currentlyPlayingStepElements = [];
+					for (let i = 0; i < this.currentlyPlayingStepElements.length; i++) {
+						this.currentlyPlayingStepElements[i].classList.remove('playing');
+					}
+					this.currentlyPlayingStepElements.length = 0;
 				} else {
 					document.querySelectorAll('.step.playing, .sub-step.playing').forEach(el => el.classList.remove('playing'));
 				}
 
 				if (this.isPlaying) {
 					if (this.mode === 'ensemble' || this.playSelectionMode || this.isSingleTrackNotationMode) {
-						this.tracks.forEach((track, t) => this.highlightCell(track, t, this.currentStep));
+						for (let t = 0; t < this.tracks.length; t++) {
+							this.highlightCell(this.tracks[t], t, this.currentStep);
+						}
 					} else {
 						this.highlightCell(this.tracks[this.currentTrack], this.currentTrack, this.currentStep);
 					}
@@ -2443,19 +2483,35 @@
 			highlightCell(track, trackIndex, stepIndex) {
 				if (!track) return;
 				const cell = track.subdivisions && track.subdivisions[stepIndex];
+				let els = null;
 				if (cell) {
 					const subIdx = Math.min(cell.count - 1, Math.floor(this.currentOffsetInCell * cell.count / this.maxSub));
-					const els = document.querySelectorAll(`.sub-step[data-track="${trackIndex}"][data-step="${stepIndex}"][data-sub="${subIdx}"]`);
-					els.forEach(el => {
-						el.classList.add('playing');
-						this.currentlyPlayingStepElements.push(el);
-					});
+					if (this.stepDomMap[trackIndex] && this.stepDomMap[trackIndex][stepIndex]) {
+						const subEls = this.stepDomMap[trackIndex][stepIndex];
+						if (Array.isArray(subEls) && subEls[subIdx]) {
+							els = [subEls[subIdx]];
+						}
+					}
+					if (!els) {
+						els = document.querySelectorAll(`.sub-step[data-track="${trackIndex}"][data-step="${stepIndex}"][data-sub="${subIdx}"]`);
+					}
 				} else {
-					const els = document.querySelectorAll(`.step[data-track="${trackIndex}"][data-step="${stepIndex}"]`);
-					els.forEach(el => {
-						el.classList.add('playing');
-						this.currentlyPlayingStepElements.push(el);
-					});
+					if (this.stepDomMap[trackIndex] && this.stepDomMap[trackIndex][stepIndex]) {
+						els = this.stepDomMap[trackIndex][stepIndex];
+					}
+					if (!els) {
+						els = document.querySelectorAll(`.step[data-track="${trackIndex}"][data-step="${stepIndex}"]`);
+					}
+				}
+
+				if (els) {
+					for (let i = 0; i < els.length; i++) {
+						const el = els[i];
+						if (el) {
+							el.classList.add('playing');
+							this.currentlyPlayingStepElements.push(el);
+						}
+					}
 				}
 			}
 			
@@ -3911,6 +3967,8 @@
 										document.querySelectorAll('.vf-note-playing').forEach(el => el.classList.remove('vf-note-playing'));
 										this.isSingleTrackNotationMode = false;
 										this.singleTrackNotationIndex = -1;
+										this.isNotationCacheBuilt = false;
+										this.notationNoteCache.clear();
 									}
 									break;
 								}
