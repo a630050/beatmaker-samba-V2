@@ -3278,6 +3278,86 @@
                 return originalDefaults[drumKey] || this.getDefaultSoundParams();
             }
 
+            async fetchPresetBeats() {
+                const select = document.getElementById('presetBeatsSelect');
+                select.innerHTML = '<option value="">載入中...</option>';
+
+                const sortSelectOptions = (sel) => {
+                    const defaultOption = sel.options[0];
+                    const options = Array.from(sel.options).slice(1);
+                    const getSortKey = (label) => {
+                        if (label.includes('前奏')) return 10;
+                        if (label.includes('主節奏') || label.includes('主節拍')) return 20;
+                        const breakMatch = label.match(/Break\s*(\d+)/i);
+                        if (breakMatch) {
+                            return 3000 + parseInt(breakMatch[1], 10);
+                        }
+                        return 9000;
+                    };
+                    options.sort((a, b) => {
+                        const keyA = getSortKey(a.textContent);
+                        const keyB = getSortKey(b.textContent);
+                        if (keyA !== keyB) {
+                            return keyA - keyB;
+                        }
+                        return a.textContent.localeCompare(b.textContent, undefined, { numeric: true, sensitivity: 'base' });
+                    });
+                    sel.innerHTML = '';
+                    if (defaultOption) sel.appendChild(defaultOption);
+                    options.forEach(opt => sel.appendChild(opt));
+                };
+
+                // 1) 離線優先：區域列出內建 beats/ 資料夾的腳本
+                const localBeats = LOCAL_PRESET_BEATS;
+                if (localBeats.length === 0) {
+                    select.innerHTML = '<option value="">沒有找到預設腳本</option>';
+                } else {
+                    select.innerHTML = '<option value="">-- 請選擇預設腳本 --</option>';
+                    localBeats.forEach(name => {
+                        const option = document.createElement('option');
+                        option.value = 'beats/' + encodeURIComponent(name.normalize('NFD'));
+                        option.textContent = name.replace(/\.json$/i, '').normalize('NFC');
+                        option.dataset.source = 'local';
+                        select.appendChild(option);
+                    });
+                    sortSelectOptions(select);
+                }
+
+                // 2) 線上備援（不阻塞）：背景嘗試抓 GitHub API 清單，只補上內建清單沒有的新腳本
+                try {
+                    const response = await fetch('https://api.github.com/repos/a630050/beatmaker-samba-V2/contents/beats');
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const files = await response.json();
+
+                    const toLabel = name => name.replace(/\.json$/i, '').normalize('NFC');
+                    const localLabels = new Set(localBeats.map(toLabel));
+                    const remoteOnly = files
+                        .filter(f => f.name.toLowerCase().endsWith('.json'))
+                        .map(f => ({ label: toLabel(f.name), value: f.download_url }))
+                        .filter(opt => !localLabels.has(opt.label));
+
+                    if (remoteOnly.length === 0) {
+                        sortSelectOptions(select);
+                        return;
+                    }
+
+                    if (select.options.length <= 1) {
+                        select.innerHTML = '<option value="">-- 請選擇預設腳本 --</option>';
+                    }
+                    remoteOnly.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt.value;
+                        option.textContent = opt.label;
+                        option.dataset.source = 'remote';
+                        select.appendChild(option);
+                    });
+                    sortSelectOptions(select);
+                } catch (error) {
+                    console.warn('GitHub API 備援抓取失敗，僅顯示內建腳本:', error);
+                    sortSelectOptions(select);
+                }
+            }
+
             async loadSingleDefaultSample(drumKey) {
                 const sound = this.drumSounds[drumKey];
                 if (!sound.defaultSampleUrl || !this.audioContext) return;
@@ -3351,59 +3431,7 @@
                 }
             }
 
-            async fetchPresetBeats() {
-                const select = document.getElementById('presetBeatsSelect');
-                select.innerHTML = '<option value="">載入中...</option>';
 
-                // 1) 離線優先：立即列出內建 beats/ 資料夾的腳本（相對路徑，不等待網路）
-                //    之後若在 beats/ 新增 .json 檔案，記得同步更新 LOCAL_PRESET_BEATS
-                const localBeats = LOCAL_PRESET_BEATS;
-                if (localBeats.length === 0) {
-                    select.innerHTML = '<option value="">沒有找到預設腳本</option>';
-                } else {
-                    select.innerHTML = '<option value="">-- 請選擇預設腳本 --</option>';
-                    localBeats.forEach(name => {
-                        const option = document.createElement('option');
-                        // beats/ 實際檔名是 NFD 編碼（如 Antu%CC%88），先 normalize('NFD') 再 encode，避免 NFC（Antu%C3%BC）產生 404
-                        option.value = 'beats/' + encodeURIComponent(name.normalize('NFD'));
-                        option.textContent = name.replace(/\.json$/i, '');
-                        option.dataset.source = 'local';
-                        select.appendChild(option);
-                    });
-                }
-
-                // 2) 線上備援（不阻塞）：背景嘗試抓 GitHub API 清單，只補上內建清單沒有的新腳本
-                try {
-                    const response = await fetch('https://api.github.com/repos/a630050/beatmaker-samba-V2/contents/beats');
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    const files = await response.json();
-
-                    // 用 NFC 正規化比對，避免 precomposed（ü）與 combining（u+¨）形式的同檔名被當成不同腳本
-                    const toLabel = name => name.replace(/\.json$/i, '').normalize('NFC');
-                    const localLabels = new Set(localBeats.map(toLabel));
-                    const remoteOnly = files
-                        .filter(f => f.name.toLowerCase().endsWith('.json'))
-                        .map(f => ({ label: toLabel(f.name), value: f.download_url }))
-                        .filter(opt => !localLabels.has(opt.label));
-
-                    if (remoteOnly.length === 0) return;
-
-                    if (select.options.length <= 1) {
-                        // 本機清單為空時，改用線上清單當主要內容
-                        select.innerHTML = '<option value="">-- 請選擇預設腳本 --</option>';
-                    }
-                    remoteOnly.forEach(opt => {
-                        const option = document.createElement('option');
-                        option.value = opt.value;
-                        option.textContent = opt.label + '（線上）';
-                        option.dataset.source = 'remote';
-                        select.appendChild(option);
-                    });
-                } catch (error) {
-                    // 備援失敗沒關係，本機清單已經顯示
-                    console.warn('GitHub API 備援抓取失敗，僅顯示內建腳本:', error);
-                }
-            }
 
             async loadPresetBeat() {
                 const select = document.getElementById('presetBeatsSelect');
