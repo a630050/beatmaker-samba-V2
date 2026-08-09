@@ -9,6 +9,7 @@
             'Antü Gira 前奏.json',
             'Antü Gira 主節奏.json',
             'Antü Gira Break 1.json',
+            'Antü Gira Break 2.json',
             'Antü Gira Break 3.json',
             'Antü Gira Break 4.json',
             'Antü Gira Break 5.json'
