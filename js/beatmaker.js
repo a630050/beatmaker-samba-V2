@@ -72,6 +72,11 @@
                 this.singleTrackNotationIndex = -1;   // 需求1-a
                 this.playSelectionMode = false; // 需求(B)-1
                 this.playSelectionRange = { startTrack: 0, endTrack: 0, startStep: 0, endStep: 0 }; // 需求(B)-1
+				// 效能優化快取
+				this.currentlyPlayingStepElements = [];
+				this.currentlyPlayingNotationElements = [];
+				this.notationNoteCache = new Map();
+				this.lastAutoScrollStep = -1;
 				this.metronome = {
                     enabled: true,
                     mode: 'sequential',
@@ -986,55 +991,37 @@
                 document.querySelectorAll(`.step[data-step="${stepIndex}"]`).forEach(el => el.classList.add('step-highlighted'));
             }
 
-            findNoteElementsForTrackStep(trackIndex, stepIndex) {
-                const possibleElements = [];
-                
-                const directId = document.getElementById(`vf-note-${trackIndex}-${stepIndex}`);
-                if (directId) {
-                    possibleElements.push(directId);
-                }
-                
+            buildNotationNoteCache() {
+                this.notationNoteCache.clear();
                 const allNoteElements = document.querySelectorAll('[id^="vf-note-"], [data-note-id^="vf-note-"]');
-                
                 allNoteElements.forEach(element => {
                     const id = element.id || element.getAttribute('data-note-id') || '';
                     const idParts = id.split('-');
-                    
                     if (idParts.length >= 4 && idParts[0] === 'vf' && idParts[1] === 'note') {
-                        const noteTrackIndex = parseInt(idParts[2]);
-                        const noteStepIndex = parseInt(idParts[3]);
-                        
-                        if (noteTrackIndex === trackIndex) {
-                            if (noteStepIndex === stepIndex) {
-                                if (!possibleElements.includes(element)) {
-                                    possibleElements.push(element);
-                                }
-                            } else if (noteStepIndex < stepIndex) {
-                                let isLongNote = true;
-                                for (let checkStep = noteStepIndex + 1; checkStep <= stepIndex; checkStep++) {
-                                    const nextNoteId = document.getElementById(`vf-note-${trackIndex}-${checkStep}`);
-                                    if (nextNoteId && nextNoteId !== element) {
-                                        isLongNote = false;
-                                        break;
-                                    }
-                                }
-                                if (isLongNote && !possibleElements.includes(element)) {
-                                    possibleElements.push(element);
-                                }
-                            }
+                        const trackIdx = parseInt(idParts[2]);
+                        const stepIdx = parseInt(idParts[3]);
+                        const key = `${trackIdx}-${stepIdx}`;
+                        if (!this.notationNoteCache.has(key)) {
+                            this.notationNoteCache.set(key, []);
+                        }
+                        const list = this.notationNoteCache.get(key);
+                        if (!list.includes(element)) {
+                            list.push(element);
                         }
                     }
                 });
-                
-                const dataElements = document.querySelectorAll(`[data-track="${trackIndex}"][data-step="${stepIndex}"]`);
-                dataElements.forEach(element => {
-                    const noteElement = element.closest('[id^="vf-note-"]') || element;
-                    if (!possibleElements.includes(noteElement)) {
-                        possibleElements.push(noteElement);
-                    }
-                });
-                
-                return possibleElements;
+            }
+
+            findNoteElementsForTrackStep(trackIndex, stepIndex) {
+                if (this.notationNoteCache.size === 0) {
+                    this.buildNotationNoteCache();
+                }
+                const key = `${trackIndex}-${stepIndex}`;
+                if (this.notationNoteCache.has(key)) {
+                    return this.notationNoteCache.get(key);
+                }
+                const directId = document.getElementById(`vf-note-${trackIndex}-${stepIndex}`);
+                return directId ? [directId] : [];
             }
 
             scrollToNoteInModal(noteEl) {
@@ -2245,7 +2232,12 @@
                 
                 const notationModal = document.getElementById('notationModal');
                 if (notationModal.style.display === 'flex') {
-                    document.querySelectorAll('.vf-note-playing').forEach(el => el.classList.remove('vf-note-playing'));
+                    if (this.currentlyPlayingNotationElements.length > 0) {
+                        this.currentlyPlayingNotationElements.forEach(el => el.classList.remove('vf-note-playing'));
+                        this.currentlyPlayingNotationElements = [];
+                    } else {
+                        document.querySelectorAll('.vf-note-playing').forEach(el => el.classList.remove('vf-note-playing'));
+                    }
                     
                     let tracksToHighlight = [];
                     if (this.isSingleTrackNotationMode) {
@@ -2275,15 +2267,8 @@
 							const possibleNoteElements = this.findNoteElementsForTrackStep(trackIndex, effIdx);
 							if (possibleNoteElements.length > 0) {
 								possibleNoteElements.forEach(noteEl => {
-									noteEl.classList.add('vf-note-playing'); // 應用外層光暈效果
-									const children = noteEl.querySelectorAll('*');
-									children.forEach(child => {
-										// 檢查該元素是否在一個 'vf-annotation' 群組內
-										// 如果不是，才給它上色
-										if (!child.closest('.vf-annotation')) {
-											child.classList.add('vf-note-playing');
-										}
-									});
+									noteEl.classList.add('vf-note-playing'); // 應用外層光暈與 CSS 樣式
+									this.currentlyPlayingNotationElements.push(noteEl);
 									if (!bottomMostNote || trackIndex > (bottomMostNote.trackIndex || -1)) {
 										bottomMostNote = { element: noteEl, trackIndex: trackIndex };
 									}
@@ -2436,11 +2421,14 @@
 						lineLeft += (this.currentOffsetInCell / this.maxSub) * stepWidth;
 					}
 					positionLine.style.left = `${lineLeft}px`;
-					// 注意：不把量到的寬度寫回 --step-width。格子寬度只由 updateStepSize() 控制，
-					// 否則播放中（0.2s transition 未跑完時量測）會把寬度鎖在錯誤值（例如 2× 卡住回不去 1×）
 				}
 
-				document.querySelectorAll('.step.playing, .sub-step.playing').forEach(el => el.classList.remove('playing'));
+				if (this.currentlyPlayingStepElements.length > 0) {
+					this.currentlyPlayingStepElements.forEach(el => el.classList.remove('playing'));
+					this.currentlyPlayingStepElements = [];
+				} else {
+					document.querySelectorAll('.step.playing, .sub-step.playing').forEach(el => el.classList.remove('playing'));
+				}
 
 				if (this.isPlaying) {
 					if (this.mode === 'ensemble' || this.playSelectionMode || this.isSingleTrackNotationMode) {
@@ -2457,9 +2445,17 @@
 				const cell = track.subdivisions && track.subdivisions[stepIndex];
 				if (cell) {
 					const subIdx = Math.min(cell.count - 1, Math.floor(this.currentOffsetInCell * cell.count / this.maxSub));
-					document.querySelectorAll(`.sub-step[data-track="${trackIndex}"][data-step="${stepIndex}"][data-sub="${subIdx}"]`).forEach(el => el.classList.add('playing'));
+					const els = document.querySelectorAll(`.sub-step[data-track="${trackIndex}"][data-step="${stepIndex}"][data-sub="${subIdx}"]`);
+					els.forEach(el => {
+						el.classList.add('playing');
+						this.currentlyPlayingStepElements.push(el);
+					});
 				} else {
-					document.querySelectorAll(`.step[data-track="${trackIndex}"][data-step="${stepIndex}"]`).forEach(el => el.classList.add('playing'));
+					const els = document.querySelectorAll(`.step[data-track="${trackIndex}"][data-step="${stepIndex}"]`);
+					els.forEach(el => {
+						el.classList.add('playing');
+						this.currentlyPlayingStepElements.push(el);
+					});
 				}
 			}
 			
@@ -2534,22 +2530,26 @@
 
 					if (!firstStep || !sequencer) return;
 
+					// 當前 step 未改變時略過，避免高頻重複滾動
+					if (this.lastAutoScrollStep === this.currentStep) return;
+					this.lastAutoScrollStep = this.currentStep;
+
 					const stepWidth = firstStep.offsetWidth;
 					const gap = parseFloat(getComputedStyle(firstStep.parentElement).gap) || 2;
 					const fullStepWidth = stepWidth + gap;
 					const scrollLeft = sequencer.scrollLeft;
 					const clientWidth = sequencer.clientWidth;
 					const playheadPosition = this.currentStep * fullStepWidth;
-					const scrollTriggerPoint = scrollLeft + (clientWidth * 0.8);
+					const scrollRightEdge = scrollLeft + clientWidth;
 
-					// 往前：播放軸超過可視區 80% 時跟著捲
-					if (playheadPosition > scrollTriggerPoint && (scrollLeft + clientWidth) < sequencer.scrollWidth) {
-						const newScrollLeft = playheadPosition - (clientWidth * 0.1);
+					// 往前：當播放頭接近右視區邊界（超過 85%）且未到最右端時，往前捲動
+					if (playheadPosition > scrollLeft + (clientWidth * 0.85) && scrollRightEdge < sequencer.scrollWidth) {
+						const newScrollLeft = playheadPosition - (clientWidth * 0.15);
 						sequencer.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
 					}
-					// 往後：播放軸跑到可視區左側之外時，捲回來讓它可見（格寬放大時尤其需要）
+					// 往後：播放頭跑到可視區左側之外時，捲回來
 					else if (playheadPosition < scrollLeft) {
-						const newScrollLeft = Math.max(0, playheadPosition - (clientWidth * 0.1));
+						const newScrollLeft = Math.max(0, playheadPosition - (clientWidth * 0.15));
 						sequencer.scrollTo({ left: newScrollLeft, behavior: 'smooth' });
 					}
 				}
@@ -4329,6 +4329,7 @@
                                         child.setAttribute('data-step', globalStepIndex);
                                     });
                                 }
+                                this.buildNotationNoteCache();
                             }, 50);
                         }
 						
@@ -4644,6 +4645,7 @@
             }
           });
         });
+        this.buildNotationNoteCache();
       }, 100);
 
       const startX = staves[0].getNoteStartX ? staves[0].getNoteStartX() : (staves[0].getX() + 10);
