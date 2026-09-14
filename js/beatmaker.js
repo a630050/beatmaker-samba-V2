@@ -36,7 +36,7 @@
             constructor() {
 				this.audioCache = new AudioCache();
 			    this.maxTracks = 16;
-				this.minTracks = 4;				this.isPlaying = false;
+				this.minTracks = 1;				this.isPlaying = false;
 				this.colorHintMode = null;
 				this.maxSub = 1;              // 全曲最大子格數（播放 tick 基準）
 				this.currentTick = 0;         // 播放用全域 tick（= 粗格 index * maxSub + 子格偏移）
